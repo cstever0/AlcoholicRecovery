@@ -1,0 +1,78 @@
+# Python virtual environments
+.venv/
+venv/
+ENV/
+env/
+.env.local
+env.bak/
+venv.bak/
+
+# Environment variables and secrets
+.env
+*.env
+.env.*
+secrets.toml
+*.pem
+*.key
+*.cert
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Raw patient data and clinical records (strictly prohibited from version control)
+data/raw/
+data/patient_records/
+*.dcm
+*.dicom
+*.anon
+*.csv.raw
+
+# Downloaded medical imaging datasets (e.g., ACDC, UK Biobank)
+data/mri/
+data/acdc/
+data/downloads/
+*.nii
+*.nii.gz
+*.mha
+*.mhd
+
+# Generated datasets where appropriate (synthetic cohorts, cached extracts)
+data/synthetic/
+data/processed/
+data/cache/
+*.parquet
+*.feather
+*.sqlite
+*.db
+
+# Large model checkpoint files and trained weights
+models/*.pt
+models/*.pth
+models/*.onnx
+models/*.bin
+models/*.joblib
+models/*.pkl
+checkpoints/
+
+# Temporary and editor files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
