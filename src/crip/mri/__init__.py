@@ -1,8 +1,35 @@
-"""MRI analysis module for the Cardiomyopathy Recovery Intelligence Platform.
+"""MRI analysis module for CRIP.
 
-Contains interfaces for NIfTI/DICOM volumetric handling, preprocessing,
-and deep learning segmentation pipelines (MONAI / PyTorch).
-Implementation scheduled for Milestone 2+.
+Provides ACDC dataset ingestion, 3D cardiac frame extraction,
+expert segmentation visualization, and volumetric calculation interfaces.
 """
 
-__all__ = []
+from crip.mri.acdc_loader import (
+    ACDCDataError,
+    ACDCDataLoader,
+    ACDCCardiacFrame,
+    ACDCCineSeries,
+    ACDCPatientMetadata,
+    LABEL_NAMES,
+    normalize_for_display,
+)
+from crip.mri.cardiac_metrics import (
+    CardiacVolumetrics,
+    calculate_ejection_fraction,
+    calculate_structure_volume_ml,
+    compute_cardiac_volumetrics_from_masks,
+)
+
+__all__ = [
+    "ACDCDataError",
+    "ACDCDataLoader",
+    "ACDCCardiacFrame",
+    "ACDCCineSeries",
+    "ACDCPatientMetadata",
+    "LABEL_NAMES",
+    "normalize_for_display",
+    "CardiacVolumetrics",
+    "calculate_ejection_fraction",
+    "calculate_structure_volume_ml",
+    "compute_cardiac_volumetrics_from_masks",
+]

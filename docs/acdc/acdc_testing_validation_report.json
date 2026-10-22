@@ -1,0 +1,4471 @@
+{
+  "summary": {
+    "dataset_path": "/Users/cstever/Desktop/AlcoholicRecovery/data/raw/acdc/testing",
+    "total_patient_directories": 50,
+    "successfully_validated_patients": 50,
+    "incomplete_or_invalid_patients": 0,
+    "patients_with_errors": 0,
+    "total_ed_es_images_verified": 100,
+    "total_ed_es_masks_verified": 100,
+    "diagnostic_groups_distribution": {
+      "DCM": 10,
+      "NOR": 10,
+      "MINF": 10,
+      "HCM": 10,
+      "RV": 10
+    },
+    "validation_status": "PASS"
+  },
+  "patients": [
+    {
+      "patient_id": "patient101",
+      "directory_path": "data/raw/acdc/testing/patient101",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient101",
+        "ed_frame": 1,
+        "es_frame": 14,
+        "group": "DCM",
+        "height": 169.0,
+        "weight": 79.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient101/patient101_4d.nii.gz",
+      "cine_4d_shape": [
+        232,
+        256,
+        10,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient101/patient101_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient101/patient101_frame01_gt.nii.gz",
+        "image_shape": [
+          232,
+          256,
+          10
+        ],
+        "gt_shape": [
+          232,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6406199932098389,
+          1.6406199932098389,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 14,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient101/patient101_frame14.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient101/patient101_frame14_gt.nii.gz",
+        "image_shape": [
+          232,
+          256,
+          10
+        ],
+        "gt_shape": [
+          232,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6406199932098389,
+          1.6406199932098389,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient102",
+      "directory_path": "data/raw/acdc/testing/patient102",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient102",
+        "ed_frame": 1,
+        "es_frame": 13,
+        "group": "NOR",
+        "height": 156.0,
+        "weight": 75.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient102/patient102_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        8,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient102/patient102_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient102/patient102_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          8
+        ],
+        "gt_shape": [
+          216,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 13,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient102/patient102_frame13.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient102/patient102_frame13_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          8
+        ],
+        "gt_shape": [
+          216,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient103",
+      "directory_path": "data/raw/acdc/testing/patient103",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient103",
+        "ed_frame": 1,
+        "es_frame": 11,
+        "group": "MINF",
+        "height": 175.0,
+        "weight": 107.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient103/patient103_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        9,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient103/patient103_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient103/patient103_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 11,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient103/patient103_frame11.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient103/patient103_frame11_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient104",
+      "directory_path": "data/raw/acdc/testing/patient104",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient104",
+        "ed_frame": 1,
+        "es_frame": 11,
+        "group": "HCM",
+        "height": 180.0,
+        "weight": 74.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient104/patient104_4d.nii.gz",
+      "cine_4d_shape": [
+        208,
+        256,
+        9,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient104/patient104_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient104/patient104_frame01_gt.nii.gz",
+        "image_shape": [
+          208,
+          256,
+          9
+        ],
+        "gt_shape": [
+          208,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 11,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient104/patient104_frame11.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient104/patient104_frame11_gt.nii.gz",
+        "image_shape": [
+          208,
+          256,
+          9
+        ],
+        "gt_shape": [
+          208,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient105",
+      "directory_path": "data/raw/acdc/testing/patient105",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient105",
+        "ed_frame": 1,
+        "es_frame": 10,
+        "group": "HCM",
+        "height": 173.0,
+        "weight": 84.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient105/patient105_4d.nii.gz",
+      "cine_4d_shape": [
+        232,
+        256,
+        10,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient105/patient105_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient105/patient105_frame01_gt.nii.gz",
+        "image_shape": [
+          232,
+          256,
+          10
+        ],
+        "gt_shape": [
+          232,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 10,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient105/patient105_frame10.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient105/patient105_frame10_gt.nii.gz",
+        "image_shape": [
+          232,
+          256,
+          10
+        ],
+        "gt_shape": [
+          232,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient106",
+      "directory_path": "data/raw/acdc/testing/patient106",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient106",
+        "ed_frame": 1,
+        "es_frame": 13,
+        "group": "DCM",
+        "height": 181.0,
+        "weight": 91.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient106/patient106_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        9,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient106/patient106_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient106/patient106_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 13,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient106/patient106_frame13.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient106/patient106_frame13_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient107",
+      "directory_path": "data/raw/acdc/testing/patient107",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient107",
+        "ed_frame": 1,
+        "es_frame": 10,
+        "group": "NOR",
+        "height": 155.0,
+        "weight": 47.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient107/patient107_4d.nii.gz",
+      "cine_4d_shape": [
+        256,
+        216,
+        9,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient107/patient107_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient107/patient107_frame01_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          9
+        ],
+        "gt_shape": [
+          256,
+          216,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 10,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient107/patient107_frame10.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient107/patient107_frame10_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          9
+        ],
+        "gt_shape": [
+          256,
+          216,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient108",
+      "directory_path": "data/raw/acdc/testing/patient108",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient108",
+        "ed_frame": 1,
+        "es_frame": 9,
+        "group": "HCM",
+        "height": 170.0,
+        "weight": 90.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient108/patient108_4d.nii.gz",
+      "cine_4d_shape": [
+        240,
+        256,
+        10,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient108/patient108_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient108/patient108_frame01_gt.nii.gz",
+        "image_shape": [
+          240,
+          256,
+          10
+        ],
+        "gt_shape": [
+          240,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 9,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient108/patient108_frame09.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient108/patient108_frame09_gt.nii.gz",
+        "image_shape": [
+          240,
+          256,
+          10
+        ],
+        "gt_shape": [
+          240,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient109",
+      "directory_path": "data/raw/acdc/testing/patient109",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient109",
+        "ed_frame": 1,
+        "es_frame": 10,
+        "group": "RV",
+        "height": 180.0,
+        "weight": 60.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient109/patient109_4d.nii.gz",
+      "cine_4d_shape": [
+        224,
+        180,
+        8,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient109/patient109_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient109/patient109_frame01_gt.nii.gz",
+        "image_shape": [
+          224,
+          180,
+          8
+        ],
+        "gt_shape": [
+          224,
+          180,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 10,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient109/patient109_frame10.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient109/patient109_frame10_gt.nii.gz",
+        "image_shape": [
+          224,
+          180,
+          8
+        ],
+        "gt_shape": [
+          224,
+          180,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient110",
+      "directory_path": "data/raw/acdc/testing/patient110",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient110",
+        "ed_frame": 1,
+        "es_frame": 11,
+        "group": "NOR",
+        "height": 167.0,
+        "weight": 116.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient110/patient110_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        9,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient110/patient110_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient110/patient110_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 11,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient110/patient110_frame11.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient110/patient110_frame11_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient111",
+      "directory_path": "data/raw/acdc/testing/patient111",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient111",
+        "ed_frame": 1,
+        "es_frame": 7,
+        "group": "HCM",
+        "height": 172.0,
+        "weight": 80.0,
+        "nb_frame": 15
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient111/patient111_4d.nii.gz",
+      "cine_4d_shape": [
+        214,
+        256,
+        6,
+        15
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient111/patient111_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient111/patient111_frame01_gt.nii.gz",
+        "image_shape": [
+          214,
+          256,
+          6
+        ],
+        "gt_shape": [
+          214,
+          256,
+          6
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.40625,
+          1.40625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 7,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient111/patient111_frame07.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient111/patient111_frame07_gt.nii.gz",
+        "image_shape": [
+          214,
+          256,
+          6
+        ],
+        "gt_shape": [
+          214,
+          256,
+          6
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.40625,
+          1.40625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient112",
+      "directory_path": "data/raw/acdc/testing/patient112",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient112",
+        "ed_frame": 1,
+        "es_frame": 12,
+        "group": "MINF",
+        "height": 172.0,
+        "weight": 90.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient112/patient112_4d.nii.gz",
+      "cine_4d_shape": [
+        248,
+        256,
+        10,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient112/patient112_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient112/patient112_frame01_gt.nii.gz",
+        "image_shape": [
+          248,
+          256,
+          10
+        ],
+        "gt_shape": [
+          248,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 12,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient112/patient112_frame12.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient112/patient112_frame12_gt.nii.gz",
+        "image_shape": [
+          248,
+          256,
+          10
+        ],
+        "gt_shape": [
+          248,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient113",
+      "directory_path": "data/raw/acdc/testing/patient113",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient113",
+        "ed_frame": 1,
+        "es_frame": 8,
+        "group": "DCM",
+        "height": 183.0,
+        "weight": 95.0,
+        "nb_frame": 15
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient113/patient113_4d.nii.gz",
+      "cine_4d_shape": [
+        208,
+        174,
+        10,
+        15
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient113/patient113_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient113/patient113_frame01_gt.nii.gz",
+        "image_shape": [
+          208,
+          174,
+          10
+        ],
+        "gt_shape": [
+          208,
+          174,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 8,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient113/patient113_frame08.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient113/patient113_frame08_gt.nii.gz",
+        "image_shape": [
+          208,
+          174,
+          10
+        ],
+        "gt_shape": [
+          208,
+          174,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient114",
+      "directory_path": "data/raw/acdc/testing/patient114",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient114",
+        "ed_frame": 1,
+        "es_frame": 11,
+        "group": "HCM",
+        "height": 172.0,
+        "weight": 80.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient114/patient114_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        11,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient114/patient114_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient114/patient114_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          11
+        ],
+        "gt_shape": [
+          216,
+          256,
+          11
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 11,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient114/patient114_frame11.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient114/patient114_frame11_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          11
+        ],
+        "gt_shape": [
+          216,
+          256,
+          11
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient115",
+      "directory_path": "data/raw/acdc/testing/patient115",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient115",
+        "ed_frame": 1,
+        "es_frame": 13,
+        "group": "MINF",
+        "height": 165.0,
+        "weight": 92.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient115/patient115_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        10,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient115/patient115_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient115/patient115_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          10
+        ],
+        "gt_shape": [
+          216,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 13,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient115/patient115_frame13.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient115/patient115_frame13_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          10
+        ],
+        "gt_shape": [
+          216,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient116",
+      "directory_path": "data/raw/acdc/testing/patient116",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient116",
+        "ed_frame": 1,
+        "es_frame": 9,
+        "group": "HCM",
+        "height": 165.0,
+        "weight": 83.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient116/patient116_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        10,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient116/patient116_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient116/patient116_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          10
+        ],
+        "gt_shape": [
+          216,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 9,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient116/patient116_frame09.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient116/patient116_frame09_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          10
+        ],
+        "gt_shape": [
+          216,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient117",
+      "directory_path": "data/raw/acdc/testing/patient117",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient117",
+        "ed_frame": 1,
+        "es_frame": 13,
+        "group": "DCM",
+        "height": 180.0,
+        "weight": 92.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient117/patient117_4d.nii.gz",
+      "cine_4d_shape": [
+        256,
+        216,
+        10,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient117/patient117_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient117/patient117_frame01_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          10
+        ],
+        "gt_shape": [
+          256,
+          216,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 13,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient117/patient117_frame13.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient117/patient117_frame13_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          10
+        ],
+        "gt_shape": [
+          256,
+          216,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient118",
+      "directory_path": "data/raw/acdc/testing/patient118",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient118",
+        "ed_frame": 1,
+        "es_frame": 10,
+        "group": "MINF",
+        "height": 176.0,
+        "weight": 80.0,
+        "nb_frame": 25
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient118/patient118_4d.nii.gz",
+      "cine_4d_shape": [
+        256,
+        216,
+        9,
+        25
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient118/patient118_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient118/patient118_frame01_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          9
+        ],
+        "gt_shape": [
+          256,
+          216,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 10,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient118/patient118_frame10.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient118/patient118_frame10_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          9
+        ],
+        "gt_shape": [
+          256,
+          216,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient119",
+      "directory_path": "data/raw/acdc/testing/patient119",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient119",
+        "ed_frame": 1,
+        "es_frame": 9,
+        "group": "RV",
+        "height": 162.0,
+        "weight": 60.0,
+        "nb_frame": 15
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient119/patient119_4d.nii.gz",
+      "cine_4d_shape": [
+        174,
+        208,
+        17,
+        15
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient119/patient119_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient119/patient119_frame01_gt.nii.gz",
+        "image_shape": [
+          174,
+          208,
+          17
+        ],
+        "gt_shape": [
+          174,
+          208,
+          17
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 9,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient119/patient119_frame09.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient119/patient119_frame09_gt.nii.gz",
+        "image_shape": [
+          174,
+          208,
+          17
+        ],
+        "gt_shape": [
+          174,
+          208,
+          17
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient120",
+      "directory_path": "data/raw/acdc/testing/patient120",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient120",
+        "ed_frame": 1,
+        "es_frame": 8,
+        "group": "MINF",
+        "height": 161.0,
+        "weight": 55.0,
+        "nb_frame": 25
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient120/patient120_4d.nii.gz",
+      "cine_4d_shape": [
+        214,
+        256,
+        9,
+        25
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient120/patient120_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient120/patient120_frame01_gt.nii.gz",
+        "image_shape": [
+          214,
+          256,
+          9
+        ],
+        "gt_shape": [
+          214,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.40625,
+          1.40625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 8,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient120/patient120_frame08.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient120/patient120_frame08_gt.nii.gz",
+        "image_shape": [
+          214,
+          256,
+          9
+        ],
+        "gt_shape": [
+          214,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.40625,
+          1.40625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient121",
+      "directory_path": "data/raw/acdc/testing/patient121",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient121",
+        "ed_frame": 1,
+        "es_frame": 10,
+        "group": "RV",
+        "height": 183.0,
+        "weight": 75.0,
+        "nb_frame": 35
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient121/patient121_4d.nii.gz",
+      "cine_4d_shape": [
+        240,
+        166,
+        8,
+        35
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient121/patient121_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient121/patient121_frame01_gt.nii.gz",
+        "image_shape": [
+          240,
+          166,
+          8
+        ],
+        "gt_shape": [
+          240,
+          166,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6666699647903442,
+          1.6666699647903442,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 10,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient121/patient121_frame10.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient121/patient121_frame10_gt.nii.gz",
+        "image_shape": [
+          240,
+          166,
+          8
+        ],
+        "gt_shape": [
+          240,
+          166,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6666699647903442,
+          1.6666699647903442,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient122",
+      "directory_path": "data/raw/acdc/testing/patient122",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient122",
+        "ed_frame": 1,
+        "es_frame": 6,
+        "group": "DCM",
+        "height": 165.0,
+        "weight": 65.0,
+        "nb_frame": 14
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient122/patient122_4d.nii.gz",
+      "cine_4d_shape": [
+        180,
+        224,
+        9,
+        14
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient122/patient122_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient122/patient122_frame01_gt.nii.gz",
+        "image_shape": [
+          180,
+          224,
+          9
+        ],
+        "gt_shape": [
+          180,
+          224,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.696429967880249,
+          1.696429967880249,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 6,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient122/patient122_frame06.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient122/patient122_frame06_gt.nii.gz",
+        "image_shape": [
+          180,
+          224,
+          9
+        ],
+        "gt_shape": [
+          180,
+          224,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.696429967880249,
+          1.696429967880249,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient123",
+      "directory_path": "data/raw/acdc/testing/patient123",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient123",
+        "ed_frame": 1,
+        "es_frame": 11,
+        "group": "NOR",
+        "height": 170.0,
+        "weight": 70.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient123/patient123_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        8,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient123/patient123_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient123/patient123_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          8
+        ],
+        "gt_shape": [
+          216,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 11,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient123/patient123_frame11.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient123/patient123_frame11_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          8
+        ],
+        "gt_shape": [
+          216,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient124",
+      "directory_path": "data/raw/acdc/testing/patient124",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient124",
+        "ed_frame": 1,
+        "es_frame": 7,
+        "group": "RV",
+        "height": 174.0,
+        "weight": 64.0,
+        "nb_frame": 15
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient124/patient124_4d.nii.gz",
+      "cine_4d_shape": [
+        168,
+        208,
+        21,
+        15
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient124/patient124_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient124/patient124_frame01_gt.nii.gz",
+        "image_shape": [
+          168,
+          208,
+          21
+        ],
+        "gt_shape": [
+          168,
+          208,
+          21
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 7,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient124/patient124_frame07.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient124/patient124_frame07_gt.nii.gz",
+        "image_shape": [
+          168,
+          208,
+          21
+        ],
+        "gt_shape": [
+          168,
+          208,
+          21
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient125",
+      "directory_path": "data/raw/acdc/testing/patient125",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient125",
+        "ed_frame": 1,
+        "es_frame": 7,
+        "group": "NOR",
+        "height": 160.0,
+        "weight": 46.0,
+        "nb_frame": 15
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient125/patient125_4d.nii.gz",
+      "cine_4d_shape": [
+        208,
+        162,
+        17,
+        15
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient125/patient125_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient125/patient125_frame01_gt.nii.gz",
+        "image_shape": [
+          208,
+          162,
+          17
+        ],
+        "gt_shape": [
+          208,
+          162,
+          17
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 7,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient125/patient125_frame07.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient125/patient125_frame07_gt.nii.gz",
+        "image_shape": [
+          208,
+          162,
+          17
+        ],
+        "gt_shape": [
+          208,
+          162,
+          17
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient126",
+      "directory_path": "data/raw/acdc/testing/patient126",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient126",
+        "ed_frame": 1,
+        "es_frame": 7,
+        "group": "RV",
+        "height": 137.0,
+        "weight": 35.0,
+        "nb_frame": 15
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient126/patient126_4d.nii.gz",
+      "cine_4d_shape": [
+        208,
+        174,
+        16,
+        15
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient126/patient126_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient126/patient126_frame01_gt.nii.gz",
+        "image_shape": [
+          208,
+          174,
+          16
+        ],
+        "gt_shape": [
+          208,
+          174,
+          16
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 7,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient126/patient126_frame07.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient126/patient126_frame07_gt.nii.gz",
+        "image_shape": [
+          208,
+          174,
+          16
+        ],
+        "gt_shape": [
+          208,
+          174,
+          16
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient127",
+      "directory_path": "data/raw/acdc/testing/patient127",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient127",
+        "ed_frame": 1,
+        "es_frame": 7,
+        "group": "RV",
+        "height": 165.0,
+        "weight": 54.0,
+        "nb_frame": 18
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient127/patient127_4d.nii.gz",
+      "cine_4d_shape": [
+        162,
+        208,
+        19,
+        18
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient127/patient127_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient127/patient127_frame01_gt.nii.gz",
+        "image_shape": [
+          162,
+          208,
+          19
+        ],
+        "gt_shape": [
+          162,
+          208,
+          19
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 7,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient127/patient127_frame07.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient127/patient127_frame07_gt.nii.gz",
+        "image_shape": [
+          162,
+          208,
+          19
+        ],
+        "gt_shape": [
+          162,
+          208,
+          19
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient128",
+      "directory_path": "data/raw/acdc/testing/patient128",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient128",
+        "ed_frame": 1,
+        "es_frame": 11,
+        "group": "NOR",
+        "height": 170.0,
+        "weight": 74.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient128/patient128_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        9,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient128/patient128_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient128/patient128_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 11,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient128/patient128_frame11.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient128/patient128_frame11_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient129",
+      "directory_path": "data/raw/acdc/testing/patient129",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient129",
+        "ed_frame": 1,
+        "es_frame": 8,
+        "group": "RV",
+        "height": 183.0,
+        "weight": 75.0,
+        "nb_frame": 16
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient129/patient129_4d.nii.gz",
+      "cine_4d_shape": [
+        154,
+        224,
+        17,
+        16
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient129/patient129_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient129/patient129_frame01_gt.nii.gz",
+        "image_shape": [
+          154,
+          224,
+          17
+        ],
+        "gt_shape": [
+          154,
+          224,
+          17
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6517900228500366,
+          1.6517900228500366,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 8,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient129/patient129_frame08.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient129/patient129_frame08_gt.nii.gz",
+        "image_shape": [
+          154,
+          224,
+          17
+        ],
+        "gt_shape": [
+          154,
+          224,
+          17
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6517900228500366,
+          1.6517900228500366,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient130",
+      "directory_path": "data/raw/acdc/testing/patient130",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient130",
+        "ed_frame": 1,
+        "es_frame": 11,
+        "group": "NOR",
+        "height": 185.0,
+        "weight": 95.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient130/patient130_4d.nii.gz",
+      "cine_4d_shape": [
+        256,
+        216,
+        10,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient130/patient130_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient130/patient130_frame01_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          10
+        ],
+        "gt_shape": [
+          256,
+          216,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 11,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient130/patient130_frame11.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient130/patient130_frame11_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          10
+        ],
+        "gt_shape": [
+          256,
+          216,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient131",
+      "directory_path": "data/raw/acdc/testing/patient131",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient131",
+        "ed_frame": 1,
+        "es_frame": 9,
+        "group": "DCM",
+        "height": 164.0,
+        "weight": 64.0,
+        "nb_frame": 25
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient131/patient131_4d.nii.gz",
+      "cine_4d_shape": [
+        256,
+        214,
+        10,
+        25
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient131/patient131_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient131/patient131_frame01_gt.nii.gz",
+        "image_shape": [
+          256,
+          214,
+          10
+        ],
+        "gt_shape": [
+          256,
+          214,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.40625,
+          1.40625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 9,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient131/patient131_frame09.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient131/patient131_frame09_gt.nii.gz",
+        "image_shape": [
+          256,
+          214,
+          10
+        ],
+        "gt_shape": [
+          256,
+          214,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.40625,
+          1.40625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient132",
+      "directory_path": "data/raw/acdc/testing/patient132",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient132",
+        "ed_frame": 1,
+        "es_frame": 15,
+        "group": "DCM",
+        "height": 163.0,
+        "weight": 80.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient132/patient132_4d.nii.gz",
+      "cine_4d_shape": [
+        256,
+        232,
+        10,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient132/patient132_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient132/patient132_frame01_gt.nii.gz",
+        "image_shape": [
+          256,
+          232,
+          10
+        ],
+        "gt_shape": [
+          256,
+          232,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 15,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient132/patient132_frame15.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient132/patient132_frame15_gt.nii.gz",
+        "image_shape": [
+          256,
+          232,
+          10
+        ],
+        "gt_shape": [
+          256,
+          232,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient133",
+      "directory_path": "data/raw/acdc/testing/patient133",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient133",
+        "ed_frame": 1,
+        "es_frame": 10,
+        "group": "DCM",
+        "height": 185.0,
+        "weight": 121.0,
+        "nb_frame": 14
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient133/patient133_4d.nii.gz",
+      "cine_4d_shape": [
+        224,
+        256,
+        10,
+        14
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient133/patient133_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient133/patient133_frame01_gt.nii.gz",
+        "image_shape": [
+          224,
+          256,
+          10
+        ],
+        "gt_shape": [
+          224,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 10,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient133/patient133_frame10.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient133/patient133_frame10_gt.nii.gz",
+        "image_shape": [
+          224,
+          256,
+          10
+        ],
+        "gt_shape": [
+          224,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.5625,
+          1.5625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient134",
+      "directory_path": "data/raw/acdc/testing/patient134",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient134",
+        "ed_frame": 1,
+        "es_frame": 15,
+        "group": "HCM",
+        "height": 185.0,
+        "weight": 104.0,
+        "nb_frame": 35
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient134/patient134_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        11,
+        35
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient134/patient134_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient134/patient134_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          11
+        ],
+        "gt_shape": [
+          216,
+          256,
+          11
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4453125,
+          1.4453125,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 15,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient134/patient134_frame15.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient134/patient134_frame15_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          11
+        ],
+        "gt_shape": [
+          216,
+          256,
+          11
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4453125,
+          1.4453125,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient135",
+      "directory_path": "data/raw/acdc/testing/patient135",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient135",
+        "ed_frame": 1,
+        "es_frame": 10,
+        "group": "MINF",
+        "height": 184.0,
+        "weight": 95.0,
+        "nb_frame": 20
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient135/patient135_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        10,
+        20
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient135/patient135_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient135/patient135_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          10
+        ],
+        "gt_shape": [
+          216,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.9531199932098389,
+          1.9531199932098389,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 10,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient135/patient135_frame10.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient135/patient135_frame10_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          10
+        ],
+        "gt_shape": [
+          216,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.9531199932098389,
+          1.9531199932098389,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient136",
+      "directory_path": "data/raw/acdc/testing/patient136",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient136",
+        "ed_frame": 1,
+        "es_frame": 12,
+        "group": "DCM",
+        "height": 167.0,
+        "weight": 89.0,
+        "nb_frame": 24
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient136/patient136_4d.nii.gz",
+      "cine_4d_shape": [
+        256,
+        216,
+        10,
+        24
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient136/patient136_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient136/patient136_frame01_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          10
+        ],
+        "gt_shape": [
+          256,
+          216,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6406199932098389,
+          1.6406199932098389,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 12,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient136/patient136_frame12.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient136/patient136_frame12_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          10
+        ],
+        "gt_shape": [
+          256,
+          216,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6406199932098389,
+          1.6406199932098389,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient137",
+      "directory_path": "data/raw/acdc/testing/patient137",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient137",
+        "ed_frame": 1,
+        "es_frame": 11,
+        "group": "MINF",
+        "height": 170.0,
+        "weight": 68.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient137/patient137_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        9,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient137/patient137_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient137/patient137_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 11,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient137/patient137_frame11.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient137/patient137_frame11_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient138",
+      "directory_path": "data/raw/acdc/testing/patient138",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient138",
+        "ed_frame": 1,
+        "es_frame": 10,
+        "group": "HCM",
+        "height": 174.0,
+        "weight": 90.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient138/patient138_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        9,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient138/patient138_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient138/patient138_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 10,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient138/patient138_frame10.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient138/patient138_frame10_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          9
+        ],
+        "gt_shape": [
+          216,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient139",
+      "directory_path": "data/raw/acdc/testing/patient139",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient139",
+        "ed_frame": 1,
+        "es_frame": 8,
+        "group": "NOR",
+        "height": 175.0,
+        "weight": 75.0,
+        "nb_frame": 15
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient139/patient139_4d.nii.gz",
+      "cine_4d_shape": [
+        174,
+        208,
+        16,
+        15
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient139/patient139_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient139/patient139_frame01_gt.nii.gz",
+        "image_shape": [
+          174,
+          208,
+          16
+        ],
+        "gt_shape": [
+          174,
+          208,
+          16
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 8,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient139/patient139_frame08.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient139/patient139_frame08_gt.nii.gz",
+        "image_shape": [
+          174,
+          208,
+          16
+        ],
+        "gt_shape": [
+          174,
+          208,
+          16
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient140",
+      "directory_path": "data/raw/acdc/testing/patient140",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient140",
+        "ed_frame": 1,
+        "es_frame": 9,
+        "group": "RV",
+        "height": 165.0,
+        "weight": 68.0,
+        "nb_frame": 15
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient140/patient140_4d.nii.gz",
+      "cine_4d_shape": [
+        174,
+        208,
+        20,
+        15
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient140/patient140_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient140/patient140_frame01_gt.nii.gz",
+        "image_shape": [
+          174,
+          208,
+          20
+        ],
+        "gt_shape": [
+          174,
+          208,
+          20
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 9,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient140/patient140_frame09.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient140/patient140_frame09_gt.nii.gz",
+        "image_shape": [
+          174,
+          208,
+          20
+        ],
+        "gt_shape": [
+          174,
+          208,
+          20
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.6826900243759155,
+          1.6826900243759155,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient141",
+      "directory_path": "data/raw/acdc/testing/patient141",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient141",
+        "ed_frame": 1,
+        "es_frame": 11,
+        "group": "RV",
+        "height": 170.0,
+        "weight": 75.0,
+        "nb_frame": 19
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient141/patient141_4d.nii.gz",
+      "cine_4d_shape": [
+        256,
+        216,
+        10,
+        19
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient141/patient141_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient141/patient141_frame01_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          10
+        ],
+        "gt_shape": [
+          256,
+          216,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 11,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient141/patient141_frame11.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient141/patient141_frame11_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          10
+        ],
+        "gt_shape": [
+          256,
+          216,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient142",
+      "directory_path": "data/raw/acdc/testing/patient142",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient142",
+        "ed_frame": 1,
+        "es_frame": 12,
+        "group": "HCM",
+        "height": 160.0,
+        "weight": 98.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient142/patient142_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        8,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient142/patient142_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient142/patient142_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          8
+        ],
+        "gt_shape": [
+          216,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 12,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient142/patient142_frame12.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient142/patient142_frame12_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          8
+        ],
+        "gt_shape": [
+          216,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient143",
+      "directory_path": "data/raw/acdc/testing/patient143",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient143",
+        "ed_frame": 1,
+        "es_frame": 12,
+        "group": "MINF",
+        "height": 161.0,
+        "weight": 85.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient143/patient143_4d.nii.gz",
+      "cine_4d_shape": [
+        256,
+        216,
+        10,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient143/patient143_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient143/patient143_frame01_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          10
+        ],
+        "gt_shape": [
+          256,
+          216,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 12,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient143/patient143_frame12.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient143/patient143_frame12_gt.nii.gz",
+        "image_shape": [
+          256,
+          216,
+          10
+        ],
+        "gt_shape": [
+          256,
+          216,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient144",
+      "directory_path": "data/raw/acdc/testing/patient144",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient144",
+        "ed_frame": 1,
+        "es_frame": 9,
+        "group": "NOR",
+        "height": 157.0,
+        "weight": 88.0,
+        "nb_frame": 25
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient144/patient144_4d.nii.gz",
+      "cine_4d_shape": [
+        214,
+        256,
+        8,
+        25
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient144/patient144_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient144/patient144_frame01_gt.nii.gz",
+        "image_shape": [
+          214,
+          256,
+          8
+        ],
+        "gt_shape": [
+          214,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.40625,
+          1.40625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 9,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient144/patient144_frame09.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient144/patient144_frame09_gt.nii.gz",
+        "image_shape": [
+          214,
+          256,
+          8
+        ],
+        "gt_shape": [
+          214,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.40625,
+          1.40625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient145",
+      "directory_path": "data/raw/acdc/testing/patient145",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient145",
+        "ed_frame": 1,
+        "es_frame": 13,
+        "group": "MINF",
+        "height": 171.0,
+        "weight": 80.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient145/patient145_4d.nii.gz",
+      "cine_4d_shape": [
+        232,
+        256,
+        10,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient145/patient145_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient145/patient145_frame01_gt.nii.gz",
+        "image_shape": [
+          232,
+          256,
+          10
+        ],
+        "gt_shape": [
+          232,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.7578099966049194,
+          1.7578099966049194,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 13,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient145/patient145_frame13.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient145/patient145_frame13_gt.nii.gz",
+        "image_shape": [
+          232,
+          256,
+          10
+        ],
+        "gt_shape": [
+          232,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.7578099966049194,
+          1.7578099966049194,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient146",
+      "directory_path": "data/raw/acdc/testing/patient146",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient146",
+        "ed_frame": 1,
+        "es_frame": 10,
+        "group": "HCM",
+        "height": 170.0,
+        "weight": 172.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient146/patient146_4d.nii.gz",
+      "cine_4d_shape": [
+        232,
+        256,
+        9,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient146/patient146_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient146/patient146_frame01_gt.nii.gz",
+        "image_shape": [
+          232,
+          256,
+          9
+        ],
+        "gt_shape": [
+          232,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 10,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient146/patient146_frame10.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient146/patient146_frame10_gt.nii.gz",
+        "image_shape": [
+          232,
+          256,
+          9
+        ],
+        "gt_shape": [
+          232,
+          256,
+          9
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient147",
+      "directory_path": "data/raw/acdc/testing/patient147",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient147",
+        "ed_frame": 1,
+        "es_frame": 9,
+        "group": "RV",
+        "height": 172.0,
+        "weight": 104.0,
+        "nb_frame": 19
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient147/patient147_4d.nii.gz",
+      "cine_4d_shape": [
+        232,
+        288,
+        15,
+        19
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient147/patient147_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient147/patient147_frame01_gt.nii.gz",
+        "image_shape": [
+          232,
+          288,
+          15
+        ],
+        "gt_shape": [
+          232,
+          288,
+          15
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.736109972000122,
+          1.736109972000122,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 9,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient147/patient147_frame09.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient147/patient147_frame09_gt.nii.gz",
+        "image_shape": [
+          232,
+          288,
+          15
+        ],
+        "gt_shape": [
+          232,
+          288,
+          15
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.736109972000122,
+          1.736109972000122,
+          5.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient148",
+      "directory_path": "data/raw/acdc/testing/patient148",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient148",
+        "ed_frame": 1,
+        "es_frame": 10,
+        "group": "MINF",
+        "height": 170.0,
+        "weight": 70.0,
+        "nb_frame": 35
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient148/patient148_4d.nii.gz",
+      "cine_4d_shape": [
+        192,
+        256,
+        8,
+        35
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient148/patient148_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient148/patient148_frame01_gt.nii.gz",
+        "image_shape": [
+          192,
+          256,
+          8
+        ],
+        "gt_shape": [
+          192,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 10,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient148/patient148_frame10.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient148/patient148_frame10_gt.nii.gz",
+        "image_shape": [
+          192,
+          256,
+          8
+        ],
+        "gt_shape": [
+          192,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.4843800067901611,
+          1.4843800067901611,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient149",
+      "directory_path": "data/raw/acdc/testing/patient149",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient149",
+        "ed_frame": 1,
+        "es_frame": 12,
+        "group": "DCM",
+        "height": 173.0,
+        "weight": 70.0,
+        "nb_frame": 25
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient149/patient149_4d.nii.gz",
+      "cine_4d_shape": [
+        214,
+        256,
+        10,
+        25
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient149/patient149_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient149/patient149_frame01_gt.nii.gz",
+        "image_shape": [
+          214,
+          256,
+          10
+        ],
+        "gt_shape": [
+          214,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.40625,
+          1.40625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 12,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient149/patient149_frame12.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient149/patient149_frame12_gt.nii.gz",
+        "image_shape": [
+          214,
+          256,
+          10
+        ],
+        "gt_shape": [
+          214,
+          256,
+          10
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.40625,
+          1.40625,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "patient_id": "patient150",
+      "directory_path": "data/raw/acdc/testing/patient150",
+      "info_cfg_exists": true,
+      "metadata": {
+        "patient_id": "patient150",
+        "ed_frame": 1,
+        "es_frame": 12,
+        "group": "NOR",
+        "height": 158.0,
+        "weight": 56.0,
+        "nb_frame": 30
+      },
+      "cine_4d_exists": true,
+      "cine_4d_path": "data/raw/acdc/testing/patient150/patient150_4d.nii.gz",
+      "cine_4d_shape": [
+        216,
+        256,
+        8,
+        30
+      ],
+      "ed_validation": {
+        "frame_name": "ED",
+        "frame_number": 1,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient150/patient150_frame01.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient150/patient150_frame01_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          8
+        ],
+        "gt_shape": [
+          216,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "es_validation": {
+        "frame_name": "ES",
+        "frame_number": 12,
+        "image_exists": true,
+        "image_path": "data/raw/acdc/testing/patient150/patient150_frame12.nii.gz",
+        "gt_exists": true,
+        "gt_path": "data/raw/acdc/testing/patient150/patient150_frame12_gt.nii.gz",
+        "image_shape": [
+          216,
+          256,
+          8
+        ],
+        "gt_shape": [
+          216,
+          256,
+          8
+        ],
+        "shapes_match": true,
+        "voxel_spacing": [
+          1.3671900033950806,
+          1.3671900033950806,
+          10.0
+        ],
+        "labels_found": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "invalid_labels": [],
+        "error_message": null
+      },
+      "is_complete": true,
+      "errors": [],
+      "warnings": []
+    }
+  ]
+}
