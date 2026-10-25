@@ -2,7 +2,7 @@
 
 > [!WARNING]
 > ### CLINICAL RESEARCH DISCLAIMER — NOT FOR DIAGNOSIS OR TREATMENT
-> **This software is an experimental research proof of concept developed exclusively for academic investigation into left ventricular ejection fraction recovery patterns. It integrates synthetic patient data, simulated genetics, and exploratory cardiac imaging parameters. This platform is NOT a certified medical device and MUST NEVER be used for clinical diagnosis, patient risk stratification, or clinical treatment decisions. Synthetic predictions must never be represented as clinically validated patient probabilities.**
+> **This software is an experimental research proof of concept developed exclusively for academic investigation into left ventricular ejection fraction recovery patterns. It integrates synthetic patient data, simulated genetics, and exploratory cardiac imaging parameters. This platform is NOT a certified medical device and MUST NEVER be used for clinical diagnosis, patient risk stratification, or clinical treatment decisions. Synthetic predictions or derived cardiac measurements must never be represented as clinically validated patient probabilities.**
 
 ---
 
@@ -11,7 +11,7 @@
 The **Cardiomyopathy Recovery Intelligence Platform (CRIP)** is a 4-week clinical AI research proof of concept. The platform investigates interpretable machine learning models predicting 6-month Left Ventricular Ejection Fraction (LVEF) recovery in cardiomyopathy associated with:
 
 - **Toxic Alcohol Exposure:** Quantified via Phosphatidylethanol (PEth) blood biomarkers and duration of cessation.
-- **Cardiac MRI Volumetrics & Fibrosis:** End-diastolic volume (EDV), end-systolic volume (ESV), stroke volume (SV), and late gadolinium enhancement (LGE) myocardial scar patterns.
+- **Cardiac MRI Volumetrics & Fibrosis:** End-diastolic volume (EDV), end-systolic volume (ESV), stroke volume (SV), ejection fraction (EF), and late gadolinium enhancement (LGE) myocardial scar patterns.
 - **Genetic Susceptibility:** Titin (*TTN*) truncating variants (*TTNtv*) and variants of uncertain significance (VUS).
 
 ---
@@ -32,7 +32,8 @@ AlcoholicRecovery/
 │       ├── MANDATORY_CITATION.md       # Official publication citation
 │       ├── STATE-OF-THE-ART-nnUNet-method.md # nnU-Net benchmark references
 │       ├── acdc_validation_report.json # Validation report for training cohort (100 cases)
-│       └── acdc_testing_validation_report.json # Validation report for testing cohort (50 cases)
+│       ├── acdc_testing_validation_report.json # Validation report for testing cohort (50 cases)
+│       └── figures/                    # Cohort descriptive figures (LVEF & volume distributions)
 ├── notebooks/
 │   └── acdc/
 │       └── script_acdc_visu.ipynb      # Reference visualization notebook
@@ -41,6 +42,12 @@ AlcoholicRecovery/
 │   │   └── acdc/                       # Real ACDC dataset (excluded from Git)
 │   │       ├── training/               # 100 patients (patient001 to patient100)
 │   │       └── testing/                # 50 patients (patient101 to patient150)
+│   ├── processed/
+│   │   └── acdc/                       # Extracted measurements & reports (excluded from Git)
+│   │       ├── cardiac_measurements.csv
+│   │       ├── cardiac_measurements.json
+│   │       ├── measurement_validation_report.json
+│   │       └── figures/
 │   └── synthetic/
 │       └── ehr_synthetic.db            # Simulated SQLite EHR database
 ├── src/
@@ -54,7 +61,7 @@ AlcoholicRecovery/
 │       │   │   └── disclaimer.py       # Clinical disclaimer UI banner
 │       │   └── pages/
 │       │       ├── 1_Patient_Profile.py# Synthetic patient exploration & EHR cohort view
-│       │       ├── 2_MRI_Analysis.py   # Real ACDC CMR visualization & volumetric preview
+│       │       ├── 2_MRI_Analysis.py   # Real ACDC CMR visualization, metrics & cohort context
 │       │       ├── 3_Recovery_Estimate.py # Interpretable modeling & SHAP UI architecture
 │       │       └── 4_Evaluation.py     # Statistical metrics, calibration & fairness checklist
 │       ├── synthetic/                  # Synthetic clinical data schemas
@@ -67,7 +74,8 @@ AlcoholicRecovery/
 │       │   ├── __init__.py
 │       │   ├── acdc_loader.py          # ACDC dataset ingestion & NIfTI/mask loader
 │       │   ├── cardiac_metrics.py      # Quantitative volumetric & LVEF interfaces
-│       │   └── inspect_acdc.py         # Automated dataset validation CLI script
+│       │   ├── inspect_acdc.py         # Automated dataset validation CLI script
+│       │   └── pipeline.py             # Batch patient & cohort measurement pipeline
 │       ├── modeling/                   # Predictive modeling & SHAP (Milestone 3)
 │       │   └── __init__.py
 │       └── evaluation/                 # Metrics & calibration protocols (Milestone 4)
@@ -81,7 +89,8 @@ AlcoholicRecovery/
 │   ├── test_mri_loader.py              # Unit tests for ACDC data loader (14 tests)
 │   ├── test_cardiac_metrics.py         # Unit tests for physical volume & LVEF math
 │   ├── test_inspect_acdc.py            # Unit tests for dataset validation utility
-│   └── test_acdc_integration.py       # Integration tests against real ACDC dataset
+│   ├── test_acdc_integration.py       # Integration tests against real ACDC dataset
+│   └── test_pipeline_and_measurements.py # Comprehensive Milestone 2B measurement tests (16 tests)
 ├── pyproject.toml                      # Modern Python build metadata and pytest config
 ├── requirements.txt                    # Pinned, tested dependencies with rationale
 └── README.md                           # Master setup guide, run instructions, and limitations
@@ -89,64 +98,62 @@ AlcoholicRecovery/
 
 ---
 
-## 3. ACDC Cardiac MRI Dataset Integration
+## 3. Cardiac Measurement Methodology (Milestone 2B)
 
-The platform integrates the **Automated Cardiac Diagnosis Challenge (ACDC)** benchmark dataset for cardiac imaging:
-
-### Dataset Directory Structure
-```text
-data/raw/acdc/
-├── training/
-│   ├── MANDATORY_CITATION.md
-│   ├── patient001/
-│   │   ├── Info.cfg                    # Metadata: ED/ES frame numbers, diagnosis, height, weight
-│   │   ├── patient001_4d.nii.gz        # 4D short-axis cine cardiac MRI series
-│   │   ├── patient001_frame01.nii.gz   # 3D End-Diastolic (ED) volume
-│   │   ├── patient001_frame01_gt.nii.gz# 3D ED expert ground-truth segmentation mask
-│   │   ├── patient001_frame12.nii.gz   # 3D End-Systolic (ES) volume
-│   │   └── patient001_frame12_gt.nii.gz# 3D ES expert ground-truth segmentation mask
-│   └── ... (through patient100)
-└── testing/
-    ├── MANDATORY_CITATION.md
-    └── patient101/ ... through patient150/
-```
-
-### Anatomical Segmentation Labels
+### 3.1 Anatomical Segmentation Labels (ACDC)
 - **Label 0:** Background
 - **Label 1:** Right Ventricular (RV) cavity
 - **Label 2:** Left Ventricular Myocardium
 - **Label 3:** Left Ventricular (LV) cavity
 
-### Verifying the Installed Dataset
-Run the automated validation utility across the dataset:
-
-```bash
-# Verify training split (100 patients)
-python -m crip.mri.inspect_acdc --data-dir data/raw/acdc/training --output docs/acdc/acdc_validation_report.json
-
-# Verify testing split (50 patients)
-python -m crip.mri.inspect_acdc --data-dir data/raw/acdc/testing --output docs/acdc/acdc_testing_validation_report.json
-```
-
-The validation tool performs rigorous checks:
-- Verifies existence and syntax of `Info.cfg`.
-- Validates 3D NIfTI image readability and voxel spacing.
-- Confirms shape compatibility between each cine frame and its expert mask.
-- Verifies segmentation values strictly belong to `{0, 1, 2, 3}`.
-- Categorizes patients by diagnosis (DCM, HCM, MINF, NOR, RV).
+### 3.2 Mathematical Formulation & Physical Units
+All measurements are calculated using physical voxel dimensions extracted from NIfTI metadata:
+1. **Physical Voxel Volume ($\text{mL}$):**
+   $$V_{\text{voxel}} = \frac{\Delta x \times \Delta y \times \Delta z}{1000.0}\text{ mL} \quad (\text{since } 1000\text{ mm}^3 = 1\text{ mL})$$
+   where $\Delta x, \Delta y$ represent in-plane pixel spacing (typically $1.2$–$1.8\text{ mm}$) and $\Delta z$ represents slice thickness/spacing (typically $5$–$10\text{ mm}$).
+2. **Chamber Volumes ($\text{mL}$):**
+   $$V_{\text{chamber}} = N_{\text{voxels}} \times V_{\text{voxel}}$$
+   Calculated at End-Diastole (LVEDV, RVEDV) and End-Systole (LVESV, RVESV).
+3. **Stroke Volume ($SV$, $\text{mL}$):**
+   $$LVSV = LVEDV - LVESV, \quad RVSV = RVEDV - RVESV$$
+4. **Ejection Fraction ($EF$, $\%$):**
+   $$LVEF = \frac{LVEDV - LVESV}{LVEDV} \times 100.0\%, \quad RVEF = \frac{RVEDV - RVESV}{RVEDV} \times 100.0\%$$
+5. **Estimated Myocardial Mass ($\text{g}$):**
+   $$\text{Mass}_{\text{myo}} = V_{\text{myo}}(\text{mL}) \times 1.05\text{ g/mL}$$
+   Using the standard human myocardial tissue density constant ($\rho = 1.05\text{ g/mL}$) established by American Heart Association (AHA) and Society for Cardiovascular Magnetic Resonance (SCMR) consensus guidelines (Cerqueira et al., *Circulation* 2002; Schulz-Menger et al., *JCMR* 2020).
 
 ---
 
-## 4. Prerequisites & Environment Compatibility
+## 4. Reproducing the Cohort Measurement Pipeline
+
+Execute the patient-level extraction pipeline across the annotated ACDC training cohort (100 patients):
+
+```bash
+python -m crip.mri.pipeline --data-dir data/raw/acdc/training --output-dir data/processed/acdc
+```
+
+### Generated Output Files
+- **`data/processed/acdc/cardiac_measurements.csv`:** Tabular records of LVEDV, LVESV, LVSV, LVEF, RVEDV, RVESV, RVSV, RVEF, myocardial mass, voxel spacing, and source file paths.
+- **`data/processed/acdc/cardiac_measurements.json`:** Structured JSON export of all patient records.
+- **`data/processed/acdc/measurement_validation_report.json`:** Comprehensive validation report with cohort parametric (mean, std) and non-parametric (median, IQR) statistics stratified by diagnosis category.
+- **Figures (`data/processed/acdc/figures/` and `docs/acdc/figures/`):**
+  - `distribution_lvef.png`: Cohort LVEF distribution with 50% normal cutoff.
+  - `distribution_lvedv.png`: Cohort LVEDV volume histogram.
+  - `lvef_by_diagnostic_group.png`: Boxplot of LVEF stratified across DCM, HCM, MINF, NOR, and RV groups.
+  - `lvedv_vs_lvef.png`: Scatter plot demonstrating cavity dilation vs. ejection fraction across groups.
+
+---
+
+## 5. Prerequisites & Environment Compatibility
 
 - **Python:** Version 3.11 or 3.12 is the primary clinical ML benchmark target (tested up to Python 3.13.15).
-  > **Note on Python 3.13:** The current development environment on macOS runs Python 3.13.15 with all core packages functional. When deploying with CUDA acceleration under Ubuntu/WSL, Python 3.11 or 3.12 is strongly recommended for seamless PyTorch/MONAI GPU wheel compatibility.
+  > **Note on Python 3.13:** The current development environment runs Python 3.13.15 on macOS arm64 with all core packages functional. When deploying with CUDA acceleration under Ubuntu/WSL, Python 3.11 or 3.12 is strongly recommended for seamless PyTorch/MONAI GPU wheel compatibility.
 - **Operating Systems:** macOS (Apple Silicon / Intel) or Ubuntu 22.04 / 24.04 LTS (native or WSL2).
 - **Hardware:** Standard CPU (GPU optional; PyTorch / MONAI automatically falls back to CPU).
 
 ---
 
-## 5. Environment Setup & Installation
+## 6. Environment Setup & Installation
 
 ### macOS Setup
 
@@ -186,7 +193,7 @@ pip install -e .
 
 ---
 
-## 6. Running the Application
+## 7. Running the Application
 
 Launch the Streamlit interface:
 
@@ -196,54 +203,55 @@ streamlit run src/crip/app/main.py
 
 Open your browser to `http://localhost:8501`.
 
-### Navigating to MRI Analysis
-1. Open the sidebar navigation and select **MRI Analysis** (`🫀`).
-2. Select any patient from the ACDC cohort dropdown (e.g., `patient001`, `patient020`).
-3. Toggle between **ED** (End-Diastole) and **ES** (End-Systole).
-4. Use the **Slice Index** slider to navigate short-axis slices from ventricular base to apex.
-5. Toggle **Show Expert Segmentation Overlay** and adjust **Overlay Opacity (Alpha)**.
-6. Observe side-by-side comparison:
-   - **Left:** Original grayscale CMR Cine image.
-   - **Right:** Expert multi-structure segmentation overlay (RV in Azure, Myocardium in Green, LV in Crimson).
-7. Review physical structure volumes ($V = N_{\text{voxels}} \times \frac{\Delta x \cdot \Delta y \cdot \Delta z}{1000}\text{ mL}$) and interactive LVEF simulation.
+### MRI Analysis Viewer Features (Milestone 2B Enhanced)
+1. Select **MRI Analysis** (`🫀`) from the sidebar.
+2. Select any patient from the 100-case ACDC cohort dropdown.
+3. Review computed quantitative parameters:
+   - **Left Ventricle:** LVEDV, LVESV, LVSV, LVEF (%)
+   - **Right Ventricle:** RVEDV, RVESV, RVSV, RVEF (%)
+   - **Tissue:** Estimated Myocardial Mass ($1.05\text{ g/mL}$)
+4. Inspect the **Biventricular Phase Volume Comparison** bar chart.
+5. Inspect the **ACDC Cohort Context** scatter plot, displaying the selected patient's position against the 100 ACDC cases and calculating their cohort percentile rank.
+6. Toggle between **ED** and **ES** and use the **Slice Index** slider to navigate short-axis slices with expert segmentation contours.
 
 ---
 
-## 7. Running Automated Tests
+## 8. Running Automated Tests
 
 Run the full automated test suite:
 
 ```bash
-# Run all 46 unit, integration, and regression tests
+# Run all 62 unit, integration, and regression tests
 pytest
 
 # Run tests with test coverage breakdown
 pytest --cov=src/crip --cov-report=term-missing
 ```
 
-Test suite coverage includes:
-- **ACDC Data Loader (14 tests):** Synthetic NIfTI fixtures validating metadata parsing, file missing errors, corrupted files, shape mismatches, label validity, voxel spacing, slice indexing, and intensity normalization.
-- **Cardiac Metrics (4 tests):** Mathematical verification of physical voxel volumetrics, stroke volume ($EDV - ESV$), and LVEF calculation ($((EDV - ESV) / EDV) \times 100$).
-- **Dataset Inspector (5 tests):** Validation of `Info.cfg` parsing, missing directory detection, and structured JSON reporting.
-- **ACDC Integration (4 tests):** End-to-end integration testing against the actual 100-patient training dataset.
-- **EHR & Schemas (14 tests):** Pydantic clinical constraints ($ESV < EDV$, LVEF bounds, PEth risk tiers) and SQLite EHR persistence.
-- **Application Initialization (5 tests):** Syntax compilation, page navigation registration, disclaimer verification, and headless AppTest page rendering.
+The test suite covers:
+- **Cardiac Measurements & Pipeline (16 tests in `test_pipeline_and_measurements.py`):** Analytical volume verification, RV/LV volumes, myocardial mass, stroke volume, LVEF/RVEF formulas, non-isotropic spacing, empty masks, zero EDV, ESV > EDV handling, invalid label rejection, patient-level processing, batch execution, CSV/JSON integrity, reproducibility, and Streamlit AppTest rendering.
+- **ACDC Data Loader (14 tests in `test_mri_loader.py`):** Synthetic NIfTI fixtures validating metadata parsing, missing files, corrupted files, shape mismatches, slice indexing, and intensity normalization.
+- **Dataset Inspector (5 tests in `test_inspect_acdc.py`):** `Info.cfg` parsing, missing directory detection, and structured JSON reporting.
+- **ACDC Integration (4 tests in `test_acdc_integration.py`):** End-to-end integration testing against the actual 100-patient training dataset.
+- **EHR & Schemas (14 tests in `test_schemas.py`, `test_ehr_db.py`):** Pydantic clinical constraints ($ESV < EDV$, LVEF bounds, PEth risk tiers) and SQLite EHR persistence.
+- **Application Initialization (5 tests in `test_app_init.py`):** Syntax compilation, page navigation registration, disclaimer verification, and headless AppTest page rendering.
 
 ---
 
-## 8. Common Error Messages & Troubleshooting
+## 9. Critical Methodology & Limitations
 
-| Error Message | Cause | Resolution |
-|---|---|---|
-| `ACDC Dataset Not Found at: data/raw/acdc/training` | Dataset folder is missing or located in a custom path. | Ensure the ACDC dataset is extracted into `data/raw/acdc/training` or enter your custom path in the sidebar input field. |
-| `Missing Info.cfg for patient: ...` | Incomplete patient folder download. | Re-extract or re-verify patient folder from the official ACDC distribution. |
-| `Shape mismatch: Image shape != Mask shape` | Mismatched NIfTI files or corrupted slice counts. | Run `python -m crip.mri.inspect_acdc` to locate corrupted cases. |
-| `Unexpected segmentation label(s) in ...` | Mask file contains invalid labels (outside `{0, 1, 2, 3}`). | Ensure official ACDC ground truth masks are used (`_gt.nii.gz`). |
-| `PermissionError: [Errno 1] Operation not permitted` | Sandboxed environment blocking external network/port access. | Streamlit is configured in `.streamlit/config.toml` to bind locally without telemetry. |
+### 9.1 Segmentation Accuracy vs. Volumetric Accuracy
+- **Segmentation Accuracy:** Measures spatial overlap between boundaries (e.g. Dice Similarity Coefficient, Hausdorff distance). A high Dice score ($>0.90$) does not guarantee meeting a clinical volume threshold ($\pm 5\%$ LVEF) because boundary errors on large basal slices carry high volumetric impact.
+- **Volumetric Accuracy:** Measures clinical aggregate volume errors ($|\Delta EDV|, |\Delta ESV|, \Delta EF$).
+
+### 9.2 Limitations of Expert-Mask Derived Measurements
+- **No External Independent Clinical Consensus Values:** The official ACDC challenge distribution supplies expert ground-truth masks, but does not provide separate core-lab tabulated clinical reference scalars. All volumes reported herein are geometric voxel integrations of these expert masks.
+- **Partial Volume Averaging:** Thick short-axis slices ($5$–$10\text{ mm}$) lead to voxel intensity averaging at apex and base.
+- **Research Scope:** Measurements from the ACDC cohort (DCM, HCM, MINF, NOR, RV) investigate structural cardiomyopathy and do not prove alcohol-induced cardiomyopathy or recovery following abstinence.
 
 ---
 
-## 9. Mandatory Dataset Attribution & License
+## 10. Mandatory Dataset Attribution & License
 
 The ACDC dataset is incorporated under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
 
@@ -253,11 +261,3 @@ In accordance with mandatory challenge terms, users and publications citing this
 > *"Deep Learning Techniques for Automatic MRI Cardiac Multi-structures Segmentation and Diagnosis: Is the Problem Solved ?"*  
 > **IEEE Transactions on Medical Imaging**, vol. 37, no. 11, pp. 2514-2525, Nov. 2018.  
 > **DOI:** [10.1109/TMI.2018.2837502](https://doi.org/10.1109/TMI.2018.2837502)
-
----
-
-## 10. Project Limitations & Ethical Constraints
-
-- **Research Demonstration Only:** All predictive modeling in CRIP is for exploratory hypothesis generation and must never be used for clinical decision-making.
-- **Expert Contours in Milestone 2A:** Segmentation overlays currently displayed in the MRI Analysis page represent expert human annotations provided by the challenge organizers. **Automatic deep learning segmentation has not yet been executed in Milestone 2A.**
-- **No Direct Clinical Claim:** The platform strictly isolates calculated mathematical values from diagnostic inferences.

@@ -1,10 +1,13 @@
-"""MRI Analysis page for CRIP with Real ACDC Cardiac MRI Visualization."""
+"""MRI Analysis page for CRIP with Real ACDC Cardiac MRI Visualization and Volumetric Quantification."""
 
 from pathlib import Path
 from typing import Optional, Tuple
-import matplotlib.patches as mpatches
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
@@ -16,7 +19,13 @@ from crip.mri.acdc_loader import (
     DEFAULT_ACDC_TRAINING_DIR,
     normalize_for_display,
 )
-from crip.mri.cardiac_metrics import calculate_structure_volume_ml
+from crip.mri.cardiac_metrics import (
+    BiventricularCardiacMeasurements,
+    calculate_structure_volume_ml,
+    compute_biventricular_measurements,
+)
+
+DEFAULT_COHORT_CSV = Path("data/processed/acdc/cardiac_measurements.csv")
 
 # Predefined distinct colors for segmentation labels (RGB float in [0.0, 1.0])
 COLOR_MAP = {
@@ -68,8 +77,8 @@ def render_page() -> None:
     st.markdown(
         """
         Interactive exploration of short-axis Cine cardiac magnetic resonance (CMR) imaging
-        from the Automated Cardiac Diagnosis Challenge (ACDC) dataset with expert ground-truth
-        anatomical segmentations.
+        from the Automated Cardiac Diagnosis Challenge (ACDC) dataset with quantitative
+        biventricular functional measurements derived from expert segmentation masks.
         """
     )
 
@@ -98,7 +107,7 @@ def render_page() -> None:
         _render_volumetric_simulator()
         return
 
-    # 5.1 Patient Selection
+    # Patient Selection
     st.sidebar.subheader("👤 Select Patient")
     selected_patient_id = st.sidebar.selectbox(
         "Patient ID",
@@ -109,32 +118,142 @@ def render_page() -> None:
 
     try:
         metadata = loader.get_patient_metadata(selected_patient_id)
+        # Load both ED and ES frames for complete biventricular metrics
+        ed_frame: ACDCCardiacFrame = loader.load_cardiac_frame(selected_patient_id, phase="ED", load_mask=True)
+        es_frame: ACDCCardiacFrame = loader.load_cardiac_frame(selected_patient_id, phase="ES", load_mask=True)
     except ACDCDataError as e:
-        st.error(f"Error loading metadata for {selected_patient_id}: {e}")
+        st.error(f"Error loading imaging data for {selected_patient_id}: {e}")
         _render_volumetric_simulator()
         return
 
-    # Metadata display banner
-    m_col1, m_col2, m_col3, m_col4, m_col5 = st.columns(5)
-    with m_col1:
-        st.metric("Patient ID", metadata.patient_id)
-    with m_col2:
-        st.metric("Diagnosis Group", metadata.group)
-    with m_col3:
-        st.metric("ED Frame Index", f"Frame {metadata.ed_frame:02d}")
-    with m_col4:
-        st.metric("ES Frame Index", f"Frame {metadata.es_frame:02d}")
-    with m_col5:
-        bmi_str = (
-            f"{metadata.weight_kg / ((metadata.height_cm / 100) ** 2):.1f}"
-            if (metadata.height_cm and metadata.weight_kg)
-            else "N/A"
-        )
-        st.metric("Height / Weight", f"{metadata.height_cm or '?'} cm / {metadata.weight_kg or '?'} kg")
+    # Compute comprehensive measurements
+    measurements: Optional[BiventricularCardiacMeasurements] = None
+    if ed_frame.mask_data is not None and es_frame.mask_data is not None:
+        try:
+            measurements = compute_biventricular_measurements(
+                ed_mask=ed_frame.mask_data,
+                es_mask=es_frame.mask_data,
+                voxel_spacing_mm=ed_frame.voxel_spacing,
+                patient_id=selected_patient_id,
+            )
+        except Exception as e:
+            st.warning(f"Unable to compute measurements for {selected_patient_id}: {e}")
+
+    # Section 1: Patient Summary & Calculated Functional Parameters
+    st.subheader(f"📊 Quantitative Cardiac Measurements — {selected_patient_id} ({metadata.group})")
+
+    st.info(
+        "🔬 **Measurement Methodology & Clinical Reference Distinction:**\n\n"
+        "The cardiac functional parameters below are calculated directly by summing voxels from expert-provided "
+        "ACDC ground-truth masks ($V = N_{\\text{voxels}} \\times \\frac{\\Delta x \\cdot \\Delta y \\cdot \\Delta z}{1000}\\text{ mL}$). "
+        "**These values represent experimental geometric integrations from research contours and must not be "
+        "interpreted as clinically validated reference standards.** Independent external clinical consensus "
+        "measurements are not provided in the challenge distribution."
+    )
+
+    if measurements:
+        row1_col1, row1_col2, row1_col3, row1_col4, row1_col5 = st.columns(5)
+        with row1_col1:
+            st.metric("Patient ID", selected_patient_id)
+            st.metric("Diagnostic Group", metadata.group)
+        with row1_col2:
+            st.metric("LV End-Diastolic Vol (LVEDV)", f"{measurements.lvedv_ml:.1f} mL")
+            st.metric("RV End-Diastolic Vol (RVEDV)", f"{measurements.rvedv_ml:.1f} mL")
+        with row1_col3:
+            st.metric("LV End-Systolic Vol (LVESV)", f"{measurements.lvesv_ml:.1f} mL")
+            st.metric("RV End-Systolic Vol (RVESV)", f"{measurements.rvesv_ml:.1f} mL")
+        with row1_col4:
+            st.metric("LV Stroke Volume (LVSV)", f"{measurements.lvsv_ml:.1f} mL")
+            st.metric("RV Stroke Volume (RVSV)", f"{measurements.rvsv_ml:.1f} mL")
+        with row1_col5:
+            st.metric("LV Ejection Fraction (LVEF)", f"{measurements.lvef_percent:.1f}%")
+            st.metric("RV Ejection Fraction (RVEF)", f"{measurements.rvef_percent:.1f}%")
+
+        m_mass_col1, m_mass_col2, m_mass_col3 = st.columns(3)
+        with m_mass_col1:
+            st.metric("Myocardial Volume (ED)", f"{measurements.myocardial_volume_ed_ml:.1f} mL")
+        with m_mass_col2:
+            st.metric("Estimated Myocardial Mass (ED)", f"{measurements.myocardial_mass_ed_g:.1f} g", help="Assumes standard myocardial density = 1.05 g/mL")
+        with m_mass_col3:
+            st.metric("Physical Voxel Spacing", f"{ed_frame.voxel_spacing[0]:.2f} × {ed_frame.voxel_spacing[1]:.2f} × {ed_frame.voxel_spacing[2]:.2f} mm")
 
     st.divider()
 
-    # 5.2 MRI Display Controls
+    # Section 2: Visual Volume Comparison & Cohort Context
+    v_col_left, v_col_right = st.columns([1, 1])
+
+    with v_col_left:
+        st.subheader("📈 Ventricular Phase Volume Comparison")
+        if measurements:
+            vol_fig = go.Figure()
+            vol_fig.add_trace(go.Bar(
+                name="Left Ventricle (LV)",
+                x=["End-Diastole (EDV)", "End-Systole (ESV)", "Stroke Volume (SV)"],
+                y=[measurements.lvedv_ml, measurements.lvesv_ml, measurements.lvsv_ml],
+                marker_color="#FF4040",
+                text=[f"{measurements.lvedv_ml:.1f} mL", f"{measurements.lvesv_ml:.1f} mL", f"{measurements.lvsv_ml:.1f} mL"],
+                textposition="auto",
+            ))
+            vol_fig.add_trace(go.Bar(
+                name="Right Ventricle (RV)",
+                x=["End-Diastole (EDV)", "End-Systole (ESV)", "Stroke Volume (SV)"],
+                y=[measurements.rvedv_ml, measurements.rvesv_ml, measurements.rvsv_ml],
+                marker_color="#26A6FF",
+                text=[f"{measurements.rvedv_ml:.1f} mL", f"{measurements.rvesv_ml:.1f} mL", f"{measurements.rvsv_ml:.1f} mL"],
+                textposition="auto",
+            ))
+            vol_fig.update_layout(
+                barmode="group",
+                title="Biventricular Cavity Volumes (ED vs. ES)",
+                yaxis_title="Volume (mL)",
+                height=320,
+                margin=dict(l=20, r=20, t=40, b=20),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            )
+            st.plotly_chart(vol_fig, use_container_width=True)
+
+    with v_col_right:
+        st.subheader("🌐 ACDC Cohort Context")
+        cohort_df = None
+        if DEFAULT_COHORT_CSV.is_file():
+            try:
+                cohort_df = pd.read_csv(DEFAULT_COHORT_CSV)
+            except Exception:
+                cohort_df = None
+
+        if cohort_df is not None and not cohort_df.empty and measurements:
+            # Scatter plot of cohort with highlighted patient
+            scatter_fig = px.scatter(
+                cohort_df,
+                x="lvedv_ml",
+                y="lvef_percent",
+                color="diagnostic_group",
+                labels={"lvedv_ml": "LVEDV (mL)", "lvef_percent": "LVEF (%)", "diagnostic_group": "Group"},
+                title="Cohort Distribution (LVEDV vs. LVEF)",
+                color_discrete_map={"DCM": "#d62728", "HCM": "#9467bd", "MINF": "#ff7f0e", "NOR": "#2ca02c", "RV": "#1f77b4"},
+                opacity=0.65,
+            )
+            # Add patient marker
+            scatter_fig.add_trace(go.Scatter(
+                x=[measurements.lvedv_ml],
+                y=[measurements.lvef_percent],
+                mode="markers",
+                marker=dict(size=14, color="gold", symbol="star", line=dict(width=2, color="black")),
+                name=f"Current: {selected_patient_id}",
+            ))
+            scatter_fig.add_hline(y=50.0, line_dash="dot", line_color="gray", annotation_text="50% EF Threshold")
+            scatter_fig.update_layout(height=320, margin=dict(l=20, r=20, t=40, b=20))
+            st.plotly_chart(scatter_fig, use_container_width=True)
+
+            # Quantile position
+            lvef_rank = (cohort_df["lvef_percent"] < measurements.lvef_percent).mean() * 100.0
+            st.caption(f"📌 **Cohort Position:** {selected_patient_id} has an LVEF of **{measurements.lvef_percent:.1f}%** ({lvef_rank:.0f}th percentile of 100 ACDC cases).")
+        else:
+            st.info("Cohort summary data not yet generated. Run `python -m crip.mri.pipeline` to generate cohort benchmarks.")
+
+    st.divider()
+
+    # Section 3: MRI Display Controls & Slices
     st.subheader("🖼️ Cine Phase & Slice Navigation")
 
     ctrl_col1, ctrl_col2, ctrl_col3 = st.columns([1, 1, 1])
@@ -160,38 +279,28 @@ def render_page() -> None:
             disabled=not show_overlay,
         )
 
-    # Load cardiac frame
-    try:
-        frame: ACDCCardiacFrame = loader.load_cardiac_frame(
-            selected_patient_id,
-            phase=phase,
-            load_mask=True,
-        )
-    except ACDCDataError as e:
-        st.error(f"Failed to load cardiac frame for {selected_patient_id} ({phase}): {e}")
-        _render_volumetric_simulator()
-        return
+    current_frame = ed_frame if phase == "ED" else es_frame
 
     # Slice selector
     slice_idx = st.slider(
         "Short-Axis Slice Index (Base ➔ Apex)",
         min_value=0,
-        max_value=frame.num_slices - 1,
-        value=frame.num_slices // 2,
+        max_value=current_frame.num_slices - 1,
+        value=current_frame.num_slices // 2,
         help="Navigate through short-axis slices from ventricular base to apex",
     )
 
-    img_slice = frame.get_slice_image(slice_idx, normalized=True)
-    mask_slice = frame.get_slice_mask(slice_idx)
+    img_slice = current_frame.get_slice_image(slice_idx, normalized=True)
+    mask_slice = current_frame.get_slice_mask(slice_idx)
 
     # Physical properties caption
     st.caption(
-        f"**Stack Dimensions:** {frame.num_slices} slices × {frame.height} rows × {frame.width} cols | "
-        f"**Physical Voxel Spacing:** {frame.voxel_spacing[0]:.2f} × {frame.voxel_spacing[1]:.2f} × {frame.voxel_spacing[2]:.2f} mm | "
-        f"**Selected Slice:** {slice_idx + 1} of {frame.num_slices}"
+        f"**Stack Dimensions:** {current_frame.num_slices} slices × {current_frame.height} rows × {current_frame.width} cols | "
+        f"**Physical Voxel Spacing:** {current_frame.voxel_spacing[0]:.2f} × {current_frame.voxel_spacing[1]:.2f} × {current_frame.voxel_spacing[2]:.2f} mm | "
+        f"**Selected Slice:** {slice_idx + 1} of {current_frame.num_slices}"
     )
 
-    # 5.3 & 5.4 Image Comparison (Side-by-Side: Original vs Overlay)
+    # Side-by-Side Comparison (Original vs Overlay)
     overlay_slice = create_overlay_rgb(
         img_slice,
         mask_slice,
@@ -205,7 +314,7 @@ def render_page() -> None:
     # Left: Original grayscale
     ax_orig.imshow(img_slice, cmap="gray", origin="upper")
     ax_orig.set_title(
-        f"Original CMR ({phase} - Slice {slice_idx + 1}/{frame.num_slices})",
+        f"Original CMR ({phase} - Slice {slice_idx + 1}/{current_frame.num_slices})",
         color="white",
         fontsize=12,
         pad=8,
@@ -238,46 +347,6 @@ def render_page() -> None:
         unsafe_allow_html=True,
     )
 
-    # 5.5 Research Context & Physical Volumetric Preview
-    st.info(
-        "🔬 **Research Context:** Segmentation contours displayed above represent expert human annotations "
-        "provided with the ACDC challenge benchmark. **The application does not perform automated AI "
-        "segmentation yet**; automated U-Net contouring models will be implemented in subsequent phases."
-    )
-
-    # Display preliminary physical volume for this phase
-    if frame.mask_data is not None:
-        lv_vol_ml, lv_voxels, vox_vol_mm3 = calculate_structure_volume_ml(
-            frame.mask_data, frame.voxel_spacing, target_label=3
-        )
-        myo_vol_ml, myo_voxels, _ = calculate_structure_volume_ml(
-            frame.mask_data, frame.voxel_spacing, target_label=2
-        )
-        rv_vol_ml, rv_voxels, _ = calculate_structure_volume_ml(
-            frame.mask_data, frame.voxel_spacing, target_label=1
-        )
-
-        st.subheader(f"📊 Quantitative Structure Volumes ({phase} Phase)")
-        v_col1, v_col2, v_col3 = st.columns(3)
-        with v_col1:
-            st.metric(
-                label=f"LV Cavity Volume ({phase})",
-                value=f"{lv_vol_ml:.1f} mL",
-                help=f"{lv_voxels:,} voxels × {vox_vol_mm3:.2f} mm³/voxel",
-            )
-        with v_col2:
-            st.metric(
-                label=f"Myocardial Volume ({phase})",
-                value=f"{myo_vol_ml:.1f} mL",
-                help=f"{myo_voxels:,} voxels × {vox_vol_mm3:.2f} mm³/voxel",
-            )
-        with v_col3:
-            st.metric(
-                label=f"RV Cavity Volume ({phase})",
-                value=f"{rv_vol_ml:.1f} mL",
-                help=f"{rv_voxels:,} voxels × {vox_vol_mm3:.2f} mm³/voxel",
-            )
-
     st.divider()
     _render_volumetric_simulator()
 
@@ -292,20 +361,21 @@ def _render_volumetric_simulator() -> None:
             r"""
             The CRIP imaging pipeline is engineered to support:
             - **Image Formats:** NIfTI (`.nii`, `.nii.gz`) sequences via `SimpleITK` and `NiBabel`.
-            - **Sequence Types:** Short-axis Cine bSSFP (balanced steady-state free precession) across cardiac phases.
-            - **Segmentation Target:** End-diastolic (ED) and end-systolic (ES) contours of the LV blood pool, myocardium, and RV.
+            - **Sequence Types:** Short-axis Cine bSSFP across cardiac phases.
+            - **Segmentation Targets:** End-diastolic (ED) and end-systolic (ES) contours of the LV blood pool, myocardium, and RV.
             - **Voxel-to-Volume Principle:**
               $$V_{\text{cavity}} = N_{\text{voxels}} \times \frac{\Delta x \times \Delta y \times \Delta z}{1000}\text{ mL}$$
-            - **Derived Biometrics:**
+            - **Derived Functional Biometrics:**
               - End-Diastolic Volume ($EDV$)
               - End-Systolic Volume ($ESV$)
               - Stroke Volume ($SV = EDV - ESV$)
-              - Ejection Fraction ($LVEF = \frac{EDV - ESV}{EDV} \times 100\%$)
+              - Ejection Fraction ($EF = \frac{EDV - ESV}{EDV} \times 100\%$)
+              - Estimated Myocardial Mass ($V_{\text{myo}} \times 1.05\text{ g/mL}$)
             """
         )
 
     with col2:
-        st.subheader("📐 Interactive Volumetric Calculator")
+        st.subheader("📐 Interactive Geometric Volumetric Calculator")
         st.caption("Simulate CMR ventricular contour measurements to observe derived LVEF:")
 
         sim_edv = st.slider("End-Diastolic Volume (EDV, mL)", min_value=80.0, max_value=350.0, value=220.0, step=5.0, key="sim_edv")
@@ -342,8 +412,9 @@ def _render_volumetric_simulator() -> None:
         | Pipeline Phase | Status | Module | Description |
         |---|---|---|---|
         | I. Foundation & Schemas | **Completed (Milestone 1)** | `crip.synthetic.schemas` | Pydantic data schemas, SQLite synthetic EHR |
-        | II-A. ACDC Ingestion & Visualization | **Active (Milestone 2A)** | `crip.mri.acdc_loader` | Real ACDC MRI loading, multi-label mask overlay |
-        | II-B. Volumetrics & Automatic Segmentation | Queued (Milestone 2B) | `crip.mri.cardiac_metrics` | Physical volumetric validation & MONAI segmentation |
+        | II-A. ACDC Ingestion & Visualization | **Completed (Milestone 2A)** | `crip.mri.acdc_loader` | Real ACDC MRI loading, multi-label mask overlay |
+        | II-B. Volumetrics & Cohort Measurement | **Active (Milestone 2B)** | `crip.mri.cardiac_metrics`, `pipeline` | Physical volumetric validation & cohort analysis |
+        | II-C. Deep Learning Segmentation | Queued (Milestone 2C) | `crip.mri.segmentation` | MONAI/PyTorch U-Net automated contouring |
         | III. Predictive Modeling | Queued (Milestone 3) | `crip.modeling` | Interpretable recovery modeling with SHAP explanations |
         | IV. Clinical Validation & Metrics | Queued (Milestone 4) | `crip.evaluation` | Calibration curves, Brier scores, decision curves |
         """
