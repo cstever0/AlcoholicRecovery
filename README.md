@@ -144,7 +144,60 @@ python -m crip.mri.pipeline --data-dir data/raw/acdc/training --output-dir data/
 
 ---
 
-## 5. Prerequisites & Environment Compatibility
+## 5. Automated Cardiac MRI Segmentation with PyTorch & MONAI (Milestone 2C)
+
+CRIP includes a deep learning cardiac segmentation pipeline using a 2D U-Net architecture implemented with PyTorch and MONAI.
+
+### 5.1 Patient-Level Stratified Splits
+To prevent data leakage, dataset splitting is strictly conducted at the **patient level**:
+- **Cohort:** 100 annotated ACDC training patients.
+- **Distribution:** 60 Training patients (60%), 20 Validation patients (20%), 20 Held-out Test patients (20%).
+- **Stratification:** Equal distribution across all 5 diagnostic categories (DCM, HCM, MINF, NOR, RV) with exactly 12 train, 4 val, and 4 test patients per diagnosis.
+- **Clinical Safety:** All slices and cine phases (ED and ES) of a patient belong exclusively to that patient's partition. The held-out test split is strictly reserved for unbiased post-training evaluation.
+- **Manifest:** Saved at `data/processed/acdc/dataset_split.json` and `docs/acdc/dataset_split.json`.
+
+### 5.2 Training the 2D U-Net Model
+Train the multi-class U-Net using compound Dice + Cross-Entropy loss:
+
+```bash
+python src/crip/mri/train_segmentation.py --epochs 25 --batch-size 16 --lr 1e-3
+```
+
+- **Hardware Acceleration:** Auto-selects NVIDIA CUDA (Ubuntu/WSL) or Apple Silicon MPS (macOS), with portable CPU fallback.
+- **Model Checkpoint:** Best model saved to `models/mri/best_unet_model.pt`.
+- **Training History:** Complete metrics saved to `models/mri/training_history.json`.
+
+### 5.3 Held-out Cohort Evaluation & LVEF Accuracy
+Run complete volumetric and geometric evaluation across the 20 withheld test patients:
+
+```bash
+python -c "from crip.evaluation.segmentation_metrics import run_cohort_segmentation_evaluation; run_cohort_segmentation_evaluation()"
+```
+
+#### Results Summary on Held-Out Test Cohort ($N=20$)
+- **Mean Absolute LVEF Error:** **3.86 percentage points** (Target $\le 5.0$ percentage points **MET**)
+- **Median Absolute LVEF Error:** **3.14 percentage points**
+- **Root Mean Squared Error (RMSE):** **4.99 percentage points**
+- **Test Patients with $|\Delta \text{LVEF}| \le 5.0\%$:** **75.0%** (15 / 20 patients)
+- **Segmentation Dice Scores:**
+  - Left Ventricular Cavity (LV): **0.906**
+  - Right Ventricular Cavity (RV): **0.807**
+  - Left Ventricular Myocardium: **0.804**
+  - Mean Foreground Dice: **0.839**
+- **Volumetric Mean Absolute Errors:**
+  - LVEDV MAE: **6.29 mL**
+  - LVESV MAE: **5.86 mL**
+  - LVSV MAE: **5.76 mL**
+- **Detailed Subgroup Analysis:**
+  - **DCM ($N=4$):** LVEF MAE = 2.99%, LV Dice = 0.922, 75% cases $\le 5\%$ error
+  - **HCM ($N=4$):** LVEF MAE = 2.87%, LV Dice = 0.892, 75% cases $\le 5\%$ error
+  - **MINF ($N=4$):** LVEF MAE = 3.26%, LV Dice = 0.929, 100% cases $\le 5\%$ error
+  - **NOR ($N=4$):** LVEF MAE = 5.35%, LV Dice = 0.898, 50% cases $\le 5\%$ error
+  - **RV ($N=4$):** LVEF MAE = 4.83%, LV Dice = 0.888, 75% cases $\le 5\%$ error
+
+---
+
+## 6. Prerequisites & Environment Compatibility
 
 - **Python:** Version 3.11 or 3.12 is the primary clinical ML benchmark target (tested up to Python 3.13.15).
   > **Note on Python 3.13:** The current development environment runs Python 3.13.15 on macOS arm64 with all core packages functional. When deploying with CUDA acceleration under Ubuntu/WSL, Python 3.11 or 3.12 is strongly recommended for seamless PyTorch/MONAI GPU wheel compatibility.
@@ -203,25 +256,30 @@ streamlit run src/crip/app/main.py
 
 Open your browser to `http://localhost:8501`.
 
-### MRI Analysis Viewer Features (Milestone 2B Enhanced)
+### MRI Analysis Viewer Features (Milestone 2C Enhanced)
 1. Select **MRI Analysis** (`🫀`) from the sidebar.
 2. Select any patient from the 100-case ACDC cohort dropdown.
-3. Review computed quantitative parameters:
+3. Switch **Segmentation Mask Source**:
+   - **Expert Ground Truth:** Direct geometric voxel integration from manual clinical annotations.
+   - **Automated U-Net Model (Milestone 2C):** Real-time deep-learning inference yielding predicted contours, automated volumetrics, and direct error comparison against ground truth.
+4. Review computed quantitative parameters:
    - **Left Ventricle:** LVEDV, LVESV, LVSV, LVEF (%)
    - **Right Ventricle:** RVEDV, RVESV, RVSV, RVEF (%)
    - **Tissue:** Estimated Myocardial Mass ($1.05\text{ g/mL}$)
-4. Inspect the **Biventricular Phase Volume Comparison** bar chart.
-5. Inspect the **ACDC Cohort Context** scatter plot, displaying the selected patient's position against the 100 ACDC cases and calculating their cohort percentile rank.
-6. Toggle between **ED** and **ES** and use the **Slice Index** slider to navigate short-axis slices with expert segmentation contours.
+5. When in Automated U-Net mode, inspect the **Target Achievement Badge** showing whether $|\Delta \text{LVEF}| \le 5.0\%$, the side-by-side metric comparison table, and the spatial Dice overlap scores.
+6. Inspect the **Biventricular Phase Volume Comparison** bar chart.
+7. Inspect the **ACDC Cohort Context** scatter plot, displaying the selected patient's position against the 100 ACDC cases and calculating their cohort percentile rank.
+8. Toggle between **ED** and **ES** and use the **Slice Index** slider to navigate short-axis slices with automated or expert segmentation contours.
+9. Review the **Automated Segmentation Benchmark (Held-out Test Cohort)** section displaying cohort-wide MAE, % within 5% error, and diagnostic subgroup metrics.
 
 ---
 
-## 8. Running Automated Tests
+## 9. Running Automated Tests
 
 Run the full automated test suite:
 
 ```bash
-# Run all 62 unit, integration, and regression tests
+# Run all 84 unit, integration, and regression tests
 pytest
 
 # Run tests with test coverage breakdown
@@ -229,6 +287,7 @@ pytest --cov=src/crip --cov-report=term-missing
 ```
 
 The test suite covers:
+- **Automated Segmentation Pipeline (22 tests in `test_segmentation_pipeline.py`):** Patient-level stratified dataset splitting (60/20/20 across DCM/HCM/MINF/NOR/RV), mutual exclusivity, determinism across seeds, short-axis intensity normalization, 2D slice resizing and nearest-neighbor restoration, 3D volume reconstruction, `ACDCSegmentationDataset` tensor shapes and augmentation, MONAI 2D U-Net forward pass, `CompoundDiceCELoss` backward gradients, device detection, checkpoint serialization and roundtrip loading, `SegmentationInferenceEngine` slice and patient inference, missing checkpoint error handling, multi-class Dice, HD95 physical distance, and cohort evaluation summary verification.
 - **Cardiac Measurements & Pipeline (16 tests in `test_pipeline_and_measurements.py`):** Analytical volume verification, RV/LV volumes, myocardial mass, stroke volume, LVEF/RVEF formulas, non-isotropic spacing, empty masks, zero EDV, ESV > EDV handling, invalid label rejection, patient-level processing, batch execution, CSV/JSON integrity, reproducibility, and Streamlit AppTest rendering.
 - **ACDC Data Loader (14 tests in `test_mri_loader.py`):** Synthetic NIfTI fixtures validating metadata parsing, missing files, corrupted files, shape mismatches, slice indexing, and intensity normalization.
 - **Dataset Inspector (5 tests in `test_inspect_acdc.py`):** `Info.cfg` parsing, missing directory detection, and structured JSON reporting.

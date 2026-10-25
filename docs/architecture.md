@@ -47,7 +47,7 @@ src/crip/
 - Manages a zero-dependency, local SQLite database for synthetic patient profiles.
 - Enforces isolation: strictly no real patient data, no external cloud dependencies, and no remote EHR interfaces.
 
-### 3. `crip.mri` (Milestone 2A & 2B)
+### 3. `crip.mri` & `crip.evaluation` (Milestones 2A, 2B & 2C)
 - **`acdc_loader.py`**:
   - Encapsulates 3D cine frame loading (`ACDCCardiacFrame`), 4D cine series (`ACDCCineSeries`), and patient metadata (`ACDCPatientMetadata`).
   - Standardizes spatial coordinate ordering to `(num_slices, height, width)`:
@@ -66,9 +66,32 @@ src/crip/
   - Estimated Myocardial Mass:
     $$\text{Mass}_{\text{myo}} = V_{\text{myo}}(\text{mL}) \times 1.05\text{ g/mL}$$
     Based on standard AHA/SCMR density consensus (Cerqueira et al., *Circulation* 2002).
-- **`pipeline.py`**:
-  - Batch cohort extraction and statistical profiling.
-  - Exports validated metrics to `data/processed/acdc/cardiac_measurements.csv`, `cardiac_measurements.json`, and `measurement_validation_report.json`.
+- **`dataset_splits.py` (Milestone 2C)**:
+  - Partitions the 100 ACDC training cases at the **patient level** into 60 train, 20 validation, and 20 held-out test cases.
+  - Stratifies across DCM, HCM, MINF, NOR, and RV (12/4/4 each).
+  - Serializes manifests to `data/processed/acdc/dataset_split.json`.
+- **`preprocessing.py` (Milestone 2C)**:
+  - 1st-99th percentile intensity windowing and scaling to $[0.0, 1.0]$.
+  - Bilinear interpolation for image slices to $224 \times 224$.
+  - Strict **nearest-neighbor** interpolation for segmentation masks, guaranteeing preservation of discrete integer labels $\{0, 1, 2, 3\}$.
+  - Inverse spatial resizing back to native short-axis resolution.
+- **`segmentation_dataset.py` (Milestone 2C)**:
+  - PyTorch Dataset extracting short-axis slices from ED and ES frames.
+  - Online geometric and intensity augmentations (random flips, 90-degree rotations, gamma jitter) preserving label boundaries.
+- **`segmentation_model.py` (Milestone 2C)**:
+  - MONAI 2D U-Net architecture (`in_channels=1`, `out_channels=4`, `channels=(16, 32, 64, 128)`).
+  - Multi-tier device selection: CUDA $\to$ Apple Silicon MPS $\to$ CPU fallback.
+  - `CompoundDiceCELoss`: hybrid loss balancing foreground Dice with multi-class Cross-Entropy.
+- **`train_segmentation.py` (Milestone 2C)**:
+  - Training loop tracking per-epoch train/val loss, RV Dice, Myocardium Dice, and LV Dice.
+  - Cosine annealing learning rate scheduling and best-model checkpointing to `models/mri/best_unet_model.pt`.
+- **`segmentation_inference.py` (Milestone 2C)**:
+  - Slice-by-slice 2D prediction, nearest-neighbor spatial inversion, and 3D volume reconstruction.
+  - End-to-end patient inference returning automated biventricular metrics and ground-truth comparison.
+- **`crip.evaluation.segmentation_metrics` (Milestone 2C)**:
+  - Multi-class Dice, 95th Percentile Hausdorff Distance (HD95 mm) with physical spacing.
+  - Volumetric errors (LVEDV, LVESV, LVSV, LVEF MAE/RMSE) and threshold evaluation ($|\Delta \text{LVEF}| \le 5\%$).
+  - Exports `data/processed/acdc/segmentation_evaluation.csv` and summary JSON.
 
 ### 4. `crip.app`
 - Interactive Streamlit dashboard supporting four research workflows:
@@ -109,6 +132,6 @@ src/crip/
 | **Milestone 1** | Foundation & Architecture | **Completed** | Modular package, Pydantic schemas, SQLite EHR, Streamlit app, test suite |
 | **Milestone 2A** | ACDC Ingestion & Display | **Completed** | ACDC loader, dataset inspection tool, side-by-side Streamlit visualization |
 | **Milestone 2B** | Cardiac Volumetrics | **Completed** | Biventricular metrics, cohort extraction pipeline, descriptive stats & plots |
-| **Milestone 2C** | Automated U-Net Segmentation | Queued | MONAI/PyTorch U-Net inference, Dice/HD95 evaluation against expert masks |
+| **Milestone 2C** | Automated U-Net Segmentation | **Completed** | MONAI/PyTorch 2D U-Net pipeline, patient-level splits, Dice/HD95 & LVEF MAE evaluation, Streamlit automated mode |
 | **Milestone 3** | Interpretable Predictive Modeling | Queued | ElasticNet/Ensembles, SHAP feature attributions, recovery trajectories |
 | **Milestone 4** | Model Calibration & Validation | Queued | Brier scores, ROC-AUC, subgroup fairness analysis, clinical reporting |

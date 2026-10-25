@@ -1,7 +1,12 @@
-"""MRI Analysis page for CRIP with Real ACDC Cardiac MRI Visualization and Volumetric Quantification."""
+"""MRI Analysis page for CRIP with Real ACDC Cardiac MRI Visualization and Volumetric Quantification.
 
+Supports both Expert Ground-Truth annotations and Automated 2D U-Net Model predictions
+with real-time multi-structure contouring and ejection-fraction accuracy verification.
+"""
+
+import json
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -24,6 +29,12 @@ from crip.mri.cardiac_metrics import (
     calculate_structure_volume_ml,
     compute_biventricular_measurements,
 )
+from crip.evaluation.segmentation_metrics import (
+    DEFAULT_EVAL_SUMMARY_PATH,
+    calculate_multiclass_dice,
+)
+from crip.mri.segmentation_inference import PatientInferenceResult, SegmentationInferenceEngine
+from crip.mri.segmentation_model import DEFAULT_CHECKPOINT_PATH
 
 DEFAULT_COHORT_CSV = Path("data/processed/acdc/cardiac_measurements.csv")
 
@@ -39,6 +50,24 @@ COLOR_HEX = {
     2: "#33D959",
     3: "#FF4040",
 }
+
+
+@st.cache_resource
+def _get_inference_engine() -> SegmentationInferenceEngine:
+    """Cache inference engine instance to reuse loaded PyTorch model."""
+    return SegmentationInferenceEngine()
+
+
+@st.cache_data
+def _predict_patient_cached(
+    patient_id: str,
+    checkpoint_mtime: float,
+    dataset_dir: str,
+) -> PatientInferenceResult:
+    """Cache patient inference results based on checkpoint file modification timestamp."""
+    loader = ACDCDataLoader(dataset_dir)
+    engine = _get_inference_engine()
+    return engine.predict_patient(loader, patient_id)
 
 
 def create_overlay_rgb(
@@ -78,7 +107,8 @@ def render_page() -> None:
         """
         Interactive exploration of short-axis Cine cardiac magnetic resonance (CMR) imaging
         from the Automated Cardiac Diagnosis Challenge (ACDC) dataset with quantitative
-        biventricular functional measurements derived from expert segmentation masks.
+        biventricular functional measurements derived from **expert ground-truth annotations**
+        or **automated 2D U-Net deep learning predictions**.
         """
     )
 
@@ -116,6 +146,15 @@ def render_page() -> None:
         help="Choose a patient from the ACDC cohort",
     )
 
+    # Segmentation Source Selection
+    st.sidebar.subheader("🧠 Segmentation Source")
+    seg_source = st.sidebar.radio(
+        "Mask Source",
+        options=["Expert Ground Truth", "Automated U-Net Model (Milestone 2C)"],
+        index=0,
+        help="Switch between manual expert ground truth contours and deep-learning 2D U-Net automated predictions.",
+    )
+
     try:
         metadata = loader.get_patient_metadata(selected_patient_id)
         # Load both ED and ES frames for complete biventricular metrics
@@ -126,56 +165,166 @@ def render_page() -> None:
         _render_volumetric_simulator()
         return
 
-    # Compute comprehensive measurements
-    measurements: Optional[BiventricularCardiacMeasurements] = None
+    # Compute expert ground truth measurements
+    expert_measurements: Optional[BiventricularCardiacMeasurements] = None
     if ed_frame.mask_data is not None and es_frame.mask_data is not None:
         try:
-            measurements = compute_biventricular_measurements(
+            expert_measurements = compute_biventricular_measurements(
                 ed_mask=ed_frame.mask_data,
                 es_mask=es_frame.mask_data,
                 voxel_spacing_mm=ed_frame.voxel_spacing,
                 patient_id=selected_patient_id,
             )
         except Exception as e:
-            st.warning(f"Unable to compute measurements for {selected_patient_id}: {e}")
+            st.warning(f"Unable to compute expert measurements for {selected_patient_id}: {e}")
+
+    # Handle Automated U-Net Model inference
+    auto_result: Optional[PatientInferenceResult] = None
+    active_ed_mask = ed_frame.mask_data
+    active_es_mask = es_frame.mask_data
+    is_auto_mode = (seg_source == "Automated U-Net Model (Milestone 2C)")
+
+    if is_auto_mode:
+        if DEFAULT_CHECKPOINT_PATH.is_file():
+            try:
+                ckpt_mtime = DEFAULT_CHECKPOINT_PATH.stat().st_mtime
+                auto_result = _predict_patient_cached(
+                    patient_id=selected_patient_id,
+                    checkpoint_mtime=ckpt_mtime,
+                    dataset_dir=str(loader.dataset_root),
+                )
+                active_ed_mask = auto_result.pred_ed_mask
+                active_es_mask = auto_result.pred_es_mask
+            except Exception as e:
+                st.error(f"Automated segmentation inference failed: {e}")
+                is_auto_mode = False
+        else:
+            st.warning(
+                f"⚠️ Automated model checkpoint not found at `{DEFAULT_CHECKPOINT_PATH}`.\n\n"
+                "Please train the model first by running:\n"
+                "```bash\npython src/crip/mri/train_segmentation.py --epochs 25\n```\n"
+                "Displaying expert ground truth contours instead."
+            )
+            is_auto_mode = False
 
     # Section 1: Patient Summary & Calculated Functional Parameters
-    st.subheader(f"📊 Quantitative Cardiac Measurements — {selected_patient_id} ({metadata.group})")
+    st.subheader(
+        f"📊 Quantitative Cardiac Measurements — {selected_patient_id} ({metadata.group})"
+        + (" [Automated U-Net Model]" if is_auto_mode else " [Expert Ground Truth]")
+    )
 
     st.info(
         "🔬 **Measurement Methodology & Clinical Reference Distinction:**\n\n"
-        "The cardiac functional parameters below are calculated directly by summing voxels from expert-provided "
-        "ACDC ground-truth masks ($V = N_{\\text{voxels}} \\times \\frac{\\Delta x \\cdot \\Delta y \\cdot \\Delta z}{1000}\\text{ mL}$). "
-        "**These values represent experimental geometric integrations from research contours and must not be "
+        "The cardiac functional parameters below are calculated directly by summing voxels from "
+        + ("**automated U-Net deep learning segmentations**" if is_auto_mode else "**expert-provided ACDC ground-truth masks**")
+        + r" ($V = N_{\text{voxels}} \times \frac{\Delta x \cdot \Delta y \cdot \Delta z}{1000}\text{ mL}$)."
+        + " **These values represent experimental geometric integrations for research and must not be "
         "interpreted as clinically validated reference standards.** Independent external clinical consensus "
         "measurements are not provided in the challenge distribution."
     )
 
-    if measurements:
-        row1_col1, row1_col2, row1_col3, row1_col4, row1_col5 = st.columns(5)
-        with row1_col1:
-            st.metric("Patient ID", selected_patient_id)
-            st.metric("Diagnostic Group", metadata.group)
-        with row1_col2:
-            st.metric("LV End-Diastolic Vol (LVEDV)", f"{measurements.lvedv_ml:.1f} mL")
-            st.metric("RV End-Diastolic Vol (RVEDV)", f"{measurements.rvedv_ml:.1f} mL")
-        with row1_col3:
-            st.metric("LV End-Systolic Vol (LVESV)", f"{measurements.lvesv_ml:.1f} mL")
-            st.metric("RV End-Systolic Vol (RVESV)", f"{measurements.rvesv_ml:.1f} mL")
-        with row1_col4:
-            st.metric("LV Stroke Volume (LVSV)", f"{measurements.lvsv_ml:.1f} mL")
-            st.metric("RV Stroke Volume (RVSV)", f"{measurements.rvsv_ml:.1f} mL")
-        with row1_col5:
-            st.metric("LV Ejection Fraction (LVEF)", f"{measurements.lvef_percent:.1f}%")
-            st.metric("RV Ejection Fraction (RVEF)", f"{measurements.rvef_percent:.1f}%")
+    # Active metrics to display
+    display_lvedv = auto_result.pred_metrics.lvedv_ml if is_auto_mode and auto_result else (expert_measurements.lvedv_ml if expert_measurements else 0.0)
+    display_lvesv = auto_result.pred_metrics.lvesv_ml if is_auto_mode and auto_result else (expert_measurements.lvesv_ml if expert_measurements else 0.0)
+    display_lvsv = auto_result.pred_metrics.lvsv_ml if is_auto_mode and auto_result else (expert_measurements.lvsv_ml if expert_measurements else 0.0)
+    display_lvef = auto_result.pred_metrics.lvef_percent if is_auto_mode and auto_result else (expert_measurements.lvef_percent if expert_measurements else 0.0)
+    display_rvedv = auto_result.pred_metrics.rvedv_ml if is_auto_mode and auto_result else (expert_measurements.rvedv_ml if expert_measurements else 0.0)
+    display_rvesv = auto_result.pred_metrics.rvesv_ml if is_auto_mode and auto_result else (expert_measurements.rvesv_ml if expert_measurements else 0.0)
+    display_rvsv = auto_result.pred_metrics.rvsv_ml if is_auto_mode and auto_result else (expert_measurements.rvsv_ml if expert_measurements else 0.0)
+    display_rvef = auto_result.pred_metrics.rvef_percent if is_auto_mode and auto_result else (expert_measurements.rvef_percent if expert_measurements else 0.0)
+    display_myo_vol = auto_result.pred_metrics.myocardial_volume_ed_ml if is_auto_mode and auto_result else (expert_measurements.myocardial_volume_ed_ml if expert_measurements else 0.0)
+    display_myo_mass = auto_result.pred_metrics.myocardial_mass_ed_g if is_auto_mode and auto_result else (expert_measurements.myocardial_mass_ed_g if expert_measurements else 0.0)
 
-        m_mass_col1, m_mass_col2, m_mass_col3 = st.columns(3)
-        with m_mass_col1:
-            st.metric("Myocardial Volume (ED)", f"{measurements.myocardial_volume_ed_ml:.1f} mL")
-        with m_mass_col2:
-            st.metric("Estimated Myocardial Mass (ED)", f"{measurements.myocardial_mass_ed_g:.1f} g", help="Assumes standard myocardial density = 1.05 g/mL")
-        with m_mass_col3:
-            st.metric("Physical Voxel Spacing", f"{ed_frame.voxel_spacing[0]:.2f} × {ed_frame.voxel_spacing[1]:.2f} × {ed_frame.voxel_spacing[2]:.2f} mm")
+    row1_col1, row1_col2, row1_col3, row1_col4, row1_col5 = st.columns(5)
+    with row1_col1:
+        st.metric("Patient ID", selected_patient_id)
+        st.metric("Diagnostic Group", metadata.group)
+    with row1_col2:
+        st.metric("LV End-Diastolic Vol (LVEDV)", f"{display_lvedv:.1f} mL")
+        st.metric("RV End-Diastolic Vol (RVEDV)", f"{display_rvedv:.1f} mL")
+    with row1_col3:
+        st.metric("LV End-Systolic Vol (LVESV)", f"{display_lvesv:.1f} mL")
+        st.metric("RV End-Systolic Vol (RVESV)", f"{display_rvesv:.1f} mL")
+    with row1_col4:
+        st.metric("LV Stroke Volume (LVSV)", f"{display_lvsv:.1f} mL")
+        st.metric("RV Stroke Volume (RVSV)", f"{display_rvsv:.1f} mL")
+    with row1_col5:
+        st.metric("LV Ejection Fraction (LVEF)", f"{display_lvef:.1f}%")
+        st.metric("RV Ejection Fraction (RVEF)", f"{display_rvef:.1f}%")
+
+    m_mass_col1, m_mass_col2, m_mass_col3 = st.columns(3)
+    with m_mass_col1:
+        st.metric("Myocardial Volume (ED)", f"{display_myo_vol:.1f} mL")
+    with m_mass_col2:
+        st.metric("Estimated Myocardial Mass (ED)", f"{display_myo_mass:.1f} g", help="Assumes standard myocardial density = 1.05 g/mL")
+    with m_mass_col3:
+        st.metric("Physical Voxel Spacing", f"{ed_frame.voxel_spacing[0]:.2f} × {ed_frame.voxel_spacing[1]:.2f} × {ed_frame.voxel_spacing[2]:.2f} mm")
+
+    # If Automated Mode is Active, show Direct Model vs. Expert Comparison
+    if is_auto_mode and auto_result and expert_measurements:
+        lvef_error = auto_result.pred_metrics.lvef_percent - expert_measurements.lvef_percent
+        lvef_abs_error = abs(lvef_error)
+        within_5pct = lvef_abs_error <= 5.0
+
+        st.markdown("---")
+        st.subheader("🎯 Automated Model vs. Expert Ground-Truth Validation")
+
+        target_badge = (
+            f"🟢 **Target Achieved:** Absolute LVEF Error = **{lvef_abs_error:.2f}%** (≤ 5.0 percentage points target)"
+            if within_5pct
+            else f"🟡 **Target Exceeded:** Absolute LVEF Error = **{lvef_abs_error:.2f}%** (> 5.0 percentage points target)"
+        )
+        st.markdown(target_badge)
+
+        comp_col1, comp_col2 = st.columns([3, 2])
+        with comp_col1:
+            comp_data = {
+                "Metric": ["LVEDV (mL)", "LVESV (mL)", "LVSV (mL)", "LVEF (%)", "RVEDV (mL)", "RVESV (mL)", "RVEF (%)"],
+                "Automated Model": [
+                    f"{auto_result.pred_metrics.lvedv_ml:.1f}",
+                    f"{auto_result.pred_metrics.lvesv_ml:.1f}",
+                    f"{auto_result.pred_metrics.lvsv_ml:.1f}",
+                    f"{auto_result.pred_metrics.lvef_percent:.1f}%",
+                    f"{auto_result.pred_metrics.rvedv_ml:.1f}",
+                    f"{auto_result.pred_metrics.rvesv_ml:.1f}",
+                    f"{auto_result.pred_metrics.rvef_percent:.1f}%",
+                ],
+                "Expert Ground Truth": [
+                    f"{expert_measurements.lvedv_ml:.1f}",
+                    f"{expert_measurements.lvesv_ml:.1f}",
+                    f"{expert_measurements.lvsv_ml:.1f}",
+                    f"{expert_measurements.lvef_percent:.1f}%",
+                    f"{expert_measurements.rvedv_ml:.1f}",
+                    f"{expert_measurements.rvesv_ml:.1f}",
+                    f"{expert_measurements.rvef_percent:.1f}%",
+                ],
+                "Error (Auto - Expert)": [
+                    f"{auto_result.pred_metrics.lvedv_ml - expert_measurements.lvedv_ml:+.1f} mL",
+                    f"{auto_result.pred_metrics.lvesv_ml - expert_measurements.lvesv_ml:+.1f} mL",
+                    f"{auto_result.pred_metrics.lvsv_ml - expert_measurements.lvsv_ml:+.1f} mL",
+                    f"{lvef_error:+.1f}%",
+                    f"{auto_result.pred_metrics.rvedv_ml - expert_measurements.rvedv_ml:+.1f} mL",
+                    f"{auto_result.pred_metrics.rvesv_ml - expert_measurements.rvesv_ml:+.1f} mL",
+                    f"{auto_result.pred_metrics.rvef_percent - expert_measurements.rvef_percent:+.1f}%",
+                ],
+            }
+            st.dataframe(pd.DataFrame(comp_data), use_container_width=True)
+
+        with comp_col2:
+            # Overlap Dice for this patient
+            if auto_result.gt_ed_mask is not None and auto_result.gt_es_mask is not None:
+                d_ed = calculate_multiclass_dice(auto_result.pred_ed_mask, auto_result.gt_ed_mask)
+                d_es = calculate_multiclass_dice(auto_result.pred_es_mask, auto_result.gt_es_mask)
+                d_lv = (d_ed["lv"] + d_es["lv"]) / 2.0
+                d_rv = (d_ed["rv"] + d_es["rv"]) / 2.0
+                d_myo = (d_ed["myo"] + d_es["myo"]) / 2.0
+                d_mean = (d_ed["mean"] + d_es["mean"]) / 2.0
+
+                st.markdown("**Segmentation Spatial Overlap (Dice)**")
+                st.metric("LV Cavity Dice", f"{d_lv:.3f}")
+                st.metric("RV Cavity Dice", f"{d_rv:.3f}")
+                st.metric("Myocardium Dice", f"{d_myo:.3f}")
+                st.metric("Mean Foreground Dice", f"{d_mean:.3f}")
 
     st.divider()
 
@@ -184,33 +333,32 @@ def render_page() -> None:
 
     with v_col_left:
         st.subheader("📈 Ventricular Phase Volume Comparison")
-        if measurements:
-            vol_fig = go.Figure()
-            vol_fig.add_trace(go.Bar(
-                name="Left Ventricle (LV)",
-                x=["End-Diastole (EDV)", "End-Systole (ESV)", "Stroke Volume (SV)"],
-                y=[measurements.lvedv_ml, measurements.lvesv_ml, measurements.lvsv_ml],
-                marker_color="#FF4040",
-                text=[f"{measurements.lvedv_ml:.1f} mL", f"{measurements.lvesv_ml:.1f} mL", f"{measurements.lvsv_ml:.1f} mL"],
-                textposition="auto",
-            ))
-            vol_fig.add_trace(go.Bar(
-                name="Right Ventricle (RV)",
-                x=["End-Diastole (EDV)", "End-Systole (ESV)", "Stroke Volume (SV)"],
-                y=[measurements.rvedv_ml, measurements.rvesv_ml, measurements.rvsv_ml],
-                marker_color="#26A6FF",
-                text=[f"{measurements.rvedv_ml:.1f} mL", f"{measurements.rvesv_ml:.1f} mL", f"{measurements.rvsv_ml:.1f} mL"],
-                textposition="auto",
-            ))
-            vol_fig.update_layout(
-                barmode="group",
-                title="Biventricular Cavity Volumes (ED vs. ES)",
-                yaxis_title="Volume (mL)",
-                height=320,
-                margin=dict(l=20, r=20, t=40, b=20),
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            )
-            st.plotly_chart(vol_fig, use_container_width=True)
+        vol_fig = go.Figure()
+        vol_fig.add_trace(go.Bar(
+            name="Left Ventricle (LV)",
+            x=["End-Diastole (EDV)", "End-Systole (ESV)", "Stroke Volume (SV)"],
+            y=[display_lvedv, display_lvesv, display_lvsv],
+            marker_color="#FF4040",
+            text=[f"{display_lvedv:.1f} mL", f"{display_lvesv:.1f} mL", f"{display_lvsv:.1f} mL"],
+            textposition="auto",
+        ))
+        vol_fig.add_trace(go.Bar(
+            name="Right Ventricle (RV)",
+            x=["End-Diastole (EDV)", "End-Systole (ESV)", "Stroke Volume (SV)"],
+            y=[display_rvedv, display_rvesv, display_rvsv],
+            marker_color="#26A6FF",
+            text=[f"{display_rvedv:.1f} mL", f"{display_rvesv:.1f} mL", f"{display_rvsv:.1f} mL"],
+            textposition="auto",
+        ))
+        vol_fig.update_layout(
+            barmode="group",
+            title=f"Biventricular Cavity Volumes ({'Automated Model' if is_auto_mode else 'Expert Mask'})",
+            yaxis_title="Volume (mL)",
+            height=320,
+            margin=dict(l=20, r=20, t=40, b=20),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        )
+        st.plotly_chart(vol_fig, use_container_width=True)
 
     with v_col_right:
         st.subheader("🌐 ACDC Cohort Context")
@@ -221,8 +369,7 @@ def render_page() -> None:
             except Exception:
                 cohort_df = None
 
-        if cohort_df is not None and not cohort_df.empty and measurements:
-            # Scatter plot of cohort with highlighted patient
+        if cohort_df is not None and not cohort_df.empty:
             scatter_fig = px.scatter(
                 cohort_df,
                 x="lvedv_ml",
@@ -233,10 +380,9 @@ def render_page() -> None:
                 color_discrete_map={"DCM": "#d62728", "HCM": "#9467bd", "MINF": "#ff7f0e", "NOR": "#2ca02c", "RV": "#1f77b4"},
                 opacity=0.65,
             )
-            # Add patient marker
             scatter_fig.add_trace(go.Scatter(
-                x=[measurements.lvedv_ml],
-                y=[measurements.lvef_percent],
+                x=[display_lvedv],
+                y=[display_lvef],
                 mode="markers",
                 marker=dict(size=14, color="gold", symbol="star", line=dict(width=2, color="black")),
                 name=f"Current: {selected_patient_id}",
@@ -245,9 +391,8 @@ def render_page() -> None:
             scatter_fig.update_layout(height=320, margin=dict(l=20, r=20, t=40, b=20))
             st.plotly_chart(scatter_fig, use_container_width=True)
 
-            # Quantile position
-            lvef_rank = (cohort_df["lvef_percent"] < measurements.lvef_percent).mean() * 100.0
-            st.caption(f"📌 **Cohort Position:** {selected_patient_id} has an LVEF of **{measurements.lvef_percent:.1f}%** ({lvef_rank:.0f}th percentile of 100 ACDC cases).")
+            lvef_rank = (cohort_df["lvef_percent"] < display_lvef).mean() * 100.0
+            st.caption(f"📌 **Cohort Position:** {selected_patient_id} has an LVEF of **{display_lvef:.1f}%** ({lvef_rank:.0f}th percentile of 100 ACDC cases).")
         else:
             st.info("Cohort summary data not yet generated. Run `python -m crip.mri.pipeline` to generate cohort benchmarks.")
 
@@ -267,7 +412,7 @@ def render_page() -> None:
         )
 
     with ctrl_col2:
-        show_overlay = st.checkbox("Show Expert Segmentation Overlay", value=True)
+        show_overlay = st.checkbox("Show Segmentation Overlay", value=True)
 
     with ctrl_col3:
         overlay_alpha = st.slider(
@@ -280,6 +425,7 @@ def render_page() -> None:
         )
 
     current_frame = ed_frame if phase == "ED" else es_frame
+    current_mask_volume = active_ed_mask if phase == "ED" else active_es_mask
 
     # Slice selector
     slice_idx = st.slider(
@@ -291,7 +437,7 @@ def render_page() -> None:
     )
 
     img_slice = current_frame.get_slice_image(slice_idx, normalized=True)
-    mask_slice = current_frame.get_slice_mask(slice_idx)
+    mask_slice = current_mask_volume[slice_idx] if current_mask_volume is not None else None
 
     # Physical properties caption
     st.caption(
@@ -322,9 +468,14 @@ def render_page() -> None:
     ax_orig.axis("off")
 
     # Right: Overlay
+    overlay_title = (
+        f"Automated U-Net Contours ({phase})"
+        if is_auto_mode
+        else f"Expert Ground-Truth Contours ({phase})"
+    )
     ax_overlay.imshow(overlay_slice, origin="upper")
     ax_overlay.set_title(
-        f"Expert Ground-Truth Contours ({phase})",
+        overlay_title,
         color="white",
         fontsize=12,
         pad=8,
@@ -346,6 +497,31 @@ def render_page() -> None:
         """,
         unsafe_allow_html=True,
     )
+
+    # Section 4: Automated Benchmark Results (Held-out Test Cohort)
+    if DEFAULT_EVAL_SUMMARY_PATH.is_file():
+        st.divider()
+        st.subheader("🔬 Automated Segmentation Benchmark (Held-out Test Cohort)")
+        try:
+            with open(DEFAULT_EVAL_SUMMARY_PATH, "r", encoding="utf-8") as f:
+                summary_data = json.load(f)
+
+            b_col1, b_col2, b_col3, b_col4 = st.columns(4)
+            with b_col1:
+                st.metric("Test Cohort Size", f"{summary_data.get('n_patients', 20)} patients")
+                st.metric("Mean Overall Dice", f"{summary_data.get('geometric_metrics', {}).get('dice_mean_overall', 0.0):.3f}")
+            with b_col2:
+                lvef_m = summary_data.get("lvef_metrics", {})
+                st.metric("Mean Absolute LVEF Error", f"{lvef_m.get('mean_absolute_error_pct', 0.0):.2f}%")
+                st.metric("LV Cavity Dice", f"{summary_data.get('geometric_metrics', {}).get('dice_lv', 0.0):.3f}")
+            with b_col3:
+                st.metric("Median Absolute LVEF Error", f"{lvef_m.get('median_absolute_error_pct', 0.0):.2f}%")
+                st.metric("RV Cavity Dice", f"{summary_data.get('geometric_metrics', {}).get('dice_rv', 0.0):.3f}")
+            with b_col4:
+                st.metric("Cases with Error ≤ 5.0%", f"{lvef_m.get('pct_cases_le_5pct_error', 0.0):.1f}%")
+                st.metric("Myocardium Dice", f"{summary_data.get('geometric_metrics', {}).get('dice_myo', 0.0):.3f}")
+        except Exception as e:
+            st.caption(f"Benchmark summary loading notice: {e}")
 
     st.divider()
     _render_volumetric_simulator()
@@ -413,8 +589,8 @@ def _render_volumetric_simulator() -> None:
         |---|---|---|---|
         | I. Foundation & Schemas | **Completed (Milestone 1)** | `crip.synthetic.schemas` | Pydantic data schemas, SQLite synthetic EHR |
         | II-A. ACDC Ingestion & Visualization | **Completed (Milestone 2A)** | `crip.mri.acdc_loader` | Real ACDC MRI loading, multi-label mask overlay |
-        | II-B. Volumetrics & Cohort Measurement | **Active (Milestone 2B)** | `crip.mri.cardiac_metrics`, `pipeline` | Physical volumetric validation & cohort analysis |
-        | II-C. Deep Learning Segmentation | Queued (Milestone 2C) | `crip.mri.segmentation` | MONAI/PyTorch U-Net automated contouring |
+        | II-B. Volumetrics & Cohort Measurement | **Completed (Milestone 2B)** | `crip.mri.cardiac_metrics`, `pipeline` | Physical volumetric validation & cohort analysis |
+        | II-C. Deep Learning Segmentation | **Completed (Milestone 2C)** | `crip.mri.segmentation` | MONAI/PyTorch U-Net automated contouring & LVEF evaluation |
         | III. Predictive Modeling | Queued (Milestone 3) | `crip.modeling` | Interpretable recovery modeling with SHAP explanations |
         | IV. Clinical Validation & Metrics | Queued (Milestone 4) | `crip.evaluation` | Calibration curves, Brier scores, decision curves |
         """

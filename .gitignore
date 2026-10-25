@@ -54,9 +54,13 @@ data/cache/
 
 # Large model checkpoint files and trained weights
 models/*.pt
+models/**/*.pt
 models/*.pth
+models/**/*.pth
 models/*.onnx
+models/**/*.onnx
 models/*.bin
+models/**/*.bin
 models/*.joblib
 models/*.pkl
 checkpoints/

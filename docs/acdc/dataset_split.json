@@ -1,0 +1,943 @@
+{
+  "seed": 42,
+  "stratification_key": "group",
+  "total_patients": 100,
+  "counts": {
+    "train": 60,
+    "val": 20,
+    "test": 20
+  },
+  "group_distribution": {
+    "train": {
+      "DCM": 12,
+      "HCM": 12,
+      "MINF": 12,
+      "NOR": 12,
+      "RV": 12
+    },
+    "val": {
+      "DCM": 4,
+      "HCM": 4,
+      "MINF": 4,
+      "NOR": 4,
+      "RV": 4
+    },
+    "test": {
+      "DCM": 4,
+      "HCM": 4,
+      "MINF": 4,
+      "NOR": 4,
+      "RV": 4
+    }
+  },
+  "splits": {
+    "train": [
+      "patient001",
+      "patient002",
+      "patient003",
+      "patient004",
+      "patient006",
+      "patient009",
+      "patient012",
+      "patient014",
+      "patient016",
+      "patient017",
+      "patient018",
+      "patient019",
+      "patient023",
+      "patient024",
+      "patient025",
+      "patient026",
+      "patient027",
+      "patient028",
+      "patient030",
+      "patient033",
+      "patient035",
+      "patient036",
+      "patient037",
+      "patient040",
+      "patient041",
+      "patient043",
+      "patient045",
+      "patient046",
+      "patient048",
+      "patient050",
+      "patient051",
+      "patient053",
+      "patient055",
+      "patient056",
+      "patient057",
+      "patient059",
+      "patient061",
+      "patient065",
+      "patient066",
+      "patient067",
+      "patient069",
+      "patient070",
+      "patient071",
+      "patient072",
+      "patient073",
+      "patient078",
+      "patient079",
+      "patient080",
+      "patient081",
+      "patient082",
+      "patient083",
+      "patient085",
+      "patient086",
+      "patient089",
+      "patient090",
+      "patient091",
+      "patient093",
+      "patient097",
+      "patient098",
+      "patient100"
+    ],
+    "val": [
+      "patient005",
+      "patient010",
+      "patient013",
+      "patient020",
+      "patient029",
+      "patient031",
+      "patient034",
+      "patient039",
+      "patient042",
+      "patient052",
+      "patient054",
+      "patient060",
+      "patient062",
+      "patient064",
+      "patient068",
+      "patient076",
+      "patient087",
+      "patient088",
+      "patient092",
+      "patient099"
+    ],
+    "test": [
+      "patient007",
+      "patient008",
+      "patient011",
+      "patient015",
+      "patient021",
+      "patient022",
+      "patient032",
+      "patient038",
+      "patient044",
+      "patient047",
+      "patient049",
+      "patient058",
+      "patient063",
+      "patient074",
+      "patient075",
+      "patient077",
+      "patient084",
+      "patient094",
+      "patient095",
+      "patient096"
+    ]
+  },
+  "patient_metadata": {
+    "patient001": {
+      "patient_id": "patient001",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 184.0,
+      "weight_kg": 95.0
+    },
+    "patient002": {
+      "patient_id": "patient002",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 160.0,
+      "weight_kg": 70.0
+    },
+    "patient003": {
+      "patient_id": "patient003",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 15,
+      "height_cm": 165.0,
+      "weight_kg": 77.0
+    },
+    "patient004": {
+      "patient_id": "patient004",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 15,
+      "height_cm": 159.0,
+      "weight_kg": 46.0
+    },
+    "patient005": {
+      "patient_id": "patient005",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 13,
+      "height_cm": 165.0,
+      "weight_kg": 77.0
+    },
+    "patient006": {
+      "patient_id": "patient006",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 16,
+      "height_cm": 180.0,
+      "weight_kg": 70.0
+    },
+    "patient007": {
+      "patient_id": "patient007",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 7,
+      "height_cm": 173.0,
+      "weight_kg": 107.0
+    },
+    "patient008": {
+      "patient_id": "patient008",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 13,
+      "height_cm": 180.0,
+      "weight_kg": 100.0
+    },
+    "patient009": {
+      "patient_id": "patient009",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 13,
+      "height_cm": 153.0,
+      "weight_kg": 61.0
+    },
+    "patient010": {
+      "patient_id": "patient010",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 13,
+      "height_cm": 170.0,
+      "weight_kg": 68.0
+    },
+    "patient011": {
+      "patient_id": "patient011",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 8,
+      "height_cm": 180.0,
+      "weight_kg": 70.0
+    },
+    "patient012": {
+      "patient_id": "patient012",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 13,
+      "height_cm": 160.0,
+      "weight_kg": 59.0
+    },
+    "patient013": {
+      "patient_id": "patient013",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 14,
+      "height_cm": 175.0,
+      "weight_kg": 57.0
+    },
+    "patient014": {
+      "patient_id": "patient014",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 13,
+      "height_cm": 175.0,
+      "weight_kg": 75.0
+    },
+    "patient015": {
+      "patient_id": "patient015",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 158.0,
+      "weight_kg": 57.0
+    },
+    "patient016": {
+      "patient_id": "patient016",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 173.0,
+      "weight_kg": 54.0
+    },
+    "patient017": {
+      "patient_id": "patient017",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 178.0,
+      "weight_kg": 85.0
+    },
+    "patient018": {
+      "patient_id": "patient018",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 161.0,
+      "weight_kg": 79.0
+    },
+    "patient019": {
+      "patient_id": "patient019",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 191.0,
+      "weight_kg": 97.0
+    },
+    "patient020": {
+      "patient_id": "patient020",
+      "group": "DCM",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 182.0,
+      "weight_kg": 106.0
+    },
+    "patient021": {
+      "patient_id": "patient021",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 13,
+      "height_cm": 192.0,
+      "weight_kg": 110.0
+    },
+    "patient022": {
+      "patient_id": "patient022",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 165.0,
+      "weight_kg": 42.0
+    },
+    "patient023": {
+      "patient_id": "patient023",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 166.0,
+      "weight_kg": 74.0
+    },
+    "patient024": {
+      "patient_id": "patient024",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 175.0,
+      "weight_kg": 85.0
+    },
+    "patient025": {
+      "patient_id": "patient025",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 174.0,
+      "weight_kg": 82.0
+    },
+    "patient026": {
+      "patient_id": "patient026",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 170.0,
+      "weight_kg": 70.0
+    },
+    "patient027": {
+      "patient_id": "patient027",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 158.0,
+      "weight_kg": 60.0
+    },
+    "patient028": {
+      "patient_id": "patient028",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 177.0,
+      "weight_kg": 76.0
+    },
+    "patient029": {
+      "patient_id": "patient029",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 163.0,
+      "weight_kg": 55.0
+    },
+    "patient030": {
+      "patient_id": "patient030",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 150.0,
+      "weight_kg": 54.0
+    },
+    "patient031": {
+      "patient_id": "patient031",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 176.0,
+      "weight_kg": 89.0
+    },
+    "patient032": {
+      "patient_id": "patient032",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 186.0,
+      "weight_kg": 123.0
+    },
+    "patient033": {
+      "patient_id": "patient033",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 14,
+      "height_cm": 165.0,
+      "weight_kg": 89.0
+    },
+    "patient034": {
+      "patient_id": "patient034",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 16,
+      "height_cm": 172.0,
+      "weight_kg": 79.0
+    },
+    "patient035": {
+      "patient_id": "patient035",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 170.0,
+      "weight_kg": 80.0
+    },
+    "patient036": {
+      "patient_id": "patient036",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 160.0,
+      "weight_kg": 80.0
+    },
+    "patient037": {
+      "patient_id": "patient037",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 169.0,
+      "weight_kg": 105.0
+    },
+    "patient038": {
+      "patient_id": "patient038",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 160.0,
+      "weight_kg": 59.0
+    },
+    "patient039": {
+      "patient_id": "patient039",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 175.0,
+      "weight_kg": 100.0
+    },
+    "patient040": {
+      "patient_id": "patient040",
+      "group": "HCM",
+      "ed_frame": 1,
+      "es_frame": 13,
+      "height_cm": 172.0,
+      "weight_kg": 95.0
+    },
+    "patient041": {
+      "patient_id": "patient041",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 170.0,
+      "weight_kg": 70.0
+    },
+    "patient042": {
+      "patient_id": "patient042",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 16,
+      "height_cm": 168.0,
+      "weight_kg": 99.0
+    },
+    "patient043": {
+      "patient_id": "patient043",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 7,
+      "height_cm": 165.0,
+      "weight_kg": 76.0
+    },
+    "patient044": {
+      "patient_id": "patient044",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 180.0,
+      "weight_kg": 54.0
+    },
+    "patient045": {
+      "patient_id": "patient045",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 13,
+      "height_cm": 174.0,
+      "weight_kg": 68.0
+    },
+    "patient046": {
+      "patient_id": "patient046",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 186.0,
+      "weight_kg": 74.0
+    },
+    "patient047": {
+      "patient_id": "patient047",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 180.0,
+      "weight_kg": 82.0
+    },
+    "patient048": {
+      "patient_id": "patient048",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 8,
+      "height_cm": 167.0,
+      "weight_kg": 73.0
+    },
+    "patient049": {
+      "patient_id": "patient049",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 171.0,
+      "weight_kg": 72.0
+    },
+    "patient050": {
+      "patient_id": "patient050",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 162.0,
+      "weight_kg": 57.0
+    },
+    "patient051": {
+      "patient_id": "patient051",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 170.0,
+      "weight_kg": 91.0
+    },
+    "patient052": {
+      "patient_id": "patient052",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 161.0,
+      "weight_kg": 85.0
+    },
+    "patient053": {
+      "patient_id": "patient053",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 176.0,
+      "weight_kg": 77.0
+    },
+    "patient054": {
+      "patient_id": "patient054",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 176.0,
+      "weight_kg": 94.0
+    },
+    "patient055": {
+      "patient_id": "patient055",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 180.0,
+      "weight_kg": 82.0
+    },
+    "patient056": {
+      "patient_id": "patient056",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 170.0,
+      "weight_kg": 62.0
+    },
+    "patient057": {
+      "patient_id": "patient057",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 175.0,
+      "weight_kg": 80.0
+    },
+    "patient058": {
+      "patient_id": "patient058",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 14,
+      "height_cm": 168.0,
+      "weight_kg": 68.0
+    },
+    "patient059": {
+      "patient_id": "patient059",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 173.0,
+      "weight_kg": 68.0
+    },
+    "patient060": {
+      "patient_id": "patient060",
+      "group": "MINF",
+      "ed_frame": 1,
+      "es_frame": 14,
+      "height_cm": 172.0,
+      "weight_kg": 51.0
+    },
+    "patient061": {
+      "patient_id": "patient061",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 187.0,
+      "weight_kg": 95.0
+    },
+    "patient062": {
+      "patient_id": "patient062",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 172.0,
+      "weight_kg": 74.0
+    },
+    "patient063": {
+      "patient_id": "patient063",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 16,
+      "height_cm": 165.0,
+      "weight_kg": 49.0
+    },
+    "patient064": {
+      "patient_id": "patient064",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 175.0,
+      "weight_kg": 97.0
+    },
+    "patient065": {
+      "patient_id": "patient065",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 14,
+      "height_cm": 180.0,
+      "weight_kg": 92.0
+    },
+    "patient066": {
+      "patient_id": "patient066",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 175.0,
+      "weight_kg": 80.0
+    },
+    "patient067": {
+      "patient_id": "patient067",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 178.0,
+      "weight_kg": 60.0
+    },
+    "patient068": {
+      "patient_id": "patient068",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 154.0,
+      "weight_kg": 64.0
+    },
+    "patient069": {
+      "patient_id": "patient069",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 160.0,
+      "weight_kg": 53.0
+    },
+    "patient070": {
+      "patient_id": "patient070",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 158.0,
+      "weight_kg": 79.0
+    },
+    "patient071": {
+      "patient_id": "patient071",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 169.0,
+      "weight_kg": 61.0
+    },
+    "patient072": {
+      "patient_id": "patient072",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 160.0,
+      "weight_kg": 78.0
+    },
+    "patient073": {
+      "patient_id": "patient073",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 185.0,
+      "weight_kg": 96.0
+    },
+    "patient074": {
+      "patient_id": "patient074",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 175.0,
+      "weight_kg": 87.0
+    },
+    "patient075": {
+      "patient_id": "patient075",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 6,
+      "height_cm": 179.0,
+      "weight_kg": 93.0
+    },
+    "patient076": {
+      "patient_id": "patient076",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 175.0,
+      "weight_kg": 87.0
+    },
+    "patient077": {
+      "patient_id": "patient077",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 180.0,
+      "weight_kg": 75.0
+    },
+    "patient078": {
+      "patient_id": "patient078",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 185.0,
+      "weight_kg": 84.0
+    },
+    "patient079": {
+      "patient_id": "patient079",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 178.0,
+      "weight_kg": 80.0
+    },
+    "patient080": {
+      "patient_id": "patient080",
+      "group": "NOR",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 155.0,
+      "weight_kg": 74.0
+    },
+    "patient081": {
+      "patient_id": "patient081",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 7,
+      "height_cm": 177.0,
+      "weight_kg": 70.0
+    },
+    "patient082": {
+      "patient_id": "patient082",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 7,
+      "height_cm": 183.0,
+      "weight_kg": 82.0
+    },
+    "patient083": {
+      "patient_id": "patient083",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 8,
+      "height_cm": 160.0,
+      "weight_kg": 58.0
+    },
+    "patient084": {
+      "patient_id": "patient084",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 140.0,
+      "weight_kg": 35.0
+    },
+    "patient085": {
+      "patient_id": "patient085",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 172.0,
+      "weight_kg": 61.0
+    },
+    "patient086": {
+      "patient_id": "patient086",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 8,
+      "height_cm": 165.0,
+      "weight_kg": 70.0
+    },
+    "patient087": {
+      "patient_id": "patient087",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 170.0,
+      "weight_kg": 64.0
+    },
+    "patient088": {
+      "patient_id": "patient088",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 180.0,
+      "weight_kg": 70.0
+    },
+    "patient089": {
+      "patient_id": "patient089",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 10,
+      "height_cm": 170.0,
+      "weight_kg": 103.0
+    },
+    "patient090": {
+      "patient_id": "patient090",
+      "group": "RV",
+      "ed_frame": 4,
+      "es_frame": 11,
+      "height_cm": 150.0,
+      "weight_kg": 66.0
+    },
+    "patient091": {
+      "patient_id": "patient091",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 162.0,
+      "weight_kg": 53.0
+    },
+    "patient092": {
+      "patient_id": "patient092",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 6,
+      "height_cm": 170.0,
+      "weight_kg": 69.0
+    },
+    "patient093": {
+      "patient_id": "patient093",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 14,
+      "height_cm": 165.0,
+      "weight_kg": 65.0
+    },
+    "patient094": {
+      "patient_id": "patient094",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 7,
+      "height_cm": 164.0,
+      "weight_kg": 45.0
+    },
+    "patient095": {
+      "patient_id": "patient095",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 12,
+      "height_cm": 165.0,
+      "weight_kg": 76.0
+    },
+    "patient096": {
+      "patient_id": "patient096",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 8,
+      "height_cm": 186.0,
+      "weight_kg": 76.0
+    },
+    "patient097": {
+      "patient_id": "patient097",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 11,
+      "height_cm": 187.0,
+      "weight_kg": 82.0
+    },
+    "patient098": {
+      "patient_id": "patient098",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 167.0,
+      "weight_kg": 50.0
+    },
+    "patient099": {
+      "patient_id": "patient099",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 9,
+      "height_cm": 180.0,
+      "weight_kg": 80.0
+    },
+    "patient100": {
+      "patient_id": "patient100",
+      "group": "RV",
+      "ed_frame": 1,
+      "es_frame": 13,
+      "height_cm": 165.0,
+      "weight_kg": 63.0
+    }
+  }
+}
