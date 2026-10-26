@@ -303,3 +303,48 @@ def run_feature_ablation_study(
         logger.info(f"Saved feature ablation study results to {out_p}")
 
     return df_ablation
+
+
+def main() -> None:
+    """CLI entry point for training and evaluating baseline recovery models."""
+    import argparse
+    from crip.modeling.dataset import DEFAULT_COHORT_CSV, load_modeling_dataset
+    from crip.evaluation.recovery_metrics import evaluate_final_model_on_test
+    from crip.modeling.artifacts import save_recovery_model_artifacts, DEFAULT_MODEL_DIR
+
+    parser = argparse.ArgumentParser(description="Train baseline recovery models for CRIP.")
+    parser.add_argument("--cohort-csv", default=DEFAULT_COHORT_CSV, help="Path to synthetic cohort CSV")
+    parser.add_argument("--scenario", default="SUSTAINED_ABSTINENCE", help="Cohort scenario (default: SUSTAINED_ABSTINENCE)")
+    parser.add_argument("--output-dir", default=str(DEFAULT_MODEL_DIR), help="Output directory for model artifacts")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed")
+    parser.add_argument("--run-ablation", action="store_true", help="Run multimodal ablation study")
+    args = parser.parse_args()
+
+    print(f"Loading modeling dataset from {args.cohort_csv} (scenario: {args.scenario})...")
+    dataset = load_modeling_dataset(args.cohort_csv, scenario=args.scenario, seed=args.seed)
+    print(f"Dataset loaded: {len(dataset.X_train)} train, {len(dataset.X_val)} val, {len(dataset.X_test)} test.")
+
+    print("Training baseline models (Dummy, Logistic Regression, Random Forest)...")
+    models = train_baseline_models(dataset, seed=args.seed)
+    lr_model = models["logistic_regression"]
+
+    print("Evaluating Logistic Regression on held-out test cohort...")
+    report = evaluate_final_model_on_test(lr_model, dataset)
+    print(f"Test ROC-AUC: {report['metrics']['roc_auc']:.4f}")
+    print(f"Test PR-AUC:  {report['metrics']['pr_auc']:.4f}")
+    print(f"Test Brier:   {report['metrics']['brier_score']:.4f}")
+    print(f"Test Acc:     {report['metrics']['accuracy']*100:.2f}%")
+
+    out_p = save_recovery_model_artifacts(lr_model, dataset, report, output_dir=args.output_dir)
+    print(f"Saved recovery model artifacts to {out_p}")
+
+    if args.run_ablation:
+        print("Running feature ablation study...")
+        df_abl = run_feature_ablation_study(dataset, seed=args.seed, output_dir=args.output_dir)
+        print("Ablation Results:")
+        print(df_abl[["ablation_group", "val_roc_auc", "val_brier_score"]])
+
+
+if __name__ == "__main__":
+    main()
+
