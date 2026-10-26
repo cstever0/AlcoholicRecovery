@@ -62,7 +62,9 @@ models/**/*.onnx
 models/*.bin
 models/**/*.bin
 models/*.joblib
+models/**/*.joblib
 models/*.pkl
+models/**/*.pkl
 checkpoints/
 
 # Temporary and editor files

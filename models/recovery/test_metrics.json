@@ -1,0 +1,91 @@
+{
+  "evaluation_split": "HELD_OUT_TEST",
+  "scenario": "SUSTAINED_ABSTINENCE",
+  "n_test_samples": 419,
+  "target_prevalence": 0.7828162291169452,
+  "target_auc_benchmark": 0.8,
+  "target_achieved": true,
+  "metrics": {
+    "n_samples": 419,
+    "prevalence": 0.7828162291169452,
+    "roc_auc": 0.9565,
+    "pr_auc": 0.9835,
+    "brier_score": 0.0694,
+    "log_loss": 0.2315,
+    "accuracy": 0.8926,
+    "sensitivity": 0.8994,
+    "specificity": 0.8681,
+    "precision": 0.9609,
+    "npv": 0.7054,
+    "f1_score": 0.9291,
+    "decision_threshold": 0.5,
+    "confusion_matrix": {
+      "tn": 79,
+      "fp": 12,
+      "fn": 33,
+      "tp": 295
+    }
+  },
+  "confidence_intervals": {
+    "roc_auc_ci_95": [
+      0.9264,
+      0.9802
+    ],
+    "brier_score_ci_95": [
+      0.0524,
+      0.0879
+    ]
+  },
+  "calibration_curve": [
+    {
+      "bin_idx": 0,
+      "mean_predicted_prob": 0.0247,
+      "observed_frequency": 0.0317
+    },
+    {
+      "bin_idx": 1,
+      "mean_predicted_prob": 0.1454,
+      "observed_frequency": 0.4667
+    },
+    {
+      "bin_idx": 2,
+      "mean_predicted_prob": 0.2515,
+      "observed_frequency": 0.6364
+    },
+    {
+      "bin_idx": 3,
+      "mean_predicted_prob": 0.339,
+      "observed_frequency": 0.75
+    },
+    {
+      "bin_idx": 4,
+      "mean_predicted_prob": 0.4356,
+      "observed_frequency": 0.7333
+    },
+    {
+      "bin_idx": 5,
+      "mean_predicted_prob": 0.5366,
+      "observed_frequency": 0.4286
+    },
+    {
+      "bin_idx": 6,
+      "mean_predicted_prob": 0.6567,
+      "observed_frequency": 1.0
+    },
+    {
+      "bin_idx": 7,
+      "mean_predicted_prob": 0.7552,
+      "observed_frequency": 0.8462
+    },
+    {
+      "bin_idx": 8,
+      "mean_predicted_prob": 0.8531,
+      "observed_frequency": 0.9091
+    },
+    {
+      "bin_idx": 9,
+      "mean_predicted_prob": 0.982,
+      "observed_frequency": 0.9876
+    }
+  ]
+}

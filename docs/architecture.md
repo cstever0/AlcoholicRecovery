@@ -117,11 +117,29 @@ src/crip/
 - **SQLite EHR Cohort Persistence (`crip.ehr.db`)**:
   - Automated schema migration, batch insertion, multi-criteria filtering, and cohort summaries.
 
-### 6. `crip.modeling` (Milestone 3B+)
-- Transparent tabular modeling (Scikit-learn ElasticNet / Random Forest) with SHAP attribution.
+### 6. `crip.modeling` & `crip.evaluation` (Milestone 3B)
+- **`dataset.py`**:
+  - Enforces strict baseline feature whitelist (demographics, CMR volumetrics, PEth toxicology, TTN genetics, LGE fibrosis).
+  - Explicit data leakage prevention: raises `ValueError` if post-baseline or future outcome variables are present.
+  - Stratified 60/20/20 train/validation/test partitioning with isolated preprocessor fitting.
+- **`train.py`**:
+  - Scikit-learn pipelines with `ColumnTransformer` (median imputation, standard scaling, OHE).
+  - Baseline classifiers: `DummyClassifier` (prior prevalence), `RandomForestClassifier` (non-linear tree benchmark), `LogisticRegression` (primary interpretable model).
+  - Modality ablation experiments evaluating incremental value of CMR volumetrics, PEth toxicology, TTN genetics, and LGE fibrosis.
+- **`recovery_metrics.py`**:
+  - Comprehensive statistical evaluation on held-out test split: ROC-AUC, PR-AUC, Brier score, accuracy, sensitivity, specificity, F1 score.
+  - Binned reliability calibration diagrams and empirical 95% bootstrap confidence intervals ($B=1,000$).
+- **`explain.py`**:
+  - Global standardized odds ratios ($\text{OR} = \exp(\beta)$) and directional classification.
+  - Patient-level additive log-odds decomposition and plain-language narrative generation.
+  - Exact linear SHAP feature attributions with strict non-causal research disclaimers.
+- **`sensitivity.py`**:
+  - Stress testing across stochastic noise multipliers ($0.5\times$ to $2.0\times$) and population compliance rates.
+- **`artifacts.py`**:
+  - Serializes model pipelines, feature schemas, patient split manifests, and evaluation summaries to `models/recovery/`.
 
 ### 7. `crip.evaluation` (Milestone 4+)
-- Empirical model calibration and validation on synthetic cohorts.
+- Empirical model calibration, subgroup fairness analysis, and clinical reporting protocols.
 
 ---
 
@@ -151,5 +169,5 @@ src/crip/
 | **Milestone 2B** | Cardiac Volumetrics | **Completed** | Biventricular metrics, cohort extraction pipeline, descriptive stats & plots |
 | **Milestone 2C** | Automated U-Net Segmentation | **Completed** | MONAI/PyTorch 2D U-Net pipeline, patient-level splits, Dice/HD95 & LVEF MAE evaluation, Streamlit automated mode |
 | **Milestone 3A** | Literature-Grounded Multimodal Cohort | **Completed** | 3,000-patient synthetic cohort, ACDC DCM grounding, PEth/TTN/LGE integration, SQLite EHR filters, 104 tests |
-| **Milestone 3B** | Interpretable Predictive Modeling | Queued | ElasticNet/Ensembles, SHAP feature attributions, recovery trajectories |
+| **Milestone 3B** | Interpretable Predictive Modeling | **Completed** | Logistic Regression/RF pipelines, feature ablations, test ROC-AUC 0.957, SHAP & log-odds attributions, scenario explorer, 129 tests |
 | **Milestone 4** | Model Calibration & Validation | Queued | Brier scores, ROC-AUC, subgroup fairness analysis, clinical reporting |

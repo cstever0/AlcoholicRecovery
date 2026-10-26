@@ -301,6 +301,16 @@ python -m crip.synthetic.cohort_generator --n 3000 --seed 42 --abstinence-prob 0
 python -m crip.synthetic.cohort_validation
 ```
 
+### Recovery Estimation & Explainability (Milestone 3B Enhanced)
+1. Select **Recovery Estimate** (`📈`) from the sidebar.
+2. Select any patient from the synthetic cohort dropdown (filtered to the sustained-abstinence modeling population).
+3. Review baseline clinical inputs: LVEF, LVEDV, PEth biomarker concentration, ACMG-AMP Titin classification, and LGE fibrosis burden.
+4. Inspect the **Simulated Recovery Probability Meter** ($\Delta \text{LVEF} \ge 10.0\%$ at 6 months under sustained abstinence).
+5. Review the **Clinical Attribution Narrative** and prominent non-causal research disclaimers.
+6. Explore the **Feature Attribution Breakdown** waterfall chart displaying patient-level additive log-odds contributions ($\beta_j \times x_j$).
+7. Use the **Hypothetical What-If Scenario Explorer** to modify baseline LVEF, EDV, PEth, Titin variant, or LGE scar burden and observe changes in simulated recovery predictions.
+8. Inspect the **Model Calibration & Held-Out Metrics** tab displaying held-out test ROC-AUC (0.957), PR-AUC (0.984), Brier score (0.069), and the binned reliability calibration diagram.
+
 ---
 
 ## 9. Running Automated Tests
@@ -308,7 +318,7 @@ python -m crip.synthetic.cohort_validation
 Run the full automated test suite:
 
 ```bash
-# Run all 104 unit, integration, and regression tests
+# Run all 129 unit, integration, and regression tests
 pytest
 
 # Run tests with test coverage breakdown
@@ -316,6 +326,7 @@ pytest --cov=src/crip --cov-report=term-missing
 ```
 
 The test suite covers:
+- **Synthetic Recovery Modeling & Explainability (25 tests in `test_recovery_modeling.py`):** Dataset loading, target construction, feature whitelist enforcement, exclusion of future variables (data leakage prevention), scenario eligibility, split reproducibility across random seeds, leakage prevention (disjoint patient IDs), preprocessing fit isolation (train-only fitting), Logistic Regression training, Dummy classifier baseline, probability range validation $[0, 1]$, model serialization, reload consistency, ROC-AUC calculation, PR-AUC calculation, Brier score, calibration curve generation, confusion matrix arithmetic, feature-group modality ablation (all 6 groups), SHAP / coefficient explanation decomposition, missing features handling, unseen categorical values handling, noise and compliance sensitivity execution, Streamlit AppTest headless rendering, and benchmark target achievement ($\text{ROC-AUC} \ge 0.80$).
 - **Synthetic Multimodal Cohort & Integration (20 tests in `test_synthetic_cohort.py`):** Fixed-seed reproducibility, identifier uniqueness, Pydantic schema validation, biological and numerical bounds, mathematical volume consistency ($ESV < EDV$, $|\Delta \text{LVEF}_{\text{calc}}| \le 0.1\%$), PEth clinical risk tiers, TTN 5-tier classification and VUS non-pathogenic isolation, LGE scar extent and patterns, missingness mechanisms (PEth, TTN, LGE, history), recovery-label calculation ($\Delta \text{LVEF} \ge 10.0 \to 1$, else $0$), non-trivial variable correlations ($|r| < 0.98$), non-trivial univariate separability audit (all univariate ROC-AUCs $< 0.82$), parameter sensitivity analysis across compliance scenarios, variable-level provenance tracking, file export integrity (CSV, JSON, quality report), SQLite EHR import and multi-criteria filtering, legacy schema backward compatibility, cohort summary statistics, and Streamlit AppTest headless rendering.
 - **Automated Segmentation Pipeline (22 tests in `test_segmentation_pipeline.py`):** Patient-level stratified dataset splitting (60/20/20 across DCM/HCM/MINF/NOR/RV), mutual exclusivity, determinism across seeds, short-axis intensity normalization, 2D slice resizing and nearest-neighbor restoration, 3D volume reconstruction, `ACDCSegmentationDataset` tensor shapes and augmentation, MONAI 2D U-Net forward pass, `CompoundDiceCELoss` backward gradients, device detection, checkpoint serialization and roundtrip loading, `SegmentationInferenceEngine` slice and patient inference, missing checkpoint error handling, multi-class Dice, HD95 physical distance, and cohort evaluation summary verification.
 - **Cardiac Measurements & Pipeline (16 tests in `test_pipeline_and_measurements.py`):** Analytical volume verification, RV/LV volumes, myocardial mass, stroke volume, LVEF/RVEF formulas, non-isotropic spacing, empty masks, zero EDV, ESV > EDV handling, invalid label rejection, patient-level processing, batch execution, CSV/JSON integrity, reproducibility, and Streamlit AppTest rendering.

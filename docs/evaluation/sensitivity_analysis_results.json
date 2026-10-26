@@ -1,0 +1,67 @@
+{
+  "analysis_type": "SYNTHETIC_MODEL_SENSITIVITY_AUDIT",
+  "model_architecture": "LogisticRegression(class_weight='balanced')",
+  "noise_sensitivity": [
+    {
+      "noise_multiplier": 0.5,
+      "simulated_stochastic_std": 2.12,
+      "test_roc_auc": 0.9588,
+      "test_pr_auc": 0.9832,
+      "test_brier_score": 0.0689,
+      "test_accuracy": 0.8902
+    },
+    {
+      "noise_multiplier": 1.0,
+      "simulated_stochastic_std": 4.25,
+      "test_roc_auc": 0.957,
+      "test_pr_auc": 0.9833,
+      "test_brier_score": 0.071,
+      "test_accuracy": 0.8998
+    },
+    {
+      "noise_multiplier": 1.5,
+      "simulated_stochastic_std": 6.38,
+      "test_roc_auc": 0.9539,
+      "test_pr_auc": 0.9796,
+      "test_brier_score": 0.0715,
+      "test_accuracy": 0.8974
+    },
+    {
+      "noise_multiplier": 2.0,
+      "simulated_stochastic_std": 8.5,
+      "test_roc_auc": 0.9399,
+      "test_pr_auc": 0.9749,
+      "test_brier_score": 0.0785,
+      "test_accuracy": 0.9045
+    }
+  ],
+  "abstinence_scenario_sensitivity": [
+    {
+      "abstinence_probability": 0.4,
+      "n_eval_patients": 112,
+      "recovery_prevalence": 0.7857142857142857,
+      "roc_auc": 0.9683,
+      "pr_auc": 0.991,
+      "brier_score": 0.0664,
+      "accuracy": 0.9107
+    },
+    {
+      "abstinence_probability": 0.7,
+      "n_eval_patients": 208,
+      "recovery_prevalence": 0.7692307692307693,
+      "roc_auc": 0.9434,
+      "pr_auc": 0.9788,
+      "brier_score": 0.0771,
+      "accuracy": 0.8894
+    },
+    {
+      "abstinence_probability": 0.9,
+      "n_eval_patients": 263,
+      "recovery_prevalence": 0.8174904942965779,
+      "roc_auc": 0.9454,
+      "pr_auc": 0.9625,
+      "brier_score": 0.0662,
+      "accuracy": 0.924
+    }
+  ]
+}

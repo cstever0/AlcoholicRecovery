@@ -1,0 +1,53 @@
+{
+  "model_version": "v1.0-m3b",
+  "features": [
+    "age",
+    "baseline_lvef",
+    "edv_ml",
+    "esv_ml",
+    "stroke_volume_ml",
+    "rvedv_ml",
+    "rvef_percent",
+    "myocardial_mass_g",
+    "peth_value_ng_ml",
+    "reported_drinks_per_week",
+    "time_since_last_drink_days",
+    "years_heavy_drinking",
+    "lge_extent_percent",
+    "biological_sex",
+    "ttn_classification",
+    "lge_status",
+    "lge_pattern",
+    "peth_available",
+    "alcohol_history_available",
+    "lge_available"
+  ],
+  "numerical_features": [
+    "age",
+    "baseline_lvef",
+    "edv_ml",
+    "esv_ml",
+    "stroke_volume_ml",
+    "rvedv_ml",
+    "rvef_percent",
+    "myocardial_mass_g",
+    "peth_value_ng_ml",
+    "reported_drinks_per_week",
+    "time_since_last_drink_days",
+    "years_heavy_drinking",
+    "lge_extent_percent"
+  ],
+  "categorical_features": [
+    "biological_sex",
+    "ttn_classification",
+    "lge_status",
+    "lge_pattern"
+  ],
+  "binary_features": [
+    "peth_available",
+    "alcohol_history_available",
+    "lge_available"
+  ],
+  "target_name": "recovery_binary",
+  "scenario": "SUSTAINED_ABSTINENCE"
+}

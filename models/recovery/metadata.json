@@ -1,0 +1,16 @@
+{
+  "model_name": "CRIP Multimodal Recovery Predictor",
+  "model_version": "v1.0-m3b",
+  "estimator_type": "LogisticRegression",
+  "synthetic_generator_version": "v1.0-m3a",
+  "training_seed": 42,
+  "target_definition": "Delta LVEF >= 10.0 percentage points at 6-month follow-up",
+  "assumed_scenario": "SUSTAINED_ABSTINENCE",
+  "training_sample_count": 1257,
+  "validation_sample_count": 419,
+  "test_sample_count": 419,
+  "test_roc_auc": 0.9565,
+  "test_brier_score": 0.0694,
+  "target_auc_benchmark": 0.8,
+  "benchmark_achieved": true
+}
