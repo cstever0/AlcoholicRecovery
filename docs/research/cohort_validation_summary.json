@@ -1,0 +1,203 @@
+{
+  "evaluation_timestamp": "2026-10-25T19:30:00Z",
+  "cohort_source": "data/synthetic/synthetic_cardiomyopathy_cohort.csv",
+  "integrity_audit": {
+    "total_records": 3000,
+    "unique_patient_ids": 3000,
+    "has_duplicate_ids": false,
+    "integrity_violations": {
+      "esv_ge_edv": 0,
+      "negative_edv": 0,
+      "negative_esv": 0,
+      "lvef_out_of_bounds": 0,
+      "age_out_of_bounds": 0,
+      "negative_peth": 0,
+      "lvef_math_mismatch": 0,
+      "six_month_lvef_out_of_bounds": 0,
+      "recovery_label_inconsistent": 0
+    },
+    "all_integrity_checks_passed": true
+  },
+  "univariate_distributions": {
+    "peth_biomarker": {
+      "n_available": 2868,
+      "mean_ng_ml": 289.0,
+      "median_ng_ml": 172.45,
+      "std_ng_ml": 356.81,
+      "iqr_25_75": [
+        48.6,
+        391.9
+      ],
+      "pct_abstinent_light": 19.32,
+      "pct_moderate": 36.37,
+      "pct_heavy": 44.32
+    },
+    "ttn_genetics": {
+      "NO_PATHOGENIC_OR_LIKELY_PATHOGENIC": 59.43,
+      "NOT_TESTED": 18.03,
+      "PATHOGENIC": 10.33,
+      "VARIANT_OF_UNCERTAIN_SIGNIFICANCE": 8.67,
+      "LIKELY_PATHOGENIC": 3.53
+    },
+    "lge_tissue_fibrosis": {
+      "status_distribution_pct": {
+        "NEGATIVE": 57.57,
+        "POSITIVE": 31.8,
+        "NOT_PERFORMED": 10.63
+      },
+      "pattern_distribution_positive_pct": {
+        "MIDWALL": 76.21,
+        "SUBEPICARDIAL": 11.11,
+        "PATCHY_TRANSMURAL": 7.55,
+        "SUBENDOCARDIAL": 5.14
+      },
+      "extent_mean_pct_lv_mass": 2.71,
+      "extent_median_pct": 0.0
+    },
+    "cardiac_function_and_recovery": {
+      "baseline_lvef": {
+        "mean": 29.86,
+        "std": 6.29,
+        "median": 29.9,
+        "min": 16.0,
+        "max": 44.0
+      },
+      "lvedv_ml": {
+        "mean": 236.23,
+        "std": 38.84,
+        "median": 236.79
+      },
+      "lvesv_ml": {
+        "mean": 167.36,
+        "std": 39.04
+      },
+      "follow_up_lvef": {
+        "mean": 37.6,
+        "std": 15.47,
+        "median": 40.1
+      },
+      "delta_lvef": {
+        "mean": 7.74,
+        "std": 13.86,
+        "median": 13.1,
+        "min": -23.0,
+        "max": 32.7
+      },
+      "overall_recovery_prevalence_pct": 54.7
+    }
+  },
+  "subgroup_recovery_rates": {
+    "by_sustained_abstinence": {
+      "sustained_abstinence": {
+        "n": 2095,
+        "recovery_rate_pct": 78.33
+      },
+      "continued_drinking": {
+        "n": 905,
+        "recovery_rate_pct": 0.0
+      }
+    },
+    "by_peth_tier": {
+      "ABSTINENT_OR_LIGHT": {
+        "n": 554,
+        "recovery_rate_pct": 39.89
+      },
+      "HEAVY_CHRONIC": {
+        "n": 1271,
+        "recovery_rate_pct": 63.41
+      },
+      "SIGNIFICANT_MODERATE": {
+        "n": 1043,
+        "recovery_rate_pct": 51.01
+      },
+      "UNAVAILABLE": {
+        "n": 132,
+        "recovery_rate_pct": 62.12
+      }
+    },
+    "by_lge_status": {
+      "NEGATIVE": {
+        "n": 1727,
+        "recovery_rate_pct": 67.69
+      },
+      "NOT_PERFORMED": {
+        "n": 319,
+        "recovery_rate_pct": 64.89
+      },
+      "POSITIVE": {
+        "n": 954,
+        "recovery_rate_pct": 27.78
+      }
+    },
+    "by_ttn_classification": {
+      "LIKELY_PATHOGENIC": {
+        "n": 106,
+        "recovery_rate_pct": 46.23
+      },
+      "NOT_TESTED": {
+        "n": 541,
+        "recovery_rate_pct": 57.49
+      },
+      "NO_PATHOGENIC_OR_LIKELY_PATHOGENIC": {
+        "n": 1783,
+        "recovery_rate_pct": 55.47
+      },
+      "PATHOGENIC": {
+        "n": 310,
+        "recovery_rate_pct": 44.52
+      },
+      "VARIANT_OF_UNCERTAIN_SIGNIFICANCE": {
+        "n": 260,
+        "recovery_rate_pct": 59.23
+      }
+    }
+  },
+  "separability_test": {
+    "univariate_roc_aucs": {
+      "age": 0.542,
+      "baseline_lvef": 0.533,
+      "edv_ml": 0.525,
+      "esv_ml": 0.528,
+      "peth_imputed": 0.609,
+      "reported_drinks": 0.592,
+      "lge_extent": 0.685,
+      "is_male": 0.506,
+      "is_lge_positive": 0.673,
+      "is_ttn_pathogenic": 0.521
+    },
+    "highest_single_feature": "lge_extent",
+    "highest_single_feature_auc": 0.685,
+    "passed_non_trivial_separability": true,
+    "threshold_ceiling": 0.82,
+    "verdict": "PASS: No single feature artificially separates the simulated recovery outcome."
+  },
+  "sensitivity_analysis": {
+    "sensitivity_scenarios": [
+      {
+        "scenario": "Standard (70% Abstinence)",
+        "abstinence_probability": 0.7,
+        "sample_size": 1000,
+        "mean_delta_lvef": 7.88,
+        "recovery_prevalence_pct": 55.6
+      },
+      {
+        "scenario": "Low Abstinence (40% Abstinence)",
+        "abstinence_probability": 0.4,
+        "sample_size": 1000,
+        "mean_delta_lvef": 0.7,
+        "recovery_prevalence_pct": 32.7
+      },
+      {
+        "scenario": "High Abstinence (90% Abstinence)",
+        "abstinence_probability": 0.9,
+        "sample_size": 1000,
+        "mean_delta_lvef": 12.32,
+        "recovery_prevalence_pct": 70.0
+      }
+    ]
+  },
+  "generated_figure_paths": [
+    "docs/research/figures/synthetic_cohort_distributions.png",
+    "docs/research/figures/recovery_by_subgroups.png"
+  ]
+}

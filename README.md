@@ -272,6 +272,35 @@ Open your browser to `http://localhost:8501`.
 8. Toggle between **ED** and **ES** and use the **Slice Index** slider to navigate short-axis slices with automated or expert segmentation contours.
 9. Review the **Automated Segmentation Benchmark (Held-out Test Cohort)** section displaying cohort-wide MAE, % within 5% error, and diagnostic subgroup metrics.
 
+### Synthetic Patient Profile & Clinical Cohort (Milestone 3A Enhanced)
+1. Select **Patient Profile** (`👤`) from the sidebar.
+2. Choose between **Full Multimodal Cohort (N=3,000)** and **Reference Illustrative Cohort (N=3)**.
+3. Use multi-criteria filter widgets in the sidebar:
+   - **Biological Sex:** Male / Female.
+   - **Titin (*TTN*) Genetics:** ACMG-AMP 5-tier classification (Pathogenic TTNtv, Likely Pathogenic, VUS, Negative, Not Tested).
+   - **Late Gadolinium Enhancement (LGE):** Negative, Positive (Midwall / Transmural / Subepicardial), Unavailable.
+   - **PEth Exposure Risk Tier:** Abstinent/Light ($<20\text{ ng/mL}$), Significant/Moderate ($20$–$200\text{ ng/mL}$), Heavy/Chronic ($>200\text{ ng/mL}$), Unavailable.
+   - **6-Month Recovery Status:** Recovered ($\Delta \text{LVEF} \ge 10.0\%$) vs Non-Recovered.
+4. Inspect real-time **Cohort KPI Banners**: active cohort size, mean baseline LVEF, recovery rate, LGE fibrosis rate, and TTN pathogenic truncation rate.
+5. Select individual synthetic subjects to inspect 6 multimodal deep-dive tabs:
+   - **🫀 CMR Volumetrics:** Left and right ventricular chamber volumes, stroke volume, ejection fraction, myocardial mass, and physical volume consistency check ($ESV < EDV$).
+   - **🍷 Toxicology & Alcohol:** Objective PEth blood biomarker concentration, risk tier, test date, and self-reported intake history.
+   - **🧬 Titin Genetics:** ACMG-AMP 5-tier classification and explicit clinical safety notice (VUS non-pathogenic isolation).
+   - **🔬 CMR Tissue Fibrosis:** Replacement scar presence, distribution pattern, and quantified fibrosis extent (% of LV mass).
+   - **📈 6-Month Trajectory:** Longitudinal follow-up LVEF, absolute change ($\Delta$), recovery category, binary outcome badge, and documented adverse events.
+   - **📋 Variable Provenance:** Full audit trail detailing the exact simulation model or empirical literature prior for each parameter.
+
+### Generating or Re-running the Synthetic Cohort CLI
+To regenerate or inspect the literature-grounded synthetic cohort from the command line:
+
+```bash
+# Generate 3,000 synthetic patient records (seed=42) and export CSV/JSON/reports
+python -m crip.synthetic.cohort_generator --n 3000 --seed 42 --abstinence-prob 0.70
+
+# Run standalone cohort validation audit and generate distribution figures
+python -m crip.synthetic.cohort_validation
+```
+
 ---
 
 ## 9. Running Automated Tests
@@ -279,7 +308,7 @@ Open your browser to `http://localhost:8501`.
 Run the full automated test suite:
 
 ```bash
-# Run all 84 unit, integration, and regression tests
+# Run all 104 unit, integration, and regression tests
 pytest
 
 # Run tests with test coverage breakdown
@@ -287,12 +316,13 @@ pytest --cov=src/crip --cov-report=term-missing
 ```
 
 The test suite covers:
+- **Synthetic Multimodal Cohort & Integration (20 tests in `test_synthetic_cohort.py`):** Fixed-seed reproducibility, identifier uniqueness, Pydantic schema validation, biological and numerical bounds, mathematical volume consistency ($ESV < EDV$, $|\Delta \text{LVEF}_{\text{calc}}| \le 0.1\%$), PEth clinical risk tiers, TTN 5-tier classification and VUS non-pathogenic isolation, LGE scar extent and patterns, missingness mechanisms (PEth, TTN, LGE, history), recovery-label calculation ($\Delta \text{LVEF} \ge 10.0 \to 1$, else $0$), non-trivial variable correlations ($|r| < 0.98$), non-trivial univariate separability audit (all univariate ROC-AUCs $< 0.82$), parameter sensitivity analysis across compliance scenarios, variable-level provenance tracking, file export integrity (CSV, JSON, quality report), SQLite EHR import and multi-criteria filtering, legacy schema backward compatibility, cohort summary statistics, and Streamlit AppTest headless rendering.
 - **Automated Segmentation Pipeline (22 tests in `test_segmentation_pipeline.py`):** Patient-level stratified dataset splitting (60/20/20 across DCM/HCM/MINF/NOR/RV), mutual exclusivity, determinism across seeds, short-axis intensity normalization, 2D slice resizing and nearest-neighbor restoration, 3D volume reconstruction, `ACDCSegmentationDataset` tensor shapes and augmentation, MONAI 2D U-Net forward pass, `CompoundDiceCELoss` backward gradients, device detection, checkpoint serialization and roundtrip loading, `SegmentationInferenceEngine` slice and patient inference, missing checkpoint error handling, multi-class Dice, HD95 physical distance, and cohort evaluation summary verification.
 - **Cardiac Measurements & Pipeline (16 tests in `test_pipeline_and_measurements.py`):** Analytical volume verification, RV/LV volumes, myocardial mass, stroke volume, LVEF/RVEF formulas, non-isotropic spacing, empty masks, zero EDV, ESV > EDV handling, invalid label rejection, patient-level processing, batch execution, CSV/JSON integrity, reproducibility, and Streamlit AppTest rendering.
 - **ACDC Data Loader (14 tests in `test_mri_loader.py`):** Synthetic NIfTI fixtures validating metadata parsing, missing files, corrupted files, shape mismatches, slice indexing, and intensity normalization.
 - **Dataset Inspector (5 tests in `test_inspect_acdc.py`):** `Info.cfg` parsing, missing directory detection, and structured JSON reporting.
 - **ACDC Integration (4 tests in `test_acdc_integration.py`):** End-to-end integration testing against the actual 100-patient training dataset.
-- **EHR & Schemas (14 tests in `test_schemas.py`, `test_ehr_db.py`):** Pydantic clinical constraints ($ESV < EDV$, LVEF bounds, PEth risk tiers) and SQLite EHR persistence.
+- **EHR & Schemas (18 tests in `test_schemas.py`, `test_ehr_db.py`):** Pydantic clinical constraints ($ESV < EDV$, LVEF bounds, PEth risk tiers) and SQLite EHR persistence.
 - **Application Initialization (5 tests in `test_app_init.py`):** Syntax compilation, page navigation registration, disclaimer verification, and headless AppTest page rendering.
 
 ---

@@ -100,10 +100,27 @@ src/crip/
   - **Recovery Estimate**: Multimodal feature attribution design (PEth + genetics + CMR).
   - **Evaluation**: Calibration, discrimination, and subgroup metrics protocol.
 
-### 5. `crip.modeling` (Milestone 3+)
+### 5. `crip.synthetic.cohort_generator` & Literature Registry (Milestone 3A)
+- **Literature & Assumptions Registry (`docs/research/`)**:
+  - `literature_registry.csv`: 10 landmark studies detailing PEth kinetics (Ulwelling & Smith 2018), recovery rates after abstinence (Nicolas 2002, Fernández-Solà 2006, Fauchier 2000), Titin truncations (Ware et al. *NEJM* 2016), and replacement fibrosis (Gulati 2013, Halliday 2017).
+  - `synthetic_cohort_assumptions.md`: Clinical simulation rules distinguishing empirical priors from engineering modeling choices.
+- **Empirical MRI Grounding**:
+  - Extracts structural CMR distributions from the 20 ACDC DCM cases ($\mu_{\text{LVEF}} = 18.4\%$, $\mu_{\text{LVEDV}} = 284.6\text{ mL}$, $\mu_{\text{Mass}} = 170.2\text{ g}$) to ground simulated ventricular morphology.
+- **Non-Linear Recovery Modeling**:
+  - Experimental primary endpoint: Binary recovery = $1$ if $\Delta \text{LVEF} \ge 10.0$ percentage points at 6-month follow-up, else $0$.
+  - Multimodal reverse remodeling drivers: cessation of toxic exposure (+), replacement fibrosis (-), pathogenic TTNtv (-), severe baseline dilation (-), patient age (-).
+  - Stochastic Gaussian residual noise ($\sigma = 4.25\%$ points) ensuring non-trivial multimodal separability (all univariate ROC-AUCs $< 0.82$).
+- **Missingness Mechanisms**:
+  - Realistic missingness rates: PEth missing (4.4%), untested TTN genetics (18.0%), contraindicated LGE (10.6%), missing self-report alcohol history (7.1%).
+- **Variable-Level Provenance**:
+  - Explicit audit tracking for every parameter in every record (`variable_provenance`).
+- **SQLite EHR Cohort Persistence (`crip.ehr.db`)**:
+  - Automated schema migration, batch insertion, multi-criteria filtering, and cohort summaries.
+
+### 6. `crip.modeling` (Milestone 3B+)
 - Transparent tabular modeling (Scikit-learn ElasticNet / Random Forest) with SHAP attribution.
 
-### 6. `crip.evaluation` (Milestone 4+)
+### 7. `crip.evaluation` (Milestone 4+)
 - Empirical model calibration and validation on synthetic cohorts.
 
 ---
@@ -133,5 +150,6 @@ src/crip/
 | **Milestone 2A** | ACDC Ingestion & Display | **Completed** | ACDC loader, dataset inspection tool, side-by-side Streamlit visualization |
 | **Milestone 2B** | Cardiac Volumetrics | **Completed** | Biventricular metrics, cohort extraction pipeline, descriptive stats & plots |
 | **Milestone 2C** | Automated U-Net Segmentation | **Completed** | MONAI/PyTorch 2D U-Net pipeline, patient-level splits, Dice/HD95 & LVEF MAE evaluation, Streamlit automated mode |
-| **Milestone 3** | Interpretable Predictive Modeling | Queued | ElasticNet/Ensembles, SHAP feature attributions, recovery trajectories |
+| **Milestone 3A** | Literature-Grounded Multimodal Cohort | **Completed** | 3,000-patient synthetic cohort, ACDC DCM grounding, PEth/TTN/LGE integration, SQLite EHR filters, 104 tests |
+| **Milestone 3B** | Interpretable Predictive Modeling | Queued | ElasticNet/Ensembles, SHAP feature attributions, recovery trajectories |
 | **Milestone 4** | Model Calibration & Validation | Queued | Brier scores, ROC-AUC, subgroup fairness analysis, clinical reporting |
