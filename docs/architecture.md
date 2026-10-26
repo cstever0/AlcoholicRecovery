@@ -138,8 +138,21 @@ src/crip/
 - **`artifacts.py`**:
   - Serializes model pipelines, feature schemas, patient split manifests, and evaluation summaries to `models/recovery/`.
 
-### 7. `crip.evaluation` (Milestone 4+)
-- Empirical model calibration, subgroup fairness analysis, and clinical reporting protocols.
+### 7. `crip.integration` & Interoperability (Milestone 4)
+- **`provenance.py`**:
+  - Enforces explicit separation between real ACDC MRI and synthetic clinical records: generates `CRIP-SCENARIO-XXXX` hypothetical case identifiers and `CaseSourceType.CONSTRUCTED_MULTIMODAL_SCENARIO` metadata.
+- **`validation.py`**:
+  - Validates physical volumetric integrity ($ESV < EDV$, $SV > 0$, $EDV > 0$), biological bounds, PEth bounds, ACMG-AMP genetic tiers, and LGE extent limits before predictive modeling.
+- **`patient_features.py`**:
+  - Standard `UnifiedPatientProfile` generating the exact 20 whitelisted features in order for model consumption.
+- **`workflow.py`**:
+  - Orchestrates end-to-end processing: ACDC MRI ingestion $\to$ MONAI U-Net segmentation $\to$ biventricular volumetrics $\to$ multimodal fusion $\to$ physical validation $\to$ Scikit-learn recovery prediction $\to$ SHAP/log-odds attribution.
+- **`mock_fhir.py`**:
+  - Bidirectional HL7 FHIR R4 Bundle export and import with standard LOINC, SNOMED, and RadLex clinical ontologies; verified with 100% round-trip fidelity.
+- **`reporting.py`**:
+  - Generates publication-ready Markdown, HTML, and JSON research demonstration reports with prominent clinical research disclaimers.
+- **`demo_cases.py`**:
+  - Curated demonstration scenarios: Case A (favorable substrate, $P=99.6\%$), Case B (genetic/fibrotic substrate, $P=0.02\%$), and Case C (missing data handling via imputation, $P=80.9\%$).
 
 ---
 
@@ -170,4 +183,4 @@ src/crip/
 | **Milestone 2C** | Automated U-Net Segmentation | **Completed** | MONAI/PyTorch 2D U-Net pipeline, patient-level splits, Dice/HD95 & LVEF MAE evaluation, Streamlit automated mode |
 | **Milestone 3A** | Literature-Grounded Multimodal Cohort | **Completed** | 3,000-patient synthetic cohort, ACDC DCM grounding, PEth/TTN/LGE integration, SQLite EHR filters, 104 tests |
 | **Milestone 3B** | Interpretable Predictive Modeling | **Completed** | Logistic Regression/RF pipelines, feature ablations, test ROC-AUC 0.957, SHAP & log-odds attributions, scenario explorer, 129 tests |
-| **Milestone 4** | Model Calibration & Validation | Queued | Brier scores, ROC-AUC, subgroup fairness analysis, clinical reporting |
+| **Milestone 4** | Final Integration & Mock FHIR Interoperability | **Completed** | Unified patient feature layer, end-to-end workflow, mock HL7 FHIR R4 export/import, research reporting, 3 demo scenarios, clinical audit, 152 tests |

@@ -134,11 +134,15 @@ def explain_patient_prediction(
 
         # Only include non-zero or notable contributions
         if abs(contrib) > 0.001:
+            odds_ratio_val = round(float(np.exp(weight)), 4)
+            contrib_val = round(float(contrib), 4)
             feature_attributions.append({
                 "feature": clean_name,
                 "raw_value": round(float(raw_val), 4),
                 "weight": round(float(weight), 4),
-                "contribution_log_odds": round(float(contrib), 4),
+                "odds_ratio": odds_ratio_val,
+                "attribution": contrib_val,
+                "contribution_log_odds": contrib_val,
                 "direction": "Promotes Recovery" if contrib > 0 else "Inhibits Recovery",
             })
 

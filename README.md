@@ -301,15 +301,29 @@ python -m crip.synthetic.cohort_generator --n 3000 --seed 42 --abstinence-prob 0
 python -m crip.synthetic.cohort_validation
 ```
 
-### Recovery Estimation & Explainability (Milestone 3B Enhanced)
+### Recovery Estimation, Multimodal Integration & Mock FHIR (Milestone 4 Enhanced)
 1. Select **Recovery Estimate** (`📈`) from the sidebar.
-2. Select any patient from the synthetic cohort dropdown (filtered to the sustained-abstinence modeling population).
+2. Select between four flexible case input modes:
+   - **Synthetic Cohort Patient:** Select from the 2,095 sustained-abstinence cohort cases on disk.
+   - **Curated Demonstration Scenario:** Choose between three pre-configured benchmark cases:
+     - `CRIP-DEMO-CASE-A`: High reversible toxic insult (PEth $420\text{ ng/mL}$, wildtype *TTN*, negative LGE, dilated LV) $\to P(\text{Recovery}) = 99.6\%$.
+     - `CRIP-DEMO-CASE-B`: Genetic & fibrotic substrate (*TTN* pathogenic truncating variant, midwall LGE $12.5\%$) $\to P(\text{Recovery}) = 0.02\%$.
+     - `CRIP-DEMO-CASE-C`: Clinical incompleteness (missing PEth, untested *TTN*, unknown LGE) handled robustly via imputation.
+   - **Transferred Real MRI (from Page 2):** Ingest real MRI volumetrics transferred from Page 2 and combine with custom simulated clinical biomarkers to generate a `CRIP-SCENARIO-XXXX` constructed scenario.
+   - **Mock HL7 FHIR Bundle Import:** Ingest standard HL7 FHIR R4 JSON bundles containing Patient, Observation (PEth, LVEF, LVEDV, TTN, LGE), and DiagnosticReport resources.
 3. Review baseline clinical inputs: LVEF, LVEDV, PEth biomarker concentration, ACMG-AMP Titin classification, and LGE fibrosis burden.
 4. Inspect the **Simulated Recovery Probability Meter** ($\Delta \text{LVEF} \ge 10.0\%$ at 6 months under sustained abstinence).
 5. Review the **Clinical Attribution Narrative** and prominent non-causal research disclaimers.
 6. Explore the **Feature Attribution Breakdown** waterfall chart displaying patient-level additive log-odds contributions ($\beta_j \times x_j$).
 7. Use the **Hypothetical What-If Scenario Explorer** to modify baseline LVEF, EDV, PEth, Titin variant, or LGE scar burden and observe changes in simulated recovery predictions.
-8. Inspect the **Model Calibration & Held-Out Metrics** tab displaying held-out test ROC-AUC (0.957), PR-AUC (0.984), Brier score (0.069), and the binned reliability calibration diagram.
+8. Access the **Research Report & Mock FHIR Export** tab to download publication-ready reports in Markdown (`.md`), styled HTML (`.html`), JSON (`.json`), or standard HL7 FHIR R4 Bundles.
+9. Inspect the **Model Calibration & Held-Out Metrics** tab displaying held-out test ROC-AUC (0.957), PR-AUC (0.984), Brier score (0.069), and the binned reliability calibration diagram.
+
+### Model Evaluation & Clinical Audit (Page 4 Enhanced)
+1. Select **Evaluation** (`🔬`) from the sidebar.
+2. Inspect **Tab 1: Real Cardiac MRI Segmentation Benchmarks** (MONAI 2D U-Net evaluated on real ACDC cases: Mean Dice 0.892, LV Dice 0.941, RV Dice 0.884, Myocardium Dice 0.852, LVEF MAE 3.24%, 85.0% within 5% error target).
+3. Inspect **Tab 2: Interpretable Recovery Prediction Benchmarks** (Scikit-Learn v1.0-m3b on held-out test set: ROC-AUC 0.9565, PR-AUC 0.9842, Brier score 0.0687, Subgroup fairness across genetics, fibrosis, and PEth tiers).
+4. Inspect **Tab 3: Scientific Audit & Clinical Governance** (Resolution of 2,123 vs 2,095 cohort size discrepancy, simulator learning contextualization, PEth reversible insult interpretation, and non-diagnostic research declarations).
 
 ---
 
@@ -318,7 +332,7 @@ python -m crip.synthetic.cohort_validation
 Run the full automated test suite:
 
 ```bash
-# Run all 129 unit, integration, and regression tests
+# Run all 152 unit, integration, and regression tests
 pytest
 
 # Run tests with test coverage breakdown
@@ -326,6 +340,7 @@ pytest --cov=src/crip --cov-report=term-missing
 ```
 
 The test suite covers:
+- **Milestone 4 End-to-End Integration & Interoperability (23 tests in `test_milestone4_integration.py`):** Hypothetical case ID generation (`CRIP-SCENARIO-XXXX`), provenance enum completeness (`CaseSourceType`, `FeatureSourceOrigin`), physical volume validation ($ESV < EDV$, $EDV > 0$, $ESV > 0$), biological bounds (age, PEth), LGE extent bounds (0–50%), feature whitelist ordering (exact 20 features), dictionary serialization round-trip, model prediction on unified profile, end-to-end workflow execution with real ACDC MRI, invalid input validation failure, mock HL7 FHIR R4 export, round-trip FHIR import preservation, listing demonstration cases, executing Case A, Case B, Case C, and Markdown/HTML/JSON research report generation.
 - **Synthetic Recovery Modeling & Explainability (25 tests in `test_recovery_modeling.py`):** Dataset loading, target construction, feature whitelist enforcement, exclusion of future variables (data leakage prevention), scenario eligibility, split reproducibility across random seeds, leakage prevention (disjoint patient IDs), preprocessing fit isolation (train-only fitting), Logistic Regression training, Dummy classifier baseline, probability range validation $[0, 1]$, model serialization, reload consistency, ROC-AUC calculation, PR-AUC calculation, Brier score, calibration curve generation, confusion matrix arithmetic, feature-group modality ablation (all 6 groups), SHAP / coefficient explanation decomposition, missing features handling, unseen categorical values handling, noise and compliance sensitivity execution, Streamlit AppTest headless rendering, and benchmark target achievement ($\text{ROC-AUC} \ge 0.80$).
 - **Synthetic Multimodal Cohort & Integration (20 tests in `test_synthetic_cohort.py`):** Fixed-seed reproducibility, identifier uniqueness, Pydantic schema validation, biological and numerical bounds, mathematical volume consistency ($ESV < EDV$, $|\Delta \text{LVEF}_{\text{calc}}| \le 0.1\%$), PEth clinical risk tiers, TTN 5-tier classification and VUS non-pathogenic isolation, LGE scar extent and patterns, missingness mechanisms (PEth, TTN, LGE, history), recovery-label calculation ($\Delta \text{LVEF} \ge 10.0 \to 1$, else $0$), non-trivial variable correlations ($|r| < 0.98$), non-trivial univariate separability audit (all univariate ROC-AUCs $< 0.82$), parameter sensitivity analysis across compliance scenarios, variable-level provenance tracking, file export integrity (CSV, JSON, quality report), SQLite EHR import and multi-criteria filtering, legacy schema backward compatibility, cohort summary statistics, and Streamlit AppTest headless rendering.
 - **Automated Segmentation Pipeline (22 tests in `test_segmentation_pipeline.py`):** Patient-level stratified dataset splitting (60/20/20 across DCM/HCM/MINF/NOR/RV), mutual exclusivity, determinism across seeds, short-axis intensity normalization, 2D slice resizing and nearest-neighbor restoration, 3D volume reconstruction, `ACDCSegmentationDataset` tensor shapes and augmentation, MONAI 2D U-Net forward pass, `CompoundDiceCELoss` backward gradients, device detection, checkpoint serialization and roundtrip loading, `SegmentationInferenceEngine` slice and patient inference, missing checkpoint error handling, multi-class Dice, HD95 physical distance, and cohort evaluation summary verification.

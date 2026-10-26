@@ -260,6 +260,33 @@ def render_page() -> None:
     with m_mass_col3:
         st.metric("Physical Voxel Spacing", f"{ed_frame.voxel_spacing[0]:.2f} × {ed_frame.voxel_spacing[1]:.2f} × {ed_frame.voxel_spacing[2]:.2f} mm")
 
+    # Transfer to Recovery Predictor Workflow Action
+    st.markdown("---")
+    t_col1, t_col2 = st.columns([3, 1])
+    with t_col1:
+        st.markdown(
+            "💡 **Multimodal Integration:** Transfer these calculated MRI volumetric parameters "
+            "directly to the Recovery Predictor (Page 3) to construct an integrated research demonstration scenario."
+        )
+    with t_col2:
+        if st.button("🚀 Transfer to Recovery Predictor", key="transfer_mri_btn", use_container_width=True):
+            st.session_state["transferred_mri_features"] = {
+                "acdc_patient_id": selected_patient_id,
+                "mri_method": "MONAI_2D_UNET_AUTOMATED" if is_auto_mode else "EXPERT_GROUND_TRUTH_MASK",
+                "edv_ml": float(display_lvedv),
+                "esv_ml": float(display_lvesv),
+                "stroke_volume_ml": float(display_lvsv),
+                "baseline_lvef": float(display_lvef),
+                "rvedv_ml": float(display_rvedv),
+                "rvef_percent": float(display_rvef),
+                "myocardial_mass_g": float(display_myo_mass),
+                "diagnostic_group": metadata.group,
+            }
+            st.success(
+                f"✅ Transferred {selected_patient_id} metrics (LVEF: {display_lvef:.1f}%, EDV: {display_lvedv:.1f} mL) "
+                "to Recovery Predictor! Navigate to Page 3 to combine with clinical biomarkers."
+            )
+
     # If Automated Mode is Active, show Direct Model vs. Expert Comparison
     if is_auto_mode and auto_result and expert_measurements:
         lvef_error = auto_result.pred_metrics.lvef_percent - expert_measurements.lvef_percent
