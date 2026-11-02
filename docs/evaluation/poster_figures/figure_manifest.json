@@ -1,0 +1,145 @@
+{
+  "title": "CRIP Academic Poster Figure Inventory & Manifest",
+  "timestamp": "2026-11-02",
+  "total_figures": 8,
+  "figures": [
+    {
+      "figure_id": "fig1_segmentation_dice",
+      "title": "U-Net Segmentation Dice Similarity by Structure",
+      "description": "Multi-class S\u00f8rensen-Dice similarity coefficient distributions for LV cavity, RV cavity, and myocardium on 20 held-out ACDC test scans (4 DCM, 4 HCM, 4 MINF, 4 NOR, 4 RV).",
+      "source_data": "data/processed/acdc/segmentation_evaluation.csv",
+      "sample_size": 20,
+      "files": {
+        "png": "docs/evaluation/poster_figures/fig1_segmentation_dice_by_structure.png",
+        "svg": "docs/evaluation/poster_figures/fig1_segmentation_dice_by_structure.svg",
+        "pdf": "docs/evaluation/poster_figures/fig1_segmentation_dice_by_structure.pdf"
+      },
+      "metrics": {
+        "dice_lv_mean": 0.906,
+        "dice_rv_mean": 0.807,
+        "dice_myo_mean": 0.804
+      }
+    },
+    {
+      "figure_id": "fig2_hd95_distance",
+      "title": "95th-Percentile Hausdorff Distance by Structure",
+      "description": "Spatial contour boundary distance error (HD95 in millimeters) across cardiac chambers at End-Diastole on 20 held-out ACDC test scans (4 DCM, 4 HCM, 4 MINF, 4 NOR, 4 RV).",
+      "source_data": "data/processed/acdc/segmentation_evaluation.csv",
+      "sample_size": 20,
+      "files": {
+        "png": "docs/evaluation/poster_figures/fig2_hd95_by_structure.png",
+        "svg": "docs/evaluation/poster_figures/fig2_hd95_by_structure.svg",
+        "pdf": "docs/evaluation/poster_figures/fig2_hd95_by_structure.pdf"
+      },
+      "metrics": {
+        "lv_hd95_ed_median_mm": 2.91,
+        "rv_hd95_ed_median_mm": 7.16,
+        "myo_hd95_ed_median_mm": 4.94
+      }
+    },
+    {
+      "figure_id": "fig3_scatter_lvef",
+      "title": "Predicted vs. Reference LVEF Scatter Plot",
+      "description": "Correlation and agreement between 2D U-Net predicted LVEF and expert ground-truth annotations with y=x identity line and SCMR 5% envelope (20 held-out test scans: 4 DCM, 4 HCM, 4 MINF, 4 NOR, 4 RV).",
+      "source_data": "data/processed/acdc/segmentation_evaluation.csv",
+      "sample_size": 20,
+      "files": {
+        "png": "docs/evaluation/poster_figures/fig3_predicted_vs_reference_lvef.png",
+        "svg": "docs/evaluation/poster_figures/fig3_predicted_vs_reference_lvef.svg",
+        "pdf": "docs/evaluation/poster_figures/fig3_predicted_vs_reference_lvef.pdf"
+      },
+      "metrics": {
+        "lvef_mae_pct": 3.8595355446888133,
+        "lvef_rmse_pct": 4.994155667602557,
+        "pearson_r": 0.9737532067090082,
+        "pct_within_5pct": 75.0
+      }
+    },
+    {
+      "figure_id": "fig4_ba_lvef",
+      "title": "Bland-Altman Agreement: LVEF",
+      "description": "Bland-Altman difference plot for Left Ventricular Ejection Fraction showing mean bias (-0.55 %-pts), 95% limits of agreement [-10.53, +9.43], and 95% confidence intervals on 20 held-out ACDC test scans (4 DCM, 4 HCM, 4 MINF, 4 NOR, 4 RV).",
+      "source_data": "data/processed/acdc/segmentation_evaluation.csv",
+      "sample_size": 20,
+      "files": {
+        "png": "docs/evaluation/poster_figures/fig4_bland_altman_lvef.png",
+        "svg": "docs/evaluation/poster_figures/fig4_bland_altman_lvef.svg",
+        "pdf": "docs/evaluation/poster_figures/fig4_bland_altman_lvef.pdf"
+      },
+      "metrics": {
+        "mean_bias_pct": -0.5489002102496405,
+        "sd_diff_pct": 5.092853547289745,
+        "lower_loa_pct": -10.530893162937542,
+        "upper_loa_pct": 9.433092742438259
+      }
+    },
+    {
+      "figure_id": "fig5_ba_lvedv",
+      "title": "Bland-Altman Agreement: LVEDV",
+      "description": "Bland-Altman difference plot for Left Ventricular End-Diastolic Volume showing mean bias (+2.13 mL) and limits of agreement [-15.73, +19.99] mL on 20 held-out ACDC test scans (4 DCM, 4 HCM, 4 MINF, 4 NOR, 4 RV).",
+      "source_data": "data/processed/acdc/segmentation_evaluation.csv",
+      "sample_size": 20,
+      "files": {
+        "png": "docs/evaluation/poster_figures/fig5_bland_altman_lvedv.png",
+        "svg": "docs/evaluation/poster_figures/fig5_bland_altman_lvedv.svg",
+        "pdf": "docs/evaluation/poster_figures/fig5_bland_altman_lvedv.pdf"
+      },
+      "metrics": {
+        "mean_bias_ml": 2.1312152633948167,
+        "sd_diff_ml": 9.113162375947654,
+        "lower_loa_ml": -15.730582993462585,
+        "upper_loa_ml": 19.99301352025222
+      }
+    },
+    {
+      "figure_id": "fig6_ba_lvesv",
+      "title": "Bland-Altman Agreement: LVESV",
+      "description": "Bland-Altman difference plot for Left Ventricular End-Systolic Volume showing mean bias (+2.35 mL) and limits of agreement [-13.07, +17.77] mL on 20 held-out ACDC test scans (4 DCM, 4 HCM, 4 MINF, 4 NOR, 4 RV).",
+      "source_data": "data/processed/acdc/segmentation_evaluation.csv",
+      "sample_size": 20,
+      "files": {
+        "png": "docs/evaluation/poster_figures/fig6_bland_altman_lvesv.png",
+        "svg": "docs/evaluation/poster_figures/fig6_bland_altman_lvesv.svg",
+        "pdf": "docs/evaluation/poster_figures/fig6_bland_altman_lvesv.pdf"
+      },
+      "metrics": {
+        "mean_bias_ml": 2.3512795642576405,
+        "sd_diff_ml": 7.867997206722139,
+        "lower_loa_ml": -13.06999496091775,
+        "upper_loa_ml": 17.772554089433033
+      }
+    },
+    {
+      "figure_id": "fig7_recovery_roc",
+      "title": "Recovery Prediction: ROC Comparison",
+      "description": "Receiver Operating Characteristic curves comparing Logistic Regression (AUC = 0.9565) against Random Forest (AUC = 0.9310) on synthetic test data.",
+      "source_data": "data/processed/recovery_model_comparison.json",
+      "sample_size": 419,
+      "files": {
+        "png": "docs/evaluation/poster_figures/fig7_recovery_model_roc_comparison.png",
+        "svg": "docs/evaluation/poster_figures/fig7_recovery_model_roc_comparison.svg",
+        "pdf": "docs/evaluation/poster_figures/fig7_recovery_model_roc_comparison.pdf"
+      },
+      "metrics": {
+        "lr_roc_auc": 0.9565,
+        "rf_roc_auc": 0.931
+      }
+    },
+    {
+      "figure_id": "fig8_recovery_calibration",
+      "title": "Recovery Prediction: Reliability Calibration",
+      "description": "Reliability calibration curves evaluating predicted probability accuracy against observed event frequencies for Logistic Regression and Random Forest.",
+      "source_data": "data/processed/recovery_model_comparison.json",
+      "sample_size": 419,
+      "files": {
+        "png": "docs/evaluation/poster_figures/fig8_recovery_model_calibration.png",
+        "svg": "docs/evaluation/poster_figures/fig8_recovery_model_calibration.svg",
+        "pdf": "docs/evaluation/poster_figures/fig8_recovery_model_calibration.pdf"
+      },
+      "metrics": {
+        "lr_brier_score": 0.0694,
+        "rf_brier_score": 0.093
+      }
+    }
+  ]
+}

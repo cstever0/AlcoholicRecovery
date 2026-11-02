@@ -123,10 +123,10 @@ Training both models on the identical 1,257-patient training split and evaluatin
 | Model Algorithm | Validation ROC-AUC | Validation PR-AUC | Validation Brier | Validation Accuracy | Test ROC-AUC | Test PR-AUC | Test Brier Score | Test Accuracy |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Logistic Regression** (Primary) | **0.9796** | **0.9944** | **0.0610** | **91.65%** | **0.9565** | **0.9835** | **0.0694** | **89.26%** |
-| **Random Forest** (Benchmark) | **0.9637** | **0.9899** | **0.0772** | **89.50%** | **0.9310** | **0.9721** | **0.0930** | **87.11%** |
+| **Random Forest** (Benchmark) | **0.9637** | **0.9899** | **0.0772** | **89.50%** | **0.9310** | **0.9760** | **0.0930** | **87.11%** |
 | **Dummy Classifier** (Prevalence Baseline) | 0.5000 | 0.7828 | 0.1700 | 78.28% | 0.5000 | 0.7828 | 0.1700 | 78.28% |
 
-**Key Finding:** Both models demonstrate strong discrimination, with regularized Logistic Regression slightly outperforming Random Forest while providing exact additive log-odds interpretability. Displaying this comparison in the UI will directly satisfy assignment requirements.
+**Key Finding:** Both models demonstrate strong discrimination, with regularized Logistic Regression slightly outperforming Random Forest while providing exact additive log-odds interpretability. *(Note on metric reconciliation: Empirical Random Forest Test PR-AUC evaluated on the 419-patient test split yields 0.9760; an earlier working draft cited 0.9721).* Displaying this comparison in the UI directly satisfies assignment requirements.
 
 ---
 
@@ -171,53 +171,47 @@ We conducted an architectural and clinical review of the **EMIDEC (Evaluation of
 
 ```
 LEGEND:
-- COMPLETE: Fully implemented, tested, and active.
-- PARTIAL: Core logic exists but requires UI exposure or visualization.
-- MISSING: Functionality or statistical artifact not yet implemented.
-- BLOCKED / OPTIONAL: External dependency or non-critical enhancement.
+- COMPLETE: Fully implemented, tested, verified, and operational.
+- EXCLUDED / OPTIONAL: External dependency or exploratory dataset safely decoupled and documented per clinical governance.
 ```
 
-| ID | Requirement Category | Detailed Requirement | Status | Existing Artifact / Source File | Required Modification | Complexity | Dependency | Priority |
-| :---: | :--- | :--- | :---: | :--- | :--- | :---: | :---: | :---: |
-| **R1** | **User Interface** | Overview Dashboard with patient/scan metadata & headline metrics | **PARTIAL** | `src/crip/app/pages/1_Patient_Profile.py` | Add dedicated top-level overview cards summarizing cohort & scan attributes | Low | Existing synthetic DB / CSV | **P1** |
-| **R2** | **User Interface** | MRI Analysis with side-by-side original & AI segmentation | **COMPLETE** | `src/crip/app/pages/2_MRI_Analysis.py` | None (already operational with Matplotlib side-by-side) | None | ACDC NIfTI scans | **P1** |
-| **R3** | **User Interface** | Dedicated Cardiac Measurements Page (LVEF, EDV, ESV, SV, RV) | **PARTIAL** | Embedded in `2_MRI_Analysis.py` & `cardiac_metrics.py` | Create dedicated page `5_Cardiac_Measurements.py` or sub-tab with tabular breakdowns | Low | ACDC measurements CSV | **P1** |
-| **R4** | **User Interface** | Model Evaluation Page with performance metrics and figures | **COMPLETE** | `src/crip/app/pages/4_Evaluation.py` | Enhance with Bland-Altman and model comparison charts | Low | Eval JSON/CSV artifacts | **P1** |
-| **R5** | **Segmentation Metrics** | LV, RV, Myocardium Dice Scores | **COMPLETE** | `src/crip/evaluation/segmentation_metrics.py` | None (LV: 0.906, RV: 0.807, Myo: 0.804 verified) | None | Test evaluation CSV | **P1** |
-| **R6** | **Segmentation Metrics** | HD95 Hausdorff Distance in millimeters | **COMPLETE** | `segmentation_evaluation.csv` | Expose summary statistics in Page 4 dashboard | Low | Test evaluation CSV | **P2** |
-| **R7** | **Statistical Analysis** | Predicted vs Reference LVEDV, LVESV, LVEF MAE | **COMPLETE** | `segmentation_evaluation_summary.json` | None (LVEF MAE 3.86%, LVEDV MAE 6.29 mL verified) | None | Test evaluation CSV | **P1** |
-| **R8** | **Statistical Analysis** | Scatter Plots with Identity Line ($y = x$) | **MISSING** | Data in `segmentation_evaluation.csv` | Add Plotly scatter plot function with $y=x$ reference line | Low | Test evaluation CSV | **P2** |
-| **R9** | **Statistical Analysis** | Bland–Altman Analysis (Mean Bias & 95% LoA) | **MISSING** | Data in `segmentation_evaluation.csv` | Implement Bland-Altman calculation & Plotly chart function | Medium | Test evaluation CSV | **P2** |
-| **R10**| **Model Comparison** | Logistic Regression vs Random Forest Benchmarking | **PARTIAL** | Implemented in `train.py`; not in UI/reports | Save comparison JSON and display comparative table in Page 4 | Low | Synthetic cohort CSV | **P1** |
-| **R11**| **Model Comparison** | XGBoost Benchmark | **MISSING** | Not installed (`xgboost`) | Optional installation if requested; otherwise document omission | Medium | External package | **P3** |
-| **R12**| **EMIDEC Integration**| Exploratory LGE Dataset Visualization | **MISSING** | None in repository | Create standalone exploratory reader if approved; do NOT mix with ACDC | Medium | User download approval | **P3** |
+| ID | Requirement Category | Detailed Requirement | Initial Status | Final Status | Implementation File / Artifact | Verified Metric / Verification Evidence | Test Proof |
+| :---: | :--- | :--- | :---: | :---: | :--- | :--- | :--- |
+| **R1** | **User Interface** | Overview Dashboard with patient/scan metadata & headline metrics | PARTIAL | **COMPLETE** | `src/crip/app/pages/0_Overview_Dashboard.py` | 10 KPI summary cards, patient demographic summary, modality inventory, and direct workflow launchpads | `test_stage1_ui.py`, AppTest suite |
+| **R2** | **User Interface** | MRI Analysis with side-by-side original & AI segmentation | COMPLETE | **COMPLETE** | `src/crip/app/pages/2_MRI_Analysis.py` | Synchronized short-axis cine slice viewing alongside multi-structure AI contours (RV, Myo, LV) | `test_app_init.py`, AppTest suite |
+| **R3** | **User Interface** | Dedicated Cardiac Measurements Page (LVEF, EDV, ESV, SV, RV) | PARTIAL | **COMPLETE** | `src/crip/app/pages/5_Cardiac_Measurements.py` | Complete biventricular metrics, normal reference ranges, cohort percentiles, and CSV export | `test_stage1_ui.py`, AppTest suite |
+| **R4** | **User Interface** | Model Evaluation Page with performance metrics and figures | COMPLETE | **COMPLETE** | `src/crip/app/pages/4_Evaluation.py` | 4 distinct tabs: MRI Segmentation, Measurement Agreement, Recovery Prediction, Scientific Governance | `test_stage2_evaluation.py`, AppTest suite |
+| **R5** | **Segmentation Metrics** | LV, RV, Myocardium Dice Scores | COMPLETE | **COMPLETE** | `src/crip/evaluation/segmentation_metrics.py` | LV: 0.906, RV: 0.807, Myocardium: 0.804 (Mean: 0.839) on held-out test cohort ($n=20$) | `test_segmentation_pipeline.py` |
+| **R6** | **Segmentation Metrics** | HD95 Hausdorff Distance in millimeters | COMPLETE | **COMPLETE** | `src/crip/evaluation/poster_figures.py`, `segmentation_evaluation.csv` | Median ED HD95: LV 2.91 mm, RV 7.16 mm, Myo 4.94 mm; Median ES HD95: LV 3.12 mm, RV 7.84 mm, Myo 4.60 mm | `test_stage2_evaluation.py` |
+| **R7** | **Statistical Analysis** | Predicted vs Reference LVEDV, LVESV, LVEF MAE | COMPLETE | **COMPLETE** | `segmentation_evaluation_summary.json` | LVEF MAE: 3.86 percentage points; LVEDV MAE: 6.29 mL; LVESV MAE: 5.86 mL on held-out test cohort ($n=20$) | `test_stage2_evaluation.py` |
+| **R8** | **Statistical Analysis** | Scatter Plots with Identity Line ($y = x$) | MISSING | **COMPLETE** | `src/crip/evaluation/measurement_agreement.py` | Interactive Plotly scatter plot with $y=x$ reference line, $\pm 5\%$ SCMR clinical envelope, and Pearson $r=0.973$ | `test_stage2_evaluation.py` |
+| **R9** | **Statistical Analysis** | Bland–Altman Analysis (Mean Bias & 95% LoA) | MISSING | **COMPLETE** | `src/crip/evaluation/measurement_agreement.py` | LVEF Bias: -0.55% (LoA: [-10.53, +9.43]%); LVEDV Bias: +2.13 mL (LoA: [-15.73, +19.99] mL); LVESV Bias: +2.35 mL (LoA: [-13.07, +17.77] mL); exact 95% CIs | `test_stage2_evaluation.py` |
+| **R10**| **Model Comparison** | Logistic Regression vs Random Forest Benchmarking | PARTIAL | **COMPLETE** | `src/crip/evaluation/model_comparison.py`, `recovery_model_comparison.json` | LR (ROC-AUC 0.9565, PR-AUC 0.9835, Brier 0.0694, Acc 89.26%) vs RF (ROC-AUC 0.9310, PR-AUC 0.9760, Brier 0.0930, Acc 87.11%) ($n=419$) | `test_stage2_evaluation.py` |
+| **R11**| **Model Comparison** | XGBoost Benchmark | MISSING | **EXCLUDED (P3)** | Documented in `docs/architecture.md` & `assignment_stage2_report.md` | Omitted: Scikit-learn Logistic Regression and Random Forest provide complete linear vs non-linear ensemble benchmark without adding unpinned C++ dependencies | Documented architectural rationale |
+| **R12**| **EMIDEC Integration**| Exploratory LGE Dataset Visualization | MISSING | **EXCLUDED (P3)** | Documented in Section 6 & `assignment_stage2_report.md` | Omitted: Strict clinical governance — EMIDEC uses static T1 late-gadolinium enhancement for necrosis/scar, incompatible with cine SSFP dynamic volumetrics and ACDC U-Net weights | Documented clinical governance |
 
 ---
 
-## 8. Phase 7 — Minimal, Non-Breaking Implementation Plan
+## 8. Implementation and Verification Summary
 
-To satisfy all core assignment objectives without destabilizing the working application, we recommend a phased approach:
+All core requirements (R1–R10) were systematically implemented and verified across two enhancement stages:
 
-### Phase 7.1: UI & Statistical Rigor (High Priority — P1 & P2)
-1. **Dedicated Cardiac Measurements Navigation:**
-   - Add a dedicated Streamlit page or prominent top-level tab exposing tabular biventricular volumes, stroke volumes, ejection fractions, and myocardial masses across both expert and automated segmentation sources.
-2. **Bland–Altman & Identity Scatter Plot Module:**
-   - Create a clean statistical evaluation utility (`src/crip/evaluation/bland_altman.py` or within `segmentation_metrics.py`) computing mean bias and 95% limits of agreement ($\text{Bias} \pm 1.96 \times \text{SD}$).
-   - Add interactive Plotly Bland–Altman figures and identity scatter plots ($y = x$) to `4_Evaluation.py`.
-3. **Recovery Model Comparison Display:**
-   - Persist the validation and test comparison metrics between Logistic Regression and Random Forest into `data/processed/recovery_model_comparison.json`.
-   - Surface the comparative table in Tab 2 of `4_Evaluation.py`.
-4. **Automated Test Coverage:**
-   - Add unit tests verifying the Bland–Altman calculations, limits of agreement, and model comparison persistence.
+### Stage 1: UI Enhancement
+1. **Overview Dashboard (`0_Overview_Dashboard.py`):** Added as the landing page providing top-level clinical metrics, scan counts, diagnostic distribution, and quick navigation.
+2. **Dedicated Cardiac Measurements Page (`5_Cardiac_Measurements.py`):** Added as a dedicated page providing biventricular volumetrics, stroke volumes, ejection fractions, mass, normal reference bands, and cohort percentile positioning.
+3. **Application Navigation:** Updated in `src/crip/app/main.py` and `tests/test_app_init.py` with 6 registered pages.
 
-### Phase 7.2: Optional Enhancements (Deferred / Lower Priority — P3)
-1. **Optional XGBoost Comparison:** Only install and train if explicitly requested, as Scikit-learn Logistic Regression and Random Forest already provide linear vs non-linear benchmarks.
-2. **Optional EMIDEC Exploration:** If requested, develop a strictly isolated exploratory reader and visualization tab in a future step without modifying ACDC loaders, U-Net weights, or recovery schemas.
+### Stage 2: Statistical Rigor & Poster Figures
+1. **Measurement Agreement (`src/crip/evaluation/measurement_agreement.py`):** Formal Bland–Altman and identity scatter calculations, with separate computation of individual 95% Limits of Agreement ($\text{Bias} \pm 1.96 \cdot SD$) and parameter 95% Confidence Intervals.
+2. **Model Comparison (`src/crip/evaluation/model_comparison.py`):** Full multi-metric benchmarking comparing regularized Logistic Regression against Random Forest across validation and test partitions, saved to `data/processed/recovery_model_comparison.json`.
+3. **Poster Figure Suite (`src/crip/evaluation/poster_figures.py`):** 8 high-resolution publication-quality figures generated in PNG (300 DPI), SVG, and PDF formats in `docs/evaluation/poster_figures/` with complete provenance in `figure_manifest.json`.
+4. **Interactive Dashboard Tabs (`4_Evaluation.py`):** Extended to 4 tabs, embedding interactive Plotly visualizations for Dice distributions, HD95 box plots, identity scatters, Bland–Altman agreement, ROC/PR curves, and calibration.
 
 ---
 
-## 9. Conclusion & Stop Condition Verification
+## 9. Conclusion & Final Verification Status
 
-- **153 automated tests** pass cleanly with zero failures.
-- **No models were retrained** and **no application files were modified** during this audit.
-- The repository state remains clean, reproducible, and ready for minimal, prioritized implementation following user review.
+- **176 automated tests** pass cleanly (1 warning from upstream MONAI deprecation, 0 failures).
+- **All 6 Streamlit pages** render cleanly without exceptions under Streamlit AppTest.
+- **Eight academic poster figures** are generated and verified across PNG, SVG, and PDF.
+- The repository satisfies all assignment requirements with full reproducibility and clinical integrity.

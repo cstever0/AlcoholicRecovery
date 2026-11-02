@@ -154,6 +154,21 @@ src/crip/
 - **`demo_cases.py`**:
   - Curated demonstration scenarios: Case A (favorable substrate, $P=99.6\%$), Case B (genetic/fibrotic substrate, $P=0.02\%$), and Case C (missing data handling via imputation, $P=80.9\%$).
 
+### 8. `crip.evaluation` & Statistical Analysis (Stages 1 & 2)
+- **`measurement_agreement.py`**:
+  - Implements formal biostatistical method comparison (Bland & Altman, *Lancet 1986*, *Stat Methods Med Res 1999*).
+  - Mean signed bias ($\bar{d}$), sample standard deviation with $ddof=1$, and 95% Limits of Agreement ($\bar{d} \pm 1.96 \cdot s$).
+  - Standard errors and 95% Confidence Intervals for bias and LoA: $SE(\bar{d}) = \frac{s}{\sqrt{n}}$, $SE(\text{LoA}) = \sqrt{\frac{3s^2}{n}}$.
+  - Identity scatter plots ($y = x$) with $\pm 5.0\%$ error tolerance envelopes and patient hover annotations.
+  - 95th-percentile Hausdorff distance (HD95 mm) spatial summary across LV, RV, and Myocardium at End-Diastole and End-Systole.
+- **`model_comparison.py`**:
+  - Evaluates Logistic Regression against non-linear Random Forest on the identical 419-case held-out synthetic test set.
+  - Generates unified comparison tables: ROC-AUC (0.9565 vs 0.9310), PR-AUC (0.9835 vs 0.9760), Brier score (0.0694 vs 0.0930), Accuracy (89.3% vs 87.1%), Sensitivity, Specificity, Precision, F1.
+  - Interactive Plotly comparative ROC curves, PR curves with prevalence baseline (78.3%), 10-bin calibration curves, and confusion matrix heatmaps.
+- **`poster_figures.py`**:
+  - Standalone, reproducible generator exporting 8 publication-ready 300-DPI figures in PNG, SVG, and PDF formats to `docs/evaluation/poster_figures/`.
+  - Machine-readable JSON manifest (`figure_manifest.json`) cataloging figure metadata, source datasets, sample sizes, and quantitative benchmarks.
+
 ---
 
 ## Critical Methodology & Validation Distinctions
@@ -184,3 +199,5 @@ src/crip/
 | **Milestone 3A** | Literature-Grounded Multimodal Cohort | **Completed** | 3,000-patient synthetic cohort, ACDC DCM grounding, PEth/TTN/LGE integration, SQLite EHR filters, 104 tests |
 | **Milestone 3B** | Interpretable Predictive Modeling | **Completed** | Logistic Regression/RF pipelines, feature ablations, test ROC-AUC 0.957, SHAP & log-odds attributions, scenario explorer, 129 tests |
 | **Milestone 4** | Final Integration & Mock FHIR Interoperability | **Completed** | Unified patient feature layer, end-to-end workflow, mock HL7 FHIR R4 export/import, research reporting, 3 demo scenarios, clinical audit, 152 tests |
+| **Stage 1 Enhancement** | Consolidated Overview & Cardiac Measurements | **Completed** | 6-page navigation (`0_Overview_Dashboard.py`, `5_Cardiac_Measurements.py`), biventricular profiles, SCMR reference ranges, 161 tests |
+| **Stage 2 Enhancement** | Statistical Evaluation & Poster-Ready Figures | **Completed** | Bland–Altman agreement module, identity scatter plots, LR vs RF model comparison, 8 publication-grade poster figures (PNG/SVG/PDF), 176 tests |

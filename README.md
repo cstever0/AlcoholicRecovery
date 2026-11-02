@@ -111,8 +111,10 @@ records. Never utilize CRIP outputs to guide patient care or medical decision-ma
 - **Literature-Grounded Synthetic Clinical Database:** 3,000-subject synthetic multimodal database adhering to strict Pydantic clinical constraints ($ESV < EDV$, PEth risk bands, ACMG-AMP Titin classification).
 - **Interpretable Machine Learning:** Scikit-learn recovery classification pipeline (`v1.0-m3b`) with exact additive log-odds decompositions ($\beta_j \times x_j$) and SHAP interpretability.
 - **Interactive Multi-Page Streamlit Interface:** Modern 6-page UI covering platform overview, patient exploration, cine MRI segmentation inspection, dedicated biventricular cardiac measurements, multimodal recovery estimation, and scientific model evaluation.
+- **Statistical Method Comparison & Bland–Altman Analysis:** Formal measurement agreement module (`crip.evaluation.measurement_agreement`) calculating mean bias, 95% limits of agreement, standard errors, and confidence intervals alongside interactive identity-line scatter plots ($y = x$).
+- **Poster-Ready Figures & Artifacts:** Standalone generator exporting 8 publication-quality 300-DPI exhibits (PNG, SVG, PDF) with full provenance manifest.
 - **Mock HL7 FHIR R4 Interoperability:** Bidirectional export, import, and schema validation of standard FHIR R4 bundles covering `Patient`, `Observation` (LOINC-coded), and `DiagnosticReport` resources.
-- **Rigorous Automated Testing:** 161 automated pytest unit, integration, and regression tests ensuring zero mathematical contradictions, zero data leakage, and verified reproducible metrics.
+- **Rigorous Automated Testing:** 176 automated pytest unit, integration, and regression tests ensuring zero mathematical contradictions, zero data leakage, and verified reproducible metrics.
 
 ---
 
@@ -602,10 +604,11 @@ python -m streamlit run src/crip/app/main.py --server.port 8502 --server.address
    - Use the **What-If Scenario Explorer** to modify baseline LVEF, PEth, or fibrosis and view prediction sensitivity.
    - Export clinical research audit reports in Markdown (`.md`), HTML (`.html`), JSON (`.json`), or HL7 FHIR R4 JSON.
 
-5. **Page 4: Model Evaluation & Clinical Governance (`🔬`)**
-   - **Tab 1 (Real MRI Benchmarks):** Detailed segmentation Dice scores, LVEF error distributions, and subgroup breakdowns.
-   - **Tab 2 (Interpretable Recovery Benchmarks):** Held-out ROC-AUC (0.957), PR-AUC (0.984), Brier score (0.069), calibration reliability curve, and subgroup fairness evaluations.
-   - **Tab 3 (Scientific Audit & Governance):** Complete reconciliation of cohort counts, simulator contextualization, and non-clinical research declarations.
+5. **Page 4: Model Evaluation & Statistical Governance (`🔬`)**
+   - **Tab 1 (Real MRI Segmentation & Spatial Geometry):** Multi-structure Dice scores (LV: 0.906, RV: 0.807, Myo: 0.804), 95th-percentile Hausdorff Distance distributions (ED medians: LV 2.91 mm, RV 7.16 mm, Myo 4.94 mm), and clinical subgroup breakdowns (DCM, HCM, MINF, NOR, RV).
+   - **Tab 2 (Cardiac Measurement Agreement & Bland–Altman):** Method comparison across LVEF, LVEDV, LVESV, and LVSV with interactive identity scatter plots ($y = x$), Bland–Altman difference plots with Mean Bias and 95% Limits of Agreement, and 95% Confidence Interval bounds distinguishing estimation uncertainty from population agreement spread.
+   - **Tab 3 (Synthetic Recovery Model Comparison):** Head-to-head comparison between Logistic Regression (Primary) and Random Forest (Nonlinear Ensemble) featuring comparative metrics table (ROC-AUC 0.957 vs 0.931, Brier 0.069 vs 0.093), comparative ROC curves, PR curves with prevalence baseline, 10-bin calibration curves, and confusion matrices.
+   - **Tab 4 (Scientific Audit & Governance):** Complete reconciliation of cohort counts, separation of real MRI ($n=20$) vs synthetic recovery ($n=419$) sample sizes, and non-clinical research declarations.
 
 ---
 
