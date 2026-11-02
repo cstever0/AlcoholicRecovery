@@ -37,6 +37,41 @@ from crip.evaluation.model_comparison import (
 from crip.evaluation.poster_figures import generate_all_poster_figures
 
 
+@pytest.fixture
+def synthetic_evaluation_df() -> pd.DataFrame:
+    """Deterministic synthetic evaluation DataFrame with realistic schema for portable unit testing."""
+    n = 20
+    groups = ["DCM"] * 4 + ["HCM"] * 4 + ["MINF"] * 4 + ["NOR"] * 4 + ["RV"] * 4
+    return pd.DataFrame({
+        "patient_id": [f"synth{i:03d}" for i in range(1, n + 1)],
+        "group": groups,
+        "dice_patient_lv": [0.90 + 0.01 * (i % 3) for i in range(n)],
+        "dice_patient_rv": [0.80 + 0.01 * (i % 3) for i in range(n)],
+        "dice_patient_myo": [0.80 + 0.01 * (i % 3) for i in range(n)],
+        "dice_patient_mean": [0.83 + 0.01 * (i % 3) for i in range(n)],
+        "hd95_ed_lv_mm": [2.5 + 0.1 * i for i in range(n)],
+        "hd95_ed_rv_mm": [6.5 + 0.1 * i for i in range(n)],
+        "hd95_ed_myo_mm": [4.5 + 0.1 * i for i in range(n)],
+        "hd95_es_lv_mm": [3.0 + 0.1 * i for i in range(n)],
+        "hd95_es_rv_mm": [7.0 + 0.1 * i for i in range(n)],
+        "hd95_es_myo_mm": [5.0 + 0.1 * i for i in range(n)],
+        "lvedv_pred_ml": [120.0 + 2.0 * i for i in range(n)],
+        "lvedv_gt_ml": [118.0 + 2.0 * i for i in range(n)],
+        "lvedv_error_ml": [2.0] * n,
+        "lvedv_abs_error_ml": [2.0] * n,
+        "lvesv_pred_ml": [60.0 + 1.0 * i for i in range(n)],
+        "lvesv_gt_ml": [58.0 + 1.0 * i for i in range(n)],
+        "lvesv_error_ml": [2.0] * n,
+        "lvesv_abs_error_ml": [2.0] * n,
+        "lvef_pred_pct": [50.0 + 0.5 * (i % 5) for i in range(n)],
+        "lvef_gt_pct": [50.5 + 0.5 * (i % 5) for i in range(n)],
+        "lvef_error_pct": [-0.5] * n,
+        "lvef_abs_error_pct": [0.5] * n,
+        "within_5pct_target": [True] * n,
+        "status": ["SUCCESS"] * n,
+    })
+
+
 class TestBlandAltmanAndMeasurementAgreement:
     """Test Bland-Altman statistics, error metrics, and input validations."""
 
@@ -120,7 +155,11 @@ class TestBlandAltmanAndMeasurementAgreement:
     def test_real_acdc_20_test_cases_reproducibility(self):
         """Verify exact agreement results against empirical 20-test-case benchmarks."""
         eval_csv = Path("data/processed/acdc/segmentation_evaluation.csv")
-        assert eval_csv.is_file(), "segmentation_evaluation.csv missing"
+        if not eval_csv.is_file():
+            pytest.skip(
+                "Real ACDC 20-case evaluation artifact ('data/processed/acdc/segmentation_evaluation.csv') not found. "
+                "Run 'python -m crip.evaluation.segmentation_metrics' with raw ACDC data and checkpoint to generate."
+            )
         df = pd.read_csv(eval_csv)
         assert len(df) == 20
 
@@ -178,11 +217,9 @@ class TestPlotlyFigureGeneration:
 class TestHausdorffDistanceEvaluation:
     """Verify HD95 metrics extraction, spatial millimeter units, and box plots."""
 
-    def test_hd95_summary_statistics_structure(self):
-        """Verify HD95 statistics output dictionary schema."""
-        eval_csv = Path("data/processed/acdc/segmentation_evaluation.csv")
-        df = pd.read_csv(eval_csv)
-        stats_dict = compute_hd95_statistics(df)
+    def test_hd95_summary_statistics_structure(self, synthetic_evaluation_df):
+        """Verify HD95 statistics output dictionary schema using synthetic fixture."""
+        stats_dict = compute_hd95_statistics(synthetic_evaluation_df)
 
         assert set(stats_dict.keys()) == {"LV", "RV", "MYO"}
         for k, info in stats_dict.items():
@@ -195,16 +232,25 @@ class TestHausdorffDistanceEvaluation:
             assert ed_s["mean"] > 0
             assert ed_s["iqr_low"] <= ed_s["median"] <= ed_s["iqr_high"]
 
+    def test_real_acdc_hd95_reproducibility(self):
+        """Integration test: Verify empirical HD95 benchmark values on real ACDC 20 test cases."""
+        eval_csv = Path("data/processed/acdc/segmentation_evaluation.csv")
+        if not eval_csv.is_file():
+            pytest.skip(
+                "Real ACDC 20-case evaluation artifact ('data/processed/acdc/segmentation_evaluation.csv') not found. "
+                "Run 'python -m crip.evaluation.segmentation_metrics' with raw ACDC data and checkpoint to generate."
+            )
+        df = pd.read_csv(eval_csv)
+        stats_dict = compute_hd95_statistics(df)
+
         # Confirm verified End-Diastole medians
         assert pytest.approx(stats_dict["LV"]["ed"]["median"], abs=0.1) == 2.91
         assert pytest.approx(stats_dict["RV"]["ed"]["median"], abs=0.1) == 7.16
         assert pytest.approx(stats_dict["MYO"]["ed"]["median"], abs=0.1) == 4.94
 
-    def test_hd95_box_plot_creation(self):
-        """Verify HD95 box plot creates traces for LV, RV, and Myocardium."""
-        eval_csv = Path("data/processed/acdc/segmentation_evaluation.csv")
-        df = pd.read_csv(eval_csv)
-        fig = create_hd95_box_plot(df)
+    def test_hd95_box_plot_creation(self, synthetic_evaluation_df):
+        """Verify HD95 box plot creates traces for LV, RV, and Myocardium using synthetic fixture."""
+        fig = create_hd95_box_plot(synthetic_evaluation_df)
         assert len(fig.data) == 3
 
 
@@ -262,10 +308,13 @@ class TestRecoveryModelComparison:
 class TestPosterFiguresAndStreamlitIntegration:
     """Verify poster-ready figure exports and Streamlit evaluation page rendering."""
 
-    def test_poster_figures_export_and_manifest(self, tmp_path):
-        """Verify all 8 figures are exported in PNG, SVG, and PDF with valid manifest."""
+    def test_poster_figures_export_and_manifest(self, tmp_path, synthetic_evaluation_df):
+        """Unit test: Verify all 8 figures are exported in PNG, SVG, and PDF with valid manifest using synthetic fixture."""
+        csv_path = tmp_path / "synthetic_eval.csv"
+        synthetic_evaluation_df.to_csv(csv_path, index=False)
+
         out_dir = tmp_path / "poster_figures"
-        manifest = generate_all_poster_figures(output_dir=out_dir)
+        manifest = generate_all_poster_figures(eval_csv_path=csv_path, output_dir=out_dir)
 
         assert manifest["total_figures"] == 8
         assert len(manifest["figures"]) == 8
@@ -281,6 +330,19 @@ class TestPosterFiguresAndStreamlitIntegration:
             assert Path(f_paths["svg"]).is_file()
             assert Path(f_paths["pdf"]).is_file()
             assert Path(f_paths["png"]).stat().st_size > 10000  # Non-empty high-res PNG
+
+    def test_real_acdc_poster_figures_export(self, tmp_path):
+        """Integration test: Verify poster figure generation against real ACDC evaluation CSV."""
+        eval_csv = Path("data/processed/acdc/segmentation_evaluation.csv")
+        if not eval_csv.is_file():
+            pytest.skip(
+                "Real ACDC 20-case evaluation artifact ('data/processed/acdc/segmentation_evaluation.csv') not found. "
+                "Run 'python -m crip.evaluation.segmentation_metrics' with raw ACDC data and checkpoint to generate."
+            )
+        out_dir = tmp_path / "real_poster_figures"
+        manifest = generate_all_poster_figures(eval_csv_path=eval_csv, output_dir=out_dir)
+        assert manifest["total_figures"] == 8
+        assert len(manifest["figures"]) == 8
 
     def test_evaluation_page_renders_with_apptest(self):
         """Verify 4_Evaluation.py renders all 4 tabs cleanly via Streamlit AppTest."""

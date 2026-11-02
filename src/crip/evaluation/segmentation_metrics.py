@@ -336,3 +336,64 @@ def run_cohort_segmentation_evaluation(
     logger.info(f"Saved cohort evaluation summary to {out_sum}")
 
     return summary
+
+
+def main() -> None:
+    """CLI entry point for cohort segmentation evaluation."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Evaluate ACDC segmentation performance across cohort split (e.g. held-out test)."
+    )
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=DEFAULT_ACDC_TRAINING_DIR,
+        help="Path to ACDC training directory containing patient folders",
+    )
+    parser.add_argument(
+        "--checkpoint",
+        type=Path,
+        default=DEFAULT_CHECKPOINT_PATH,
+        help="Path to trained U-Net checkpoint (.pt)",
+    )
+    parser.add_argument(
+        "--split",
+        type=str,
+        default="test",
+        help="Split name to evaluate: test, val, or train (default: test)",
+    )
+    parser.add_argument(
+        "--output-csv",
+        type=Path,
+        default=DEFAULT_EVAL_CSV_PATH,
+        help="Destination path for per-patient evaluation CSV",
+    )
+    parser.add_argument(
+        "--output-summary",
+        type=Path,
+        default=DEFAULT_EVAL_SUMMARY_PATH,
+        help="Destination path for evaluation summary JSON",
+    )
+    args = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+    summary = run_cohort_segmentation_evaluation(
+        data_dir=args.data_dir,
+        checkpoint_path=args.checkpoint,
+        split_name=args.split,
+        output_csv_path=args.output_csv,
+        output_summary_path=args.output_summary,
+    )
+    print("\n=== Evaluation Complete ===")
+    print(f"Split: {summary.get('split_evaluated')}")
+    print(f"Evaluated Patients: {summary.get('n_patients')}")
+    print(f"LVEF MAE: {summary.get('lvef_metrics', {}).get('mean_absolute_error_pct')}%")
+    print(f"Mean Foreground Dice: {summary.get('geometric_metrics', {}).get('dice_mean_overall')}")
+    print(f"Output CSV: {args.output_csv}")
+    print(f"Output Summary: {args.output_summary}")
+
+
+if __name__ == "__main__":
+    main()
+

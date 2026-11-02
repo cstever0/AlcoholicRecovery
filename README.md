@@ -114,7 +114,7 @@ records. Never utilize CRIP outputs to guide patient care or medical decision-ma
 - **Statistical Method Comparison & Bland–Altman Analysis:** Formal measurement agreement module (`crip.evaluation.measurement_agreement`) calculating mean bias, 95% limits of agreement, standard errors, and confidence intervals alongside interactive identity-line scatter plots ($y = x$).
 - **Poster-Ready Figures & Artifacts:** Standalone generator exporting 8 publication-quality 300-DPI exhibits (PNG, SVG, PDF) with full provenance manifest.
 - **Mock HL7 FHIR R4 Interoperability:** Bidirectional export, import, and schema validation of standard FHIR R4 bundles covering `Patient`, `Observation` (LOINC-coded), and `DiagnosticReport` resources.
-- **Rigorous Automated Testing:** 176 automated pytest unit, integration, and regression tests ensuring zero mathematical contradictions, zero data leakage, and verified reproducible metrics.
+- **Rigorous Automated Testing:** 178 automated pytest unit, integration, and regression tests ensuring zero mathematical contradictions, zero data leakage, and verified reproducible metrics.
 
 ---
 
@@ -235,7 +235,7 @@ AlcoholicRecovery/
 │       ├── modeling/                   # Scikit-learn training, dataset, SHAP attributions
 │       ├── mri/                        # SimpleITK/NiBabel CMR reader and MONAI U-Net
 │       └── synthetic/                  # Pydantic schemas, generator, and validators
-├── tests/                              # 153 automated pytest unit & integration tests
+├── tests/                              # 178 automated pytest unit & integration tests
 ├── pyproject.toml                      # Modern build metadata and pytest configuration
 ├── requirements.txt                    # Pinned, tested dependencies
 └── README.md                           # Master setup and execution manual
@@ -690,10 +690,22 @@ print("Round-trip FHIR data preservation verified successfully.")
 
 ## 22. Running Automated Tests
 
-Run the complete automated test suite with pytest:
+The test suite separates **self-contained unit tests** (which use deterministic synthetic fixtures and run on any clean checkout) from **empirical integration tests** (which validate results against real ACDC CMR imaging and trained model weights).
+
+### 22.1 Running Tests on a Fresh Clone (Without External Assets)
+On a fresh clone where raw MRI scans (`data/raw/acdc/`) and model weights (`models/mri/*.pt`) are not present, all 174 core unit tests run and pass without error. Four empirical integration tests skip cleanly with informative messages:
 
 ```bash
-# Run all 153 tests
+# Run tests with short summary reporting skips
+pytest -q -rs
+# Expected output: 174 passed, 4 skipped, 1 warning (0 failures)
+```
+
+### 22.2 Running Full Empirical Integration Tests
+When evaluation artifacts or raw dataset assets are available:
+
+```bash
+# Run all 178 tests
 pytest
 
 # Run tests with detailed verbosity
@@ -703,8 +715,14 @@ pytest -v
 pytest --cov=src/crip --cov-report=term-missing
 ```
 
-### Running Targeted Test Modules
+### 22.3 Running Targeted Test Modules
 ```bash
+# Run Stage 2 statistical evaluation and measurement agreement tests (17 tests)
+pytest tests/test_stage2_evaluation.py
+
+# Run Stage 1 overview and cardiac measurements UI tests (8 tests)
+pytest tests/test_stage1_ui.py
+
 # Run Milestone 4 end-to-end integration tests (24 tests)
 pytest tests/test_milestone4_integration.py
 
@@ -748,7 +766,41 @@ pytest tests/test_acdc_integration.py
 
 ---
 
-### 23.2 Reconciling Benchmark Variations
+### 23.2 Generating Segmentation Evaluation Artifacts on Ubuntu / WSL2 / macOS
+
+On a fresh checkout, `data/processed/acdc/segmentation_evaluation.csv` and `data/processed/acdc/segmentation_evaluation_summary.json` are not tracked in Git (per `.gitignore` rules for generated data).
+
+To regenerate them from scratch:
+
+#### Prerequisites:
+1. **ACDC Dataset:** Downloaded and extracted into `data/raw/acdc/training/` containing patient folders (`patient001` through `patient100`) with `Info.cfg`, 4D cine, and ground-truth NIfTI masks.
+2. **Saved Dataset Split:** Preserved in `docs/acdc/dataset_split.json` (specifying the 20 held-out test patients).
+3. **Segmentation Checkpoint:** Trained 2D U-Net checkpoint placed at `models/mri/best_unet_model.pt`.
+4. **Environment:** Activated virtual environment with dependencies installed (`pip install -e .`).
+
+#### Reproduction Command:
+```bash
+# Run cohort evaluation across the 20 held-out test patients
+python -m crip.evaluation.segmentation_metrics --split test
+
+# Optional: customize data paths or outputs
+python -m crip.evaluation.segmentation_metrics \
+    --data-dir data/raw/acdc/training \
+    --checkpoint models/mri/best_unet_model.pt \
+    --split test \
+    --output-csv data/processed/acdc/segmentation_evaluation.csv \
+    --output-summary data/processed/acdc/segmentation_evaluation_summary.json
+```
+
+#### Regenerating Publication Poster Figures:
+```bash
+# Re-export all 8 poster-ready figures in PNG, SVG, and PDF
+python -c "from crip.evaluation.poster_figures import generate_all_poster_figures; generate_all_poster_figures()"
+```
+
+---
+
+### 23.3 Reconciling Benchmark Variations
 
 1. **Synthetic Cohort Count ($2,095$ vs $2,123$):**
    - The cohort generator creates $3,000$ synthetic individuals with a $70\%$ sustained abstinence probability ($0.70 \times 3000 = 2,100$ theoretical expectation).
