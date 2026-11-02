@@ -210,32 +210,41 @@ AlcoholicRecovery/
 │   └── config.toml                     # Streamlit server and privacy configuration
 ├── data/
 │   ├── raw/
-│   │   └── acdc/                       # Real ACDC MRI scans (excluded from Git)
-│   │       ├── training/               # 100 patients (patient001 to patient100)
-│   │       └── testing/                # 50 patients (patient101 to patient150)
+│   │   ├── acdc/                       # Real ACDC MRI scans (excluded from Git)
+│   │   │   ├── training/               # 100 patients (patient001 to patient100)
+│   │   │   └── testing/                # 50 patients (patient101 to patient150)
+│   │   ├── emidec/                     # EMIDEC LGE viability CMR dataset (150 cases)
+│   │   ├── mnms/                       # M&Ms multi-vendor cine CMR dataset (345 cases)
+│   │   ├── sunnybrook/                 # Sunnybrook benchmark placeholder (BLOCKED)
+│   │   └── myops2020/                  # MyoPS multi-sequence placeholder (BLOCKED)
 │   ├── processed/
-│   │   └── acdc/                       # Derived volumetric CSVs, splits, and figures
+│   │   ├── acdc/                       # Derived volumetric CSVs, splits, and figures
+│   │   ├── emidec/                     # EMIDEC dataset audit manifest
+│   │   └── mnms/                       # M&Ms dataset audit manifest
 │   └── synthetic/
 │       ├── synthetic_cardiomyopathy_cohort.csv # 3,000 synthetic patient cohort
 │       └── ehr_synthetic.db            # SQLite synthetic EHR database
 ├── docs/
 │   ├── architecture.md                 # Detailed architecture & milestone specifications
 │   ├── acdc/                           # ACDC dataset documentation, citation, licenses
+│   ├── datasets/                       # Multi-dataset integration guide and label mappings
 │   ├── evaluation/                     # Milestone reports and scientific audits
+│   │   └── external_datasets/          # External cohort validation figures (M&Ms)
 │   └── setup/                          # Dedicated platform and setup companion guides
 ├── models/
 │   ├── mri/                            # MONAI U-Net weights (best_unet_model.pt)
 │   └── recovery/                       # Trained Scikit-learn pipeline & schemas (v1.0-m3b)
 ├── src/
 │   └── crip/                           # Core Python src-layout package
-│       ├── app/                        # 4-page Streamlit web platform
+│       ├── app/                        # 6-page Streamlit web platform
+│       ├── datasets/                   # Multi-dataset registry, schemas, and loaders
 │       ├── ehr/                        # SQLite synthetic EHR database interface
-│       ├── evaluation/                 # Metrics & calibration evaluation engines
+│       ├── evaluation/                 # Metrics, calibration, and external M&Ms evaluator
 │       ├── integration/                # Multimodal integration, FHIR R4, demo cases
 │       ├── modeling/                   # Scikit-learn training, dataset, SHAP attributions
 │       ├── mri/                        # SimpleITK/NiBabel CMR reader and MONAI U-Net
 │       └── synthetic/                  # Pydantic schemas, generator, and validators
-├── tests/                              # 178 automated pytest unit & integration tests
+├── tests/                              # 227 automated pytest unit & integration tests
 ├── pyproject.toml                      # Modern build metadata and pytest configuration
 ├── requirements.txt                    # Pinned, tested dependencies
 └── README.md                           # Master setup and execution manual
@@ -394,6 +403,28 @@ Validation passed: All 100 patients contain required Info.cfg and 3D NIfTI volum
 ```
 
 *(For complete details, see [docs/setup/datasets.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/setup/datasets.md))*
+
+---
+
+### 12.4 Multi-Dataset Integration & Registry (EMIDEC & M&Ms)
+
+CRIP features a modular multi-dataset ingestion framework supporting multi-center cine CMR and tissue viability imaging alongside canonical ACDC data:
+
+- **EMIDEC 2020 (`data/raw/emidec/`)**: 150 static 3D Late Gadolinium Enhancement (LGE) viability CMR scans (100 training with contours, 50 held-out test). Used for myocardial infarction and microvascular obstruction (no-reflow) quantification. **Clinical Invariant:** Because EMIDEC scans are single-phase static acquisitions, the platform strictly disables dynamic ejection fraction (LVEF) computation on EMIDEC cases.
+- **M&Ms 2020 (`data/raw/mnms/`)**: 345 multi-center, multi-vendor 4D cine CMR cases across Siemens, Philips, GE, and Canon scanners (114 fully paired image + contour cases). **Critical Governance:** Raw M&Ms annotations invert the ventricular chambers relative to ACDC ($1 = \text{LV}, 3 = \text{RV}$ vs ACDC $1 = \text{RV}, 3 = \text{LV}$). CRIP's `MNMSDataLoader` automatically translates M&Ms ground-truth masks to canonical ACDC label conventions on load (`map_mnms_to_canonical`).
+- **Sunnybrook & MyoPS 2020**: Pre-registered in the registry under `BLOCKED` status pending local download.
+
+#### Running Multi-Dataset Audits:
+```bash
+# Audit both EMIDEC and M&Ms cohorts and update manifests
+python -m crip.datasets.validation --dataset all
+
+# Manifests saved to:
+# data/processed/emidec/dataset_manifest.json
+# data/processed/mnms/dataset_manifest.json
+```
+
+*(For comprehensive label tables, clinical governance rules, and loader APIs, see [docs/datasets/multidataset_integration.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/datasets/multidataset_integration.md) and [docs/evaluation/multidataset_stage1_report.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/multidataset_stage1_report.md))*
 
 ---
 
@@ -717,6 +748,15 @@ pytest --cov=src/crip --cov-report=term-missing
 
 ### 22.3 Running Targeted Test Modules
 ```bash
+# Run M&Ms external evaluation and generalizability tests (12 tests)
+pytest tests/test_external_mnms.py
+
+# Run multi-dataset registry, schema, and label mapping tests (23 tests)
+pytest tests/test_dataset_registry.py
+
+# Run EMIDEC and M&Ms dataset loader and integration tests (14 tests)
+pytest tests/test_dataset_loaders.py
+
 # Run Stage 2 statistical evaluation and measurement agreement tests (17 tests)
 pytest tests/test_stage2_evaluation.py
 
@@ -812,6 +852,32 @@ python -c "from crip.evaluation.poster_figures import generate_all_poster_figure
 2. **Reconciliation of MRI Segmentation Benchmarks (3.86% vs. 3.24% Draft Target):**
    - **$3.86\%$ LVEF MAE & $0.839$ Mean Foreground Dice (Verified Empirical Benchmark, $N=20$):** Derived directly from the persisted `models/mri/best_unet_model.pt` checkpoint evaluated across the designated 20 held-out test patients (`data/processed/acdc/segmentation_evaluation_summary.json`).
    - **$3.24\%$ LVEF MAE & $0.892$ Mean Dice (Preliminary Draft Targets Audited and Removed):** An early Milestone 4 narrative draft cited preliminary exploratory aspiration targets ($3.24\%$ / $0.892$). A comprehensive audit of codebase artifacts confirmed that these figures were speculative drafting targets rather than persisted evaluation outputs. In accordance with strict reproducibility standards, these unsupported targets have been completely removed from all benchmark tables. The sole verified, reproducible evaluation is **3.86 percentage points LVEF MAE** and **0.839 Mean Foreground Dice**.
+
+---
+
+### 23.4 M&Ms External Generalizability Benchmark (Multi-Center, Multi-Vendor)
+
+CRIP benchmarks the zero-shot out-of-domain generalizability of the frozen ACDC 2D U-Net across the **114 paired cases** of the M&Ms 2020 cohort (spanning Siemens, Philips, GE, and Canon scanners across 5 clinical centers):
+
+| Evaluation Metric | In-Domain ACDC Test ($N=20$) | External M&Ms Cohort ($N=114$) | Domain Shift ($\Delta$) |
+| :--- | :---: | :---: | :---: |
+| **Mean Foreground Dice** | **$0.839$** | **$0.725$** (Median $0.772$) | $-0.114$ |
+| **LV Cavity Dice** | **$0.906$** | **$0.810$** (Median $0.846$) | $-0.096$ |
+| **RV Cavity Dice** | **$0.807$** | **$0.672$** (Median $0.725$) | $-0.135$ |
+| **Myocardium Dice** | **$0.804$** | **$0.695$** (Median $0.733$) | $-0.109$ |
+| **LVEF Mean Absolute Error** | **$3.86\%$ points** | **$8.48\%$ points** (Median $6.12\%$) | $+4.62\%$ points |
+| **% Cases with $|\Delta \text{LVEF}| \le 5\%$** | **$75.0\%$** | **$40.4\%$** | $-34.6\%$ |
+
+#### Reproduction Commands:
+```bash
+# 1. Execute external evaluation across all 114 paired M&Ms cases
+python -m crip.evaluation.external_mnms
+
+# 2. Re-export all 5 publication poster figures in PNG, SVG, and PDF
+python -m crip.evaluation.poster_figures_mnms
+```
+
+*(For full vendor-stratified comparisons, HD95 distributions, and poster figures, see [docs/evaluation/mnms_external_validation_report.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/mnms_external_validation_report.md) and [docs/evaluation/external_datasets/mnms/](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/external_datasets/mnms/))*
 
 
 ---
