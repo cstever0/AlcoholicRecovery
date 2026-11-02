@@ -9,22 +9,33 @@ if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
 import streamlit as st
-from crip.app.components.disclaimer import render_clinical_disclaimer
 
 APP_DIR = Path(__file__).resolve().parent
 
 # Clean page configuration definitions
 PAGE_CONFIGS = [
     {
+        "file": APP_DIR / "pages" / "0_Overview_Dashboard.py",
+        "title": "Overview Dashboard",
+        "icon": "🏠",
+        "default": True,
+    },
+    {
         "file": APP_DIR / "pages" / "1_Patient_Profile.py",
         "title": "Patient Profile",
         "icon": "👤",
-        "default": True,
+        "default": False,
     },
     {
         "file": APP_DIR / "pages" / "2_MRI_Analysis.py",
         "title": "MRI Analysis",
         "icon": "🫀",
+        "default": False,
+    },
+    {
+        "file": APP_DIR / "pages" / "5_Cardiac_Measurements.py",
+        "title": "Cardiac Measurements",
+        "icon": "📊",
         "default": False,
     },
     {
@@ -53,7 +64,8 @@ pages = [
 
 navigation = st.navigation(
     {
-        "Clinical Exploration": pages
+        "Platform Overview": [pages[0]],
+        "Clinical Exploration": pages[1:],
     }
 )
 

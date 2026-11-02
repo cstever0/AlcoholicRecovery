@@ -20,8 +20,10 @@ class TestApplicationInitialization:
         from crip.app.main import PAGE_CONFIGS, navigation
 
         expected_page_titles = {
+            "Overview Dashboard",
             "Patient Profile",
             "MRI Analysis",
+            "Cardiac Measurements",
             "Recovery Estimate",
             "Evaluation",
         }
@@ -64,8 +66,10 @@ class TestApplicationInitialization:
         assert not at_main.exception
 
         page_files = [
+            root_dir / "src/crip/app/pages/0_Overview_Dashboard.py",
             root_dir / "src/crip/app/pages/1_Patient_Profile.py",
             root_dir / "src/crip/app/pages/2_MRI_Analysis.py",
+            root_dir / "src/crip/app/pages/5_Cardiac_Measurements.py",
             root_dir / "src/crip/app/pages/3_Recovery_Estimate.py",
             root_dir / "src/crip/app/pages/4_Evaluation.py",
         ]

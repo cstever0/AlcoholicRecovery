@@ -110,9 +110,9 @@ records. Never utilize CRIP outputs to guide patient care or medical decision-ma
 - **Physical Cardiac Volumetric Engine:** Geometric slice-by-slice voxel volume integration calculating LVEDV, LVESV, LVSV, LVEF, RVEDV, RVESV, RVSV, RVEF, and myocardial mass using the standard human myocardial tissue density constant ($\rho = 1.05\text{ g/mL}$).
 - **Literature-Grounded Synthetic Clinical Database:** 3,000-subject synthetic multimodal database adhering to strict Pydantic clinical constraints ($ESV < EDV$, PEth risk bands, ACMG-AMP Titin classification).
 - **Interpretable Machine Learning:** Scikit-learn recovery classification pipeline (`v1.0-m3b`) with exact additive log-odds decompositions ($\beta_j \times x_j$) and SHAP interpretability.
-- **Interactive Multi-Page Streamlit Interface:** Modern 4-page UI covering patient exploration, cine MRI segmentation inspection, multimodal recovery estimation, and scientific model evaluation.
+- **Interactive Multi-Page Streamlit Interface:** Modern 6-page UI covering platform overview, patient exploration, cine MRI segmentation inspection, dedicated biventricular cardiac measurements, multimodal recovery estimation, and scientific model evaluation.
 - **Mock HL7 FHIR R4 Interoperability:** Bidirectional export, import, and schema validation of standard FHIR R4 bundles covering `Patient`, `Observation` (LOINC-coded), and `DiagnosticReport` resources.
-- **Rigorous Automated Testing:** 153 automated pytest unit, integration, and regression tests ensuring zero mathematical contradictions, zero data leakage, and verified reproducible metrics.
+- **Rigorous Automated Testing:** 161 automated pytest unit, integration, and regression tests ensuring zero mathematical contradictions, zero data leakage, and verified reproducible metrics.
 
 ---
 
@@ -563,7 +563,13 @@ python -m streamlit run src/crip/app/main.py --server.port 8502 --server.address
 
 ## 20. Application Usage and Demonstration
 
-### Walkthrough of the 4 Application Pages
+### Walkthrough of the 6 Application Pages
+
+0. **Page 0: Overview Dashboard (`🏠`)**
+   - Consolidated system landing view presenting real-time status and artifact checks across all 5 core subsystems (ACDC training scans, testing scans, MONAI U-Net checkpoint, synthetic cohort, and recovery pipeline).
+   - Clinical study selector with diagnostic group badge, acquisition timing (ED/ES frames), and provenance trail.
+   - Primary cardiac functional metrics cards (LVEF with preserved/reduced tags, LVEDV, LVESV, LVSV, RVEF, RVEDV, Myocardial Mass at $1.05\text{ g/mL}$, and physiology check $ESV < EDV$).
+   - Guided workflow quick-links to all exploration and modeling modules.
 
 1. **Page 1: Patient Profile & Clinical Cohort (`👤`)**
    - Explore the 3,000 synthetic patient cohort or reference cases.
@@ -573,11 +579,19 @@ python -m streamlit run src/crip/app/main.py --server.port 8502 --server.address
 2. **Page 2: Real Cardiac MRI Analysis (`🫀`)**
    - Select any patient from the 100-case ACDC training cohort.
    - Toggle between **Ground Truth Masks** and **Automated U-Net Predictions**.
-   - Navigate short-axis slices and cine phases (ED and ES) with synchronized segmentation contours.
+   - Navigate short-axis slices and cine phases (ED and ES) with synchronized multi-structure contours (RV cavity, myocardium, LV cavity).
    - Inspect live biventricular volumes and examine the patient's percentile rank in the ACDC cohort.
-   - Click **"Transfer MRI Measurements to Recovery Estimator"** to bridge real imaging into Page 3.
+   - Click **"Transfer to Recovery Predictor"** to bridge real imaging into Page 3.
 
-3. **Page 3: Recovery Estimation & Multimodal Integration (`📈`)**
+3. **Page 5: Dedicated Cardiac Measurements (`📊`)**
+   - Comprehensive tabular and visual breakdown of Left and Right Ventricular parameters.
+   - Detailed metrics: LVEDV, LVESV, LVSV, LVEF, RVEDV, RVESV, RVSV, RVEF, myocardial volume (ED/ES), estimated myocardial mass ($1.05\text{ g/mL}$), and physical voxel spacing ($dx \times dy \times dz$).
+   - **Paired AI Model vs. Expert Reference Comparison:** Direct comparison table featuring signed errors ($\text{Pred} - \text{GT}$), absolute errors ($|\text{Pred} - \text{GT}|$), relative percentages, and SCMR $\le 5\%$ tolerance compliance indicators.
+   - Comparative grouped bar charts for biventricular dynamics and AI-vs-expert agreement.
+   - SCMR adult normal reference ranges and 100-case ACDC cohort descriptive summary statistics.
+   - Workflow transfer button to push active measurements to the recovery estimator.
+
+4. **Page 3: Recovery Estimation & Multimodal Integration (`📈`)**
    - Select an input mode:
      - *Synthetic Cohort Patient:* Select from 2,095 sustained-abstinence cases.
      - *Curated Demonstration Scenarios:* Instant benchmark cases (Case A, B, or C).
@@ -588,7 +602,7 @@ python -m streamlit run src/crip/app/main.py --server.port 8502 --server.address
    - Use the **What-If Scenario Explorer** to modify baseline LVEF, PEth, or fibrosis and view prediction sensitivity.
    - Export clinical research audit reports in Markdown (`.md`), HTML (`.html`), JSON (`.json`), or HL7 FHIR R4 JSON.
 
-4. **Page 4: Model Evaluation & Clinical Governance (`🔬`)**
+5. **Page 4: Model Evaluation & Clinical Governance (`🔬`)**
    - **Tab 1 (Real MRI Benchmarks):** Detailed segmentation Dice scores, LVEF error distributions, and subgroup breakdowns.
    - **Tab 2 (Interpretable Recovery Benchmarks):** Held-out ROC-AUC (0.957), PR-AUC (0.984), Brier score (0.069), calibration reliability curve, and subgroup fairness evaluations.
    - **Tab 3 (Scientific Audit & Governance):** Complete reconciliation of cohort counts, simulator contextualization, and non-clinical research declarations.
