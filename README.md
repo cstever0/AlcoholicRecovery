@@ -39,7 +39,7 @@
       - [11.4 Native Windows (PowerShell & Experimental Execution)](#114-native-windows-powershell--experimental-execution)
       - [11.5 Hardware Acceleration & CPU Fallback](#115-hardware-acceleration--cpu-fallback)
 
-- **PATH B — OPTIONAL: COMPLETE MRI DATASET AND MODEL REPRODUCTION**
+- **PATH B — COMPLETE MULTI-DATASET RESEARCH REPRODUCTION**
   12. [Path B — Complete Real MRI Dataset Acquisition and Setup](#12-path-b--complete-real-mri-dataset-acquisition-and-setup)
       - [12.1 Overview of Integrated Medical Imaging Datasets](#121-overview-of-integrated-medical-imaging-datasets)
       - [12.2 Official Acquisition Portals & Download Instructions](#122-official-acquisition-portals--download-instructions)
@@ -67,17 +67,50 @@
       - [18.2 Joint Cine Multi-Dataset U-Net (ACDC + M&Ms)](#182-joint-cine-multi-dataset-u-net-acdc--mms)
       - [18.3 Dedicated EMIDEC 5-Class LGE U-Net](#183-dedicated-emidec-5-class-lge-u-net)
       - [18.4 Held-Out Test Case Inference Smoke Test](#184-held-out-test-case-inference-smoke-test)
-  19. [Model Checkpoint Inventory and Artifact Restoration](#19-model-checkpoint-inventory-and-artifact-restoration)
+  19. [Held-Out Model Evaluation & Bland–Altman Inputs](#19-held-out-model-evaluation--blandaltman-inputs)
+      - [19.1 ACDC Held-Out Segmentation Evaluation](#191-acdc-held-out-segmentation-evaluation)
+      - [19.2 Joint Cine Matched Holdout Evaluation](#192-joint-cine-matched-holdout-evaluation)
+      - [19.3 M&Ms Multi-Vendor Generalizability Evaluation](#193-mms-multi-vendor-generalizability-evaluation)
+      - [19.4 EMIDEC Viability Tissue Quantification](#194-emidec-viability-tissue-quantification)
+  20. [Scientific Figure Generation & Multi-Format Export](#20-scientific-figure-generation--multi-format-export)
+      - [20.1 Poster Figures 1–8: ACDC Volumetrics & Recovery](#201-poster-figures-18-acdc-volumetrics--recovery)
+      - [20.2 M&Ms Cross-Vendor Generalization Figures](#202-mms-cross-vendor-generalization-figures)
+      - [20.3 EMIDEC Viability & Tissue Characterization Figures](#203-emidec-viability--tissue-characterization-figures)
+      - [20.4 Multi-Dataset Recovery Benchmark Figures](#204-multi-dataset-recovery-benchmark-figures)
+  21. [Model Checkpoint Inventory and Artifact Restoration](#21-model-checkpoint-inventory-and-artifact-restoration)
+  22. [Git Research Provenance & Workflow Isolation](#22-git-research-provenance--workflow-isolation)
+      - [22.1 Understanding Tracked Output Modifications](#221-understanding-tracked-output-modifications)
+      - [22.2 Best Practices for Experiment Isolation & Preservation](#222-best-practices-for-experiment-isolation--preservation)
 
 - **Application Tour, Interoperability, Verification & References**
-  20. [Launching the Streamlit Clinical Research Platform](#20-launching-the-streamlit-clinical-research-platform)
-  21. [Application Workspaces and Demonstration Tour](#21-application-workspaces-and-demonstration-tour)
-  22. [Mock FHIR Import/Export](#22-mock-fhir-importexport)
-  23. [Running Automated Tests](#23-running-automated-tests)
-  24. [Reproducing Scientific Evaluation Metrics](#24-reproducing-scientific-evaluation-metrics)
-  25. [Troubleshooting & Frequently Asked Questions](#25-troubleshooting--frequently-asked-questions)
-  26. [Reproducibility and Limitations](#26-reproducibility-and-limitations)
-  27. [License, Dataset Attribution, and References](#27-license-dataset-attribution-and-references)
+  23. [Launching the Streamlit Clinical Research Platform](#23-launching-the-streamlit-clinical-research-platform)
+  24. [Application Workspaces and Demonstration Tour](#24-application-workspaces-and-demonstration-tour)
+      - [24.1 Walkthrough of the Application Pages](#241-walkthrough-of-the-application-pages)
+      - [24.2 Curated Multimodal Demonstration Scenarios](#242-curated-multimodal-demonstration-scenarios)
+      - [24.3 Complete Streamlit Application Verification Checklist](#243-complete-streamlit-application-verification-checklist)
+  25. [Mock FHIR Import/Export](#25-mock-fhir-importexport)
+  26. [Running Automated Tests](#26-running-automated-tests)
+      - [26.1 Complete Test Suite Execution](#261-complete-test-suite-execution)
+      - [26.2 Running Tests on a Fresh Clone](#262-running-tests-on-a-fresh-clone-without-external-medical-imaging-assets)
+      - [26.3 Running Targeted Test Modules](#263-running-targeted-test-modules)
+  27. [Reproducing Scientific Evaluation Metrics & Reference Benchmarks](#27-reproducing-scientific-evaluation-metrics--reference-benchmarks)
+      - [27.1 Reference Benchmarks vs. Local Reproduction](#271-reference-benchmarks-vs-local-reproduction)
+      - [27.2 Reconciling Benchmark Variations](#272-reconciling-benchmark-variations)
+      - [27.3 M&Ms External Generalizability Benchmark](#273-mms-external-generalizability-benchmark-multi-center-multi-vendor)
+      - [27.4 EMIDEC Delayed-Enhancement Tissue Characterization Benchmark](#274-emidec-delayed-enhancement-tissue-characterization-benchmark)
+      - [27.5 Unified Multi-Dataset Architecture & Empirical Feature Bank](#275-unified-multi-dataset-architecture--empirical-feature-bank)
+      - [27.6 Joint Cine Multi-Dataset Training & Matched Evaluation](#276-joint-cine-multi-dataset-training--matched-evaluation-stage-5a)
+      - [27.7 Dedicated EMIDEC LGE Tissue Segmentation Benchmark](#277-dedicated-emidec-lge-tissue-segmentation-benchmark-stage-5b)
+      - [27.8 Unified Empirically Informed Synthetic Data and Recovery Modeling](#278-unified-empirically-informed-synthetic-data-and-recovery-modeling-stage-5c)
+  28. [Troubleshooting & Frequently Asked Questions](#28-troubleshooting--frequently-asked-questions)
+      - [28.1 Python and Virtual Environment Problems](#281-python-and-virtual-environment-problems)
+      - [28.2 Dataset Acquisition and Organization Problems](#282-dataset-acquisition-and-organization-problems)
+      - [28.3 Cohort Partition and Split Repair Problems](#283-cohort-partition-and-split-repair-problems)
+      - [28.4 Preprocessing and Feature Bank Dependency Problems](#284-preprocessing-and-feature-bank-dependency-problems)
+      - [28.5 Model Checkpoint and Evaluation Problems](#285-model-checkpoint-and-evaluation-problems)
+      - [28.6 Streamlit Web Platform Problems](#286-streamlit-web-platform-problems)
+  29. [Reproducibility and Limitations](#29-reproducibility-and-limitations)
+  30. [License, Dataset Attribution, and References](#30-license-dataset-attribution-and-references)
 
 ---
 
@@ -290,7 +323,7 @@ AlcoholicRecovery/
 │       ├── mri/                        # SimpleITK/NiBabel CMR reader and MONAI U-Net
 │       ├── pipeline/                   # Unified multi-dataset CLI, splits, feature bank, bridge
 │       └── synthetic/                  # Pydantic schemas, generator, and validators
-├── tests/                              # 296 automated pytest unit & integration tests
+├── tests/                              # 353 automated pytest unit & integration tests
 ├── pyproject.toml                      # Modern build metadata and pytest configuration
 ├── requirements.txt                    # Pinned, tested dependencies
 └── README.md                           # Master setup and execution manual
@@ -1013,15 +1046,194 @@ print('ACDC patient007 ED Prediction Shape:', pred_ed.shape)
 
 ---
 
-## 19. Model Checkpoint Inventory and Artifact Restoration
+## 19. Held-Out Model Evaluation & Bland–Altman Inputs
 
-Because raw imaging data, database binaries, and model weights are excluded from Git via `.gitignore`, use this checklist to inspect, verify, or restore required local artifacts:
+This phase executes model evaluation on the designated, untouched held-out evaluation cohorts. Running these evaluations generates the tabular metric summaries and patient-level agreement CSVs required by the Streamlit application (specifically Page 4 Tab 2 Bland–Altman analysis and Page 5 paired comparisons).
+
+### 19.1 ACDC Held-Out Segmentation Evaluation
+
+> [!IMPORTANT]
+> **Prerequisite for Page 4 Tab 2 (Bland–Altman Agreement):**
+> On a fresh clone, `data/processed/acdc/segmentation_evaluation.csv` is not tracked in Git. Without executing this evaluation, Streamlit Page 4 Tab 2 will display a notice: `⚠️ segmentation_evaluation.csv not found. Please run the evaluation pipeline first.`
+
+Evaluate the trained in-domain 2D U-Net checkpoint (`models/mri/best_unet_model.pt`) across the **20 held-out ACDC test patients** (`patient007`, `patient011`, `patient015`, `patient019`, `patient024`, `patient033`, etc., as defined in `docs/acdc/dataset_split.json`):
+
+```bash
+python -m crip.evaluation.segmentation_metrics \
+    --data-dir data/raw/acdc/training \
+    --checkpoint models/mri/best_unet_model.pt \
+    --split test \
+    --output-csv data/processed/acdc/segmentation_evaluation.csv \
+    --output-summary data/processed/acdc/segmentation_evaluation_summary.json
+```
+
+**Generated Evaluation Outputs in `data/processed/acdc/`:**
+- `segmentation_evaluation.csv`: 20-row table containing patient-by-patient Dice coefficients (LV, RV, Myocardium), 95th-percentile Hausdorff Distances (HD95), ground-truth chamber volumes, predicted chamber volumes, and derived LVEF.
+- `segmentation_evaluation_summary.json`: Population-level summary statistics (Mean Foreground Dice: **0.839**, Mean Absolute LVEF Error: **3.86 percentage points**, 75.0% of cases within $\pm 5.0\%$ error tolerance).
+
+**Held-Out Evaluation Verification:**
+```bash
+python -c "
+import pandas as pd
+from pathlib import Path
+
+p = Path('data/processed/acdc/segmentation_evaluation.csv')
+assert p.exists(), f'Missing evaluation CSV: {p}'
+df = pd.read_csv(p)
+assert len(df) == 20, f'Expected 20 held-out cases, got {len(df)}'
+required_cols = ['patient_id', 'dice_lv', 'dice_rv', 'dice_myo', 'gt_lvef', 'pred_lvef']
+assert all(c in df.columns for c in required_cols), 'Missing required metric columns'
+print(f'✓ Held-out evaluation verified: {len(df)} test patients loaded with all metric columns.')
+print(f'  Mean Foreground Dice: {df[[\"dice_lv\", \"dice_rv\", \"dice_myo\"]].mean().mean():.4f}')
+"
+```
+
+---
+
+### 19.2 Joint Cine Matched Holdout Evaluation
+
+Evaluate both the baseline ACDC U-Net and the Joint Cine U-Net across all **54 holdout test cases** (20 ACDC held-out test patients + 34 M&Ms multi-vendor holdout patients):
+
+```bash
+# Execute full matched evaluation across all 54 holdout cases
+python -m crip.pipeline evaluate
+
+# Or inspect the verified summary without re-evaluating:
+python -m crip.pipeline evaluate --summary-only
+```
+
+**Evaluated Artifacts:**
+- Generates matched comparative statistics across both models.
+- Demonstrates cross-vendor spatial generalizability improvements on M&Ms (Mean Dice: $0.719 \to 0.756$, LVEF MAE: $8.05\% \to 6.49\%$, $\le 5\%$ error agreement: $38.2\% \to 52.9\%$).
+
+---
+
+### 19.3 M&Ms Multi-Vendor Generalizability Evaluation
+
+Benchmark the out-of-domain performance of the cine segmentation models across the **114 paired cases** of the M&Ms 2020 cohort (spanning Siemens, Philips, GE, and Canon scanners):
+
+```bash
+python -m crip.evaluation.external_mnms
+```
+
+**Generated Artifacts in `data/processed/mnms/`:**
+- `external_evaluation.csv`: Tabular metrics across all 114 paired multi-vendor cases.
+- `external_mnms_summary.json`: Detailed vendor-stratified metrics and domain shift statistics.
+
+---
+
+### 19.4 EMIDEC Viability Tissue Quantification
+
+Quantify static delayed-enhancement tissue compartments across all **100 annotated EMIDEC cases**:
+
+```bash
+python -m crip.emidec.tissue_metrics
+```
+
+**Generated Artifacts in `data/processed/emidec/`:**
+- `tissue_measurements.csv`: Physical infarct volume (mL), viable myocardial mass (g), and microvascular obstruction (no-reflow) core volume (mL).
+- `tissue_measurements.json`: Summary distribution metrics.
+
+---
+
+## 20. Scientific Figure Generation & Multi-Format Export
+
+CRIP includes publication-grade scientific figure generation modules that export all experimental visualizations in three standard formats:
+1. **PNG (300 DPI):** High-resolution raster images for slide decks, documentation, and web browsers.
+2. **SVG:** Lossless scalable vector graphics for responsive web embedding.
+3. **PDF:** Publication-ready vector figures suitable for journal manuscript submission and print typesetting.
+
+### 20.1 Poster Figures 1–8: ACDC Volumetrics & Recovery
+
+Generate the foundational 8-figure scientific poster suite covering ACDC volumetric segmentation agreement, Bland–Altman difference plots, and baseline recovery prediction ROC/PR curves:
+
+> [!NOTE]
+> This command requires `data/processed/acdc/segmentation_evaluation.csv` (generated in Section 19.1).
+
+```bash
+# Set writable Matplotlib configuration directory
+export MPLCONFIGDIR=/tmp/matplotlib
+
+# Generate Figures 1 through 8 in PNG, SVG, and PDF
+python -m crip.evaluation.poster_figures
+```
+
+**Generated Poster Figures in `docs/evaluation/poster_figures/`:**
+- `figure1_dice_by_structure.{png,svg,pdf}`: Multi-structure spatial Dice boxplots (LV, RV, Myocardium).
+- `figure2_hd95_by_structure.{png,svg,pdf}`: 95th-percentile Hausdorff Distance distributions (mm).
+- `figure3_predicted_vs_reference_lvef.{png,svg,pdf}`: Identity correlation scatter ($y = x$) for Left Ventricular Ejection Fraction.
+- `figure4_bland_altman_lvef.{png,svg,pdf}`: Bland–Altman agreement for LVEF with Mean Bias and 95% Limits of Agreement.
+- `figure5_bland_altman_lvedv.{png,svg,pdf}`: Bland–Altman agreement for Left Ventricular End-Diastolic Volume.
+- `figure6_bland_altman_lvesv.{png,svg,pdf}`: Bland–Altman agreement for Left Ventricular End-Systolic Volume.
+- `figure7_recovery_model_roc.{png,svg,pdf}`: Recovery prediction Receiver Operating Characteristic (ROC) curves.
+- `figure8_recovery_model_calibration.{png,svg,pdf}`: Reliability diagrams and calibration curves with Brier scores.
+- `figure_manifest.json`: Indexing manifest detailing generated files and dimensions.
+
+---
+
+### 20.2 M&Ms Cross-Vendor Generalization Figures
+
+Generate the 5 publication figures illustrating multi-vendor domain shift across Siemens, Philips, GE Healthcare, and Canon Medical Systems:
+
+```bash
+python -m crip.evaluation.poster_figures_mnms
+```
+
+**Generated Figures in `docs/evaluation/external_datasets/mnms/`:**
+- `figure1_dice_comparison.{png,svg,pdf}`: In-domain ACDC vs. external M&Ms Dice comparison.
+- `figure2_hd95_distributions.{png,svg,pdf}`: Boundary distance degradation across vendor cohorts.
+- `figure3_vendor_breakdown.{png,svg,pdf}`: Per-vendor Dice boxplots and failure mode analysis.
+- `figure4_lvef_correlation.{png,svg,pdf}`: Scatter correlation between predicted and reference LVEF across vendors.
+- `figure5_segmentation_overlay.{png,svg,pdf}`: Representative short-axis cine slice overlays with expert vs. automated contours.
+
+---
+
+### 20.3 EMIDEC Viability & Tissue Characterization Figures
+
+Generate the 6 publication figures illustrating delayed-enhancement tissue compartment sizing, infarction burden, and microvascular obstruction:
+
+```bash
+python -m crip.evaluation.poster_figures_emidec
+```
+
+**Generated Figures in `docs/evaluation/external_datasets/emidec/`:**
+- `figure1_representative_overlay.{png,svg,pdf}`: Multi-compartment LGE contours (normal myo, infarct, MVO core).
+- `figure2_volume_distributions.{png,svg,pdf}`: Left ventricular cavity and myocardial volume distributions.
+- `figure3_infarction_distribution.{png,svg,pdf}`: Infarct volume and burden histograms in pathological cases.
+- `figure4_no_reflow_distribution.{png,svg,pdf}`: Microvascular obstruction volume and prevalence breakdown.
+- `figure5_burden_correlation.{png,svg,pdf}`: Correlation between infarction burden and microvascular obstruction core volume.
+- `figure6_clinical_severity.{png,svg,pdf}`: Tissue compartment breakdown stratified by clinical infarction severity.
+
+---
+
+### 20.4 Multi-Dataset Recovery Benchmark Figures
+
+When executing recovery training (`python -m crip.pipeline train --task recovery`), the pipeline automatically generates 8 publication-grade comparison figures in PNG, SVG, and PDF formats (24 total files) in:
+```text
+docs/evaluation/multidataset/synthetic_integration/
+```
+
+**Figure Suite Contents:**
+- `fig1_roc_comparison.{png,svg,pdf}`: ROC curves comparing Baseline (ACDC prior) vs. Empirical (multi-dataset prior).
+- `fig2_pr_comparison.{png,svg,pdf}`: Precision-Recall curves.
+- `fig3_calibration_curves.{png,svg,pdf}`: Reliability diagrams and expected calibration errors (ECE).
+- `fig4_feature_importance.{png,svg,pdf}`: Regularized Logistic Regression odds ratios and Random Forest Gini importances.
+- `fig5_wasserstein_realism.{png,svg,pdf}`: Synthetic vs. real feature distribution similarity distances.
+- `fig6_correlation_heatmaps.{png,svg,pdf}`: Physiological correlation preservation matrices.
+- `fig7_scenario_recovery.{png,svg,pdf}`: Recovery probability distributions stratified by clinical scenario (ACM vs. Ischemic).
+- `fig8_metric_summary_radar.{png,svg,pdf}`: Multi-dimensional model performance trade-off summaries.
+
+---
+
+## 21. Model Checkpoint Inventory and Artifact Restoration
+
+Because raw medical imaging data, database binaries, and deep learning model weights are excluded from version control via `.gitignore`, use this inventory to inspect, verify, or recreate required local artifacts:
 
 | Excluded Artifact | Local Target Path | SHA-256 Checksum | How to Restore / Recreate | Application Fallback if Missing |
 | :--- | :--- | :---: | :--- | :--- |
-| **Baseline Cine U-Net** | `models/mri/best_unet_model.pt` | `71ea5423...` | Run `python src/crip/mri/train_segmentation.py` | Page 2 displays expert ground truth contours only |
-| **Joint Cine U-Net** | `models/multidataset/cine_joint_unet.pt` | `fd4f7da4...` | Run `python -m crip.pipeline train --task cine` | Page 2 Tab 2 comparison is bypassed |
-| **EMIDEC LGE U-Net** | `models/multidataset/emidec_lge_unet.pt` | `630d637e...` / `d62fb350...` | Run `python -m crip.pipeline train --task lge` | Page 2 Tab 3 displays expert contours only |
+| **Baseline Cine U-Net** | `models/mri/best_unet_model.pt` | `71ea5423...` | Run `python src/crip/mri/train_segmentation.py --epochs 25` | Page 2 displays expert ground truth contours only |
+| **Joint Cine U-Net** | `models/multidataset/cine_joint_unet.pt` | `fd4f7da4...` | Run `python -m crip.pipeline train --task cine --epochs 20` | Page 2 Tab 2 comparison workspace is bypassed |
+| **EMIDEC LGE U-Net** | `models/multidataset/emidec_lge_unet.pt` | `630d637e...` / `d62fb350...` | Run `python -m crip.pipeline train --task lge --epochs 30` | Page 2 Tab 3 displays expert contours only |
 | **Recovery Model Pipeline** | `models/recovery/recovery_pipeline.joblib` | — | Run `python -m crip.modeling.train` | Streamlit auto-trains baseline model on startup |
 | **Synthetic Cohort CSV** | `data/synthetic/synthetic_cardiomyopathy_cohort.csv` | — | Run `python -m crip.synthetic.cohort_generator` | Streamlit prompts or auto-generates cohort |
 | **SQLite EHR Database** | `data/synthetic/ehr_synthetic.db` | — | Run `cohort_generator` or let Streamlit auto-seed | Streamlit auto-seeds reference demonstration cases |
@@ -1040,7 +1252,51 @@ fd4f7da40f756794c99d9e2cad1e06a080701e86b5386afcd686a24b5c12e50d  models/multida
 
 ---
 
-## 20. Launching the Streamlit Clinical Research Platform
+## 22. Git Research Provenance & Workflow Isolation
+
+When reproducing research experiments across different computers or operating systems (such as migrating from macOS Apple Silicon to Ubuntu on WSL2), managing Git working trees and research artifacts requires care.
+
+### 22.1 Understanding Tracked Output Modifications
+
+The CRIP repository tracks reference scientific figures (`docs/evaluation/**/*.png`, `*.svg`, `*.pdf`) and experiment training metadata (`docs/evaluation/**/*.json`) to provide immediate documentation and visualization without requiring every reader to download gigabytes of raw MRI scans.
+
+When you execute model training, evaluation, or figure generation scripts on your local computer, the scripts recompute metrics and re-export figures to these directories:
+- **Numerical Floating-Point Variations:** Even with fixed random seeds (`seed=42`), minor differences in hardware floating-point math (e.g., Apple Silicon Metal Performance Shaders vs. NVIDIA CUDA vs. x86_64 CPU vectorization) will produce infinitesimal differences in neural network gradients, loss histories, and Matplotlib vector anti-aliasing.
+- **Git Status Diffs:** Consequently, running `python -m crip.pipeline train --task recovery` or figure generation scripts will cause Git to report tracked figure files and summary JSONs as modified (`git status`).
+- **This is expected behavior, not a corruption error.**
+
+### 22.2 Best Practices for Experiment Isolation & Preservation
+
+To maintain clean repository hygiene while reproducing results:
+
+1. **Work on a Dedicated Reproduction Branch:**
+   Never run full reproduction pipelines directly on `main` if you plan to commit code modifications:
+   ```bash
+   git checkout -b reproduction-run
+   ```
+2. **Inspect Changes with Git Status & Git Diff:**
+   Periodically check what files have been regenerated:
+   ```bash
+   git status
+   git diff --stat docs/evaluation/
+   ```
+3. **Distinguish Source Code from Generated Assets:**
+   - **Source Code (`src/crip/`, `tests/`):** Should only change when fixing bugs or enhancing algorithms.
+   - **Local Generated Data (`data/processed/`, `data/synthetic/`):** Excluded from Git via `.gitignore`.
+   - **Trained Model Weights (`models/mri/*.pt`, `models/multidataset/*.pt`):** Excluded from Git.
+   - **Tracked Research Assets (`docs/evaluation/`):** Reference baselines published with the paper/milestone.
+4. **Never Use Destructive Reset Commands as Routine Cleanup:**
+   > [!CAUTION]
+   > Do **NOT** run `git reset --hard` or `git clean -fdx` blindly. Doing so will delete your downloaded raw MRI datasets (`data/raw/`), local virtual environments (`.venv/`), and freshly trained model checkpoints (`models/`).
+5. **Preserving Local Checkpoints & Outputs:**
+   If you wish to preserve existing reference figures while testing new training runs, make a local backup of `docs/evaluation/` before executing training:
+   ```bash
+   cp -r docs/evaluation docs/evaluation_reference_backup
+   ```
+
+---
+
+## 23. Launching the Streamlit Clinical Research Platform
 
 Start the multi-page clinical research application using Python:
 
@@ -1048,23 +1304,39 @@ Start the multi-page clinical research application using Python:
 python -m streamlit run src/crip/app/main.py
 ```
 
-Open your browser to: **`http://localhost:8501`**
-
-To run on a specific port or allow remote access:
-```bash
-python -m streamlit run src/crip/app/main.py --server.port 8502 --server.address 0.0.0.0
+Open your web browser and navigate to:
 ```
+http://localhost:8501
+```
+
+### Platform-Specific Launch Options
+
+#### Ubuntu under Windows Subsystem for Linux (WSL2):
+To ensure the Windows host browser can connect reliably to the Streamlit server running inside WSL2, bind to all network interfaces:
+```bash
+python -m streamlit run src/crip/app/main.py --server.address 0.0.0.0 --server.port 8501
+```
+Then open `http://localhost:8501` in your Windows browser (Chrome, Edge, Firefox).
+
+#### Resolving Port Conflicts:
+If port 8501 is already in use by another service:
+```bash
+python -m streamlit run src/crip/app/main.py --server.port 8502
+```
+
+#### Stopping the Application:
+To stop the Streamlit web server, press **`Ctrl + C`** in the terminal where it is running.
 
 ---
 
-## 21. Application Workspaces and Demonstration Tour
+## 24. Application Workspaces and Demonstration Tour
 
-### Walkthrough of the Application Pages & Unified Workspaces
+### 24.1 Walkthrough of the Application Pages
 
 0. **Page 0: Overview Dashboard (`🏠`)**
    - Consolidated system landing view presenting real-time status and artifact checks across all core subsystems.
    - **Multi-Dataset Ingestion Status:** Real-time metrics across **ACDC 2017** (100 cine scans), **M&Ms 2020** (114 multi-vendor cine scans), and **EMIDEC 2020** (100 delayed-enhancement LGE scans).
-   - **AI Model Checkpoint Inventory:** Direct tracking of sha256 checksums, disk footprints, and validation metrics for the In-Domain Cine U-Net (`best_unet_model.pt`), Joint Cine U-Net (`cine_joint_unet.pt`), and Experimental EMIDEC LGE U-Net (`emidec_lge_unet.pt`).
+   - **AI Model Checkpoint Inventory:** Direct tracking of SHA-256 checksums, disk footprints, and validation metrics for the In-Domain Cine U-Net (`best_unet_model.pt`), Joint Cine U-Net (`cine_joint_unet.pt`), and Experimental EMIDEC LGE U-Net (`emidec_lge_unet.pt`).
    - **Empirical Feature Bank & Splits:** Direct status reporting for the 314 unified clinical feature records and non-leaking train/val/test splits.
    - **Reproducibility CLI Command Registry:** Quick-reference commands for headless terminal execution.
 
@@ -1087,7 +1359,7 @@ python -m streamlit run src/crip/app/main.py --server.port 8502 --server.address
      - Per-case Dice similarity and boundary distance metrics.
      - Matched 54-case evaluation summary demonstrating cross-vendor generalization gains.
    - **Tab 3 — EMIDEC LGE Tissue Workspace:**
-     - **Mandatory Scientific Notice:** Prominently warns that deep learning lesion segmentation is experimental (Infarct Dice: ~0.28, MVO Dice: ~0.01) and unsuitable for clinical decision-making.
+     - **Mandatory Scientific Notice:** Prominently warns that deep learning lesion segmentation is experimental (Infarct Dice: ~0.18, MVO Dice: ~0.02) and unsuitable for clinical decision-making.
      - Interactive case browser across 100 delayed-enhancement studies (normal controls, acute infarcts, microvascular obstruction).
      - 4-panel delayed-enhancement viewer: Raw Inversion-Recovery CMR, Expert Ground Truth, Experimental 5-Class AI Prediction, and Tissue Legend (Background, LV cavity, Viable Myocardium, Hyper-enhanced Infarction, Hypointense No-Reflow Core).
      - Clinical tissue volumetrics: Infarction volume (mL), viable myocardial mass (g), and MVO burden.
@@ -1113,7 +1385,7 @@ python -m streamlit run src/crip/app/main.py --server.port 8502 --server.address
 
 5. **Page 4: Model Evaluation & Statistical Governance (`🔬`)**
    - **Tab 1 — Real MRI Segmentation Benchmarks:** Multi-dataset performance metrics across ACDC in-domain ($N=20$), M&Ms multi-vendor external evaluation ($N=114$), Joint Cine matched comparison ($N=54$), and EMIDEC five-class LGE evaluation ($N=20$).
-   - **Tab 2 — Cardiac Measurement Agreement (Bland–Altman):** Paired method comparison across LVEF, LVEDV, LVESV, and LVSV with identity scatter plots ($y = x$), Bland–Altman difference plots with Mean Bias, 95% Limits of Agreement, and 95% Confidence Intervals.
+   - **Tab 2 — Cardiac Measurement Agreement (Bland–Altman):** Paired method comparison across LVEF, LVEDV, LVESV, and LVSV with identity scatter plots ($y = x$), Bland–Altman difference plots with Mean Bias, 95% Limits of Agreement, and 95% Confidence Intervals (powered by `segmentation_evaluation.csv`).
    - **Tab 3 — Recovery Prediction Benchmarks (Experiment 1 vs 2):**
      - *Experiment 1 (Sustained Abstinence, $N=419$):* Canonical benchmark under guaranteed abstinence (Logistic Regression AUC = 0.9565, Random Forest AUC = 0.9310).
      - *Experiment 2 (All-Comers Presentation, $N=450$):* General population presentation including 30% continued drinking and 25% ischemic phenocopies. Demonstrates how empirical multi-dataset priors elevate recovery discrimination from Baseline AUC 0.7101 to Empirical AUC 0.9048.
@@ -1123,7 +1395,7 @@ python -m streamlit run src/crip/app/main.py --server.port 8502 --server.address
 
 ---
 
-### Curated Multimodal Demonstration Scenarios
+### 24.2 Curated Multimodal Demonstration Scenarios
 
 Execute the three pre-configured benchmark scenarios from the command line:
 
@@ -1158,12 +1430,44 @@ Case C: 80.9% (HIGH_PROBABILITY_RECOVERY)
 > [!NOTE]
 > **Case C Missing Data Sensitivity Range:** For Case C (`CRIP-DEMO-CASE-C`), while the baseline point prediction using median/mode imputation yields **80.9%**, the multimodal sensitivity analysis bounds the true plausible outcome within **$[0.0\%, 95.4\%]$** reflecting severe information incompleteness (unperformed PEth, untested *TTN*, and absent LGE).
 
+---
+
+### 24.3 Complete Streamlit Application Verification Checklist
+
+Use this checklist to verify that all Streamlit application features operate properly:
+
+- [ ] **Page 0 (Overview Dashboard):**
+  - [ ] Multi-dataset status cards show green indicators for ACDC (100), M&Ms (114), and EMIDEC (100).
+  - [ ] AI Checkpoint inventory lists all 3 models with matching SHA-256 hashes.
+  - [ ] Unified feature bank indicates 314 records and non-leaking splits.
+- [ ] **Page 1 (Patient Profile & Cohort Explorer):**
+  - [ ] 3,000 synthetic patient records load and filter cleanly.
+  - [ ] All 6 individual patient tabs render without errors.
+- [ ] **Page 2 (Cardiac MRI Analysis):**
+  - [ ] Tab 1: Loads ACDC cases (e.g. `patient001`), toggles between ground-truth and AI segmentation, navigates short-axis slices.
+  - [ ] Tab 2: Loads held-out ACDC cases (e.g. `patient007`) and M&Ms holdout cases, displays 4-panel comparison and spatial AI disagreement map.
+  - [ ] Tab 3: Loads EMIDEC delayed-enhancement studies (e.g. `Case_001` or `Case_N001`), displays 5-class tissue contours, and presents the prominent experimental notice.
+- [ ] **Page 3 (Recovery Estimation):**
+  - [ ] Prediction meter renders calibrated recovery probability.
+  - [ ] Additive log-odds waterfall attribution chart displays feature contributions ($\beta_j \times x_j$).
+  - [ ] What-If sensitivity sliders update prediction dynamically.
+  - [ ] Report export generates valid Markdown, HTML, JSON, and FHIR R4 bundles.
+- [ ] **Page 4 (Model Evaluation & Governance):**
+  - [ ] Tab 1: Displays verified segmentation benchmark summary tables.
+  - [ ] Tab 2: Renders Bland–Altman agreement plots and limits of agreement without missing-artifact warnings.
+  - [ ] Tab 3: Renders calibration curves and ROC curves for both Experiment 1 (Sustained Abstinence) and Experiment 2 (All-Comers Presentation).
+  - [ ] Tab 4: Displays kernel density distributions and correlation heatmaps for synthetic cohorts.
+  - [ ] Tab 5: Scientific Figure Explorer enables preview and download of PNG, SVG, and PDF figures.
+  - [ ] Tab 6: Displays scientific governance declarations and sample size reconciliations.
+- [ ] **Page 5 (Cardiac Measurements):**
+  - [ ] Renders biventricular parameters (LVEDV, LVESV, LVSV, LVEF, RVEDV, RVESV, RVSV, RVEF).
+  - [ ] Displays paired AI vs. reference comparison table with SCMR tolerance compliance indicators.
 
 ---
 
-## 22. Mock FHIR Import/Export
+## 25. Mock FHIR Import/Export
 
-CRIP supports bidirectional interoperability with mock HL7 FHIR R4 JSON clinical bundles.
+CRIP supports bidirectional interoperability with mock HL7 FHIR R4 JSON clinical bundles:
 
 ```python
 from crip.integration.demo_cases import execute_demonstration_case
@@ -1188,7 +1492,7 @@ assert reimported_profile.peth_value_ng_ml == result["profile"].peth_value_ng_ml
 print("Round-trip FHIR data preservation verified successfully.")
 ```
 
-#### Supported FHIR Resource Types
+#### Supported FHIR Resource Types:
 - **`Patient`:** Demographics and biological sex.
 - **`Observation` (PEth):** LOINC code `94042-9` (Phosphatidylethanol in blood).
 - **`Observation` (LVEF):** LOINC code `88062-5` (Left ventricular ejection fraction by CMR).
@@ -1199,14 +1503,18 @@ print("Round-trip FHIR data preservation verified successfully.")
 
 ---
 
-## 23. Running Automated Tests
+## 26. Running Automated Tests
 
 The test suite separates **self-contained unit tests** (which use deterministic synthetic fixtures and run on any clean checkout) from **empirical integration tests** (which validate results against real CMR imaging and trained model checkpoints).
 
-### 22.1 Complete Test Suite Execution
-Execute the entire 296-test automated regression suite:
+### 26.1 Complete Test Suite Execution
+
+Execute the entire **353-test automated regression suite**:
 
 ```bash
+# Set writable Matplotlib cache directory
+export MPLCONFIGDIR=/tmp/matplotlib
+
 # Run tests with short summary
 pytest -q
 
@@ -1219,10 +1527,13 @@ pytest --cov=src/crip --cov-report=term-missing
 
 **Verified Test Suite Output:**
 ```text
-======================= 296 passed, 1 warning in ~18s ========================
+======================= 353 passed, 1 warning in ~24s ========================
 ```
 
-### 22.2 Running Tests on a Fresh Clone (Without External Medical Imaging Assets)
+---
+
+### 26.2 Running Tests on a Fresh Clone (Without External Medical Imaging Assets)
+
 On a fresh clone where raw MRI scans (`data/raw/acdc/`, `data/raw/mnms/`, `data/raw/emidec/`) and model checkpoints (`models/mri/*.pt`, `models/multidataset/*.pt`) have not been acquired or trained, all self-contained unit tests run and pass without error. External empirical tests that require local NIfTI assets skip cleanly with informative messages:
 
 ```bash
@@ -1230,65 +1541,58 @@ pytest -q -rs
 # Unit tests pass; empirical data-dependent tests skip gracefully with clear reasons
 ```
 
-### 22.3 Running Targeted Test Modules
+---
+
+### 26.3 Running Targeted Test Modules
+
+The test suite is organized into 29 modular test files covering every subsystem:
+
+| Test Module | Coverage Area | Number of Tests |
+| :--- | :--- | :---: |
+| `tests/test_calibration_schema_regression.py` | Calibration curve JSON normalization and Streamlit schema safety | 13 tests |
+| `tests/test_emidec_manifest_repair.py` | Cross-platform split manifest repair and case synchronization | 12 tests |
+| `tests/test_cine_comparison_loading.py` | Cine comparison workspace phase normalization and error handling | 12 tests |
+| `tests/test_recovery_preflight.py` | Preflight artifact discovery, dependency checks, and remediation messages | 8 tests |
+| `tests/test_stage6_streamlit_integration.py` | Streamlit multi-dataset integration and Page 4 regression tests | 8 tests |
+| `tests/test_unified_pipeline.py` | Unified multi-dataset CLI architecture, auditing, and feature bank | 16 tests |
+| `tests/test_joint_cine_training.py` | Joint cine multi-dataset training, slice sampling, and label harmonization | 18 tests |
+| `tests/test_emidec_training.py` | EMIDEC 5-class LGE tissue segmentation training and reliability | 7 tests |
+| `tests/test_emidec_tissue_metrics.py` | EMIDEC delayed-enhancement tissue volumetrics and MVO core metrics | 12 tests |
+| `tests/test_external_mnms.py` | M&Ms multi-vendor generalizability and vendor stratification | 12 tests |
+| `tests/test_empirical_synthetic_pipeline.py` | Empirical synthetic data generator and 5D Gaussian copula | 8 tests |
+| `tests/test_benchmark_reconciliation.py` | Benchmark reconciliation, governance, and draft target audits | 6 tests |
+| `tests/test_dataset_registry.py` | Multi-dataset registry, schema validation, and modality contracts | 23 tests |
+| `tests/test_dataset_loaders.py` | Multi-dataset loaders and label harmonization | 14 tests |
+| `tests/test_provenance_and_verification_audit.py` | Provenance trails, held-out patient verification, and mask audits | 6 tests |
+| `tests/test_recovery_modeling.py` | Recovery prediction modeling, SHAP attributions, and whitelist | 25 tests |
+| `tests/test_synthetic_cohort.py` | Synthetic cohort generation, Pydantic bounds, and invariants | 20 tests |
+| `tests/test_segmentation_pipeline.py` | 2D U-Net segmentation pipeline, Dice, and HD95 metrics | 22 tests |
+| `tests/test_stage2_evaluation.py` | Cardiac volumetric metrics and Bland–Altman agreement | 17 tests |
+| `tests/test_pipeline_and_measurements.py` | Physical chamber volumetrics and voxel geometry | 16 tests |
+| `tests/test_acdc_integration.py` | Real ACDC dataset ingestion and parsing | 4 tests |
+| `tests/test_app_init.py` | Streamlit multi-page app initialization | 5 tests |
+| `tests/test_cardiac_metrics.py` | Core mathematical cardiac chamber calculations | 4 tests |
+| `tests/test_ehr_db.py` | SQLite synthetic EHR database schema and seeding | 4 tests |
+| `tests/test_inspect_acdc.py` | ACDC raw data inspector and metadata parser | 5 tests |
+| `tests/test_milestone4_integration.py` | End-to-end integration and cross-modal data flow | 24 tests |
+| `tests/test_mri_loader.py` | SimpleITK/NiBabel NIfTI loaders and coordinate transforms | 14 tests |
+| `tests/test_schemas.py` | Pydantic patient profile and measurement data schemas | 10 tests |
+| `tests/test_stage1_ui.py` | Streamlit patient profile and overview page UI components | 8 tests |
+| **Total Test Suite** | **Comprehensive Regression Suite** | **353 tests** |
+
 ```bash
-# Unified multi-dataset pipeline architecture and commands (16 tests)
+# Example: Run calibration schema regression tests
+pytest tests/test_calibration_schema_regression.py
+
+# Example: Run unified pipeline integration tests
 pytest tests/test_unified_pipeline.py
-
-# Joint cine multi-dataset training and sampling (6 tests)
-pytest tests/test_joint_cine_training.py
-
-# EMIDEC LGE tissue segmentation training and reliability (7 tests)
-pytest tests/test_emidec_training.py
-
-# EMIDEC delayed-enhancement tissue metrics (12 tests)
-pytest tests/test_emidec_tissue_metrics.py
-
-# M&Ms multi-vendor external generalizability (12 tests)
-pytest tests/test_external_mnms.py
-
-# Empirical synthetic data generator and Gaussian copula (8 tests)
-pytest tests/test_empirical_synthetic_pipeline.py
-
-# Benchmark reconciliation and governance (6 tests)
-pytest tests/test_benchmark_reconciliation.py
-
-# Multi-dataset registry and metadata (23 tests)
-pytest tests/test_dataset_registry.py
-
-# Multi-dataset loaders and label harmonization (14 tests)
-pytest tests/test_dataset_loaders.py
-
-# Stage 6 Streamlit multi-dataset integration (8 tests)
-pytest tests/test_stage6_streamlit_integration.py
-
-# Provenance, test patient verification, and mask audits (6 tests)
-pytest tests/test_provenance_and_verification_audit.py
-
-# Recovery prediction modeling, SHAP attributions, and whitelist (25 tests)
-pytest tests/test_recovery_modeling.py
-
-# Synthetic cohort generation, Pydantic bounds, and invariants (20 tests)
-pytest tests/test_synthetic_cohort.py
-
-# 2D U-Net segmentation pipeline and metrics (22 tests)
-pytest tests/test_segmentation_pipeline.py
-
-# Cardiac volumetric metrics and Bland-Altman agreement (17 tests)
-pytest tests/test_stage2_evaluation.py
-
-# Physical chamber volumetrics and voxel geometry (16 tests)
-pytest tests/test_pipeline_and_measurements.py
-
-# Real ACDC dataset integration (4 tests)
-pytest tests/test_acdc_integration.py
 ```
 
 ---
 
-## 24. Reproducing Scientific Evaluation Metrics
+## 27. Reproducing Scientific Evaluation Metrics & Reference Benchmarks
 
-### 24.1 Reference Benchmarks vs. Local Reproduction
+### 27.1 Reference Benchmarks vs. Local Reproduction
 
 | Evaluation Domain | Benchmark Metric | Verified Milestone 4.1 Result | Target Benchmark |
 | :--- | :--- | :---: | :---: |
@@ -1308,48 +1612,14 @@ pytest tests/test_acdc_integration.py
 
 ---
 
-### 24.2 Generating Segmentation Evaluation Artifacts on Ubuntu / WSL2 / macOS
-
-On a fresh checkout, `data/processed/acdc/segmentation_evaluation.csv` and `data/processed/acdc/segmentation_evaluation_summary.json` are not tracked in Git (per `.gitignore` rules for generated data).
-
-To regenerate them from scratch:
-
-#### Prerequisites:
-1. **ACDC Dataset:** Downloaded and extracted into `data/raw/acdc/training/` containing patient folders (`patient001` through `patient100`) with `Info.cfg`, 4D cine, and ground-truth NIfTI masks.
-2. **Saved Dataset Split:** Preserved in `docs/acdc/dataset_split.json` (specifying the 20 held-out test patients).
-3. **Segmentation Checkpoint:** Trained 2D U-Net checkpoint placed at `models/mri/best_unet_model.pt`.
-4. **Environment:** Activated virtual environment with dependencies installed (`pip install -e .`).
-
-#### Reproduction Command:
-```bash
-# Run cohort evaluation across the 20 held-out test patients
-python -m crip.evaluation.segmentation_metrics --split test
-
-# Optional: customize data paths or outputs
-python -m crip.evaluation.segmentation_metrics \
-    --data-dir data/raw/acdc/training \
-    --checkpoint models/mri/best_unet_model.pt \
-    --split test \
-    --output-csv data/processed/acdc/segmentation_evaluation.csv \
-    --output-summary data/processed/acdc/segmentation_evaluation_summary.json
-```
-
-#### Regenerating Publication Poster Figures:
-```bash
-# Re-export all 8 poster-ready figures in PNG, SVG, and PDF
-python -c "from crip.evaluation.poster_figures import generate_all_poster_figures; generate_all_poster_figures()"
-```
-
----
-
-### 24.3 Reconciling Benchmark Variations
+### 27.2 Reconciling Benchmark Variations
 
 1. **Synthetic Cohort Count ($2,095$ vs $2,123$):**
    - The cohort generator creates $3,000$ synthetic individuals with a $70\%$ sustained abstinence probability ($0.70 \times 3000 = 2,100$ theoretical expectation).
    - Milestone 3A preliminary filtering yielded $2,123$ patients ($70.7\%$).
    - Milestone 3B and Milestone 4 implemented fixed-seed stratified partitioning yielding exactly **2,095** eligible sustained-abstinence patients partitioned into:
      $$\text{Train: } 1,257 \text{ (60.0\%)}, \quad \text{Validation: } 419 \text{ (20.0\%)}, \quad \text{Held-out Test: } 419 \text{ (20.0\%)}$$
-   - The platform strictly employs this $2,095$-patient dataset across all modeling and evaluation.
+   - The platform strictly employs this $2,095$-patient dataset across all baseline modeling and evaluation.
 
 2. **Reconciliation of MRI Segmentation Benchmarks (3.86% vs. 3.24% Draft Target):**
    - **$3.86\%$ LVEF MAE & $0.839$ Mean Foreground Dice (Verified Empirical Benchmark, $N=20$):** Derived directly from the persisted `models/mri/best_unet_model.pt` checkpoint evaluated across the designated 20 held-out test patients (`data/processed/acdc/segmentation_evaluation_summary.json`).
@@ -1357,7 +1627,7 @@ python -c "from crip.evaluation.poster_figures import generate_all_poster_figure
 
 ---
 
-### 24.4 M&Ms External Generalizability Benchmark (Multi-Center, Multi-Vendor)
+### 27.3 M&Ms External Generalizability Benchmark (Multi-Center, Multi-Vendor)
 
 CRIP benchmarks the zero-shot out-of-domain generalizability of the frozen ACDC 2D U-Net across the **114 paired cases** of the M&Ms 2020 cohort (spanning Siemens, Philips, GE, and Canon scanners across 5 clinical centers):
 
@@ -1370,20 +1640,11 @@ CRIP benchmarks the zero-shot out-of-domain generalizability of the frozen ACDC 
 | **LVEF Mean Absolute Error** | **$3.86\%$ points** | **$8.48\%$ points** (Median $6.12\%$) | $+4.62\%$ points |
 | **% Cases with $|\Delta \text{LVEF}| \le 5\%$** | **$75.0\%$** | **$40.4\%$** | $-34.6\%$ |
 
-#### Reproduction Commands:
-```bash
-# 1. Execute external evaluation across all 114 paired M&Ms cases
-python -m crip.evaluation.external_mnms
-
-# 2. Re-export all 5 publication poster figures in PNG, SVG, and PDF
-python -m crip.evaluation.poster_figures_mnms
-```
-
 *(For full vendor-stratified comparisons, HD95 distributions, and poster figures, see [docs/evaluation/mnms_external_validation_report.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/mnms_external_validation_report.md) and [docs/evaluation/external_datasets/mnms/](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/external_datasets/mnms/))*
 
 ---
 
-### 24.5 EMIDEC Delayed-Enhancement Tissue Characterization Benchmark
+### 27.4 EMIDEC Delayed-Enhancement Tissue Characterization Benchmark
 
 CRIP provides full support for delayed-enhancement (late gadolinium enhancement, LGE) CMR tissue characterization using the **EMIDEC** dataset (100 training cases: 33 Normal Controls, 67 Pathological Infarction Cases). 
 
@@ -1411,20 +1672,9 @@ CRIP provides full support for delayed-enhancement (late gadolinium enhancement,
 1. **No Dynamic Ejection Fraction from Static Viability CMR:** EMIDEC contains static end-diastolic delayed-enhancement CMR acquisitions. Ejection fraction (LVEF) requires paired end-diastolic and end-systolic cine frames; computing ejection fraction from static delayed-enhancement scans is strictly forbidden.
 2. **Pathology Boundary: CAD vs. Non-Ischemic Cardiomyopathy:** EMIDEC quantifies ischemic subendocardial/transmural myocardial infarction and microvascular obstruction resulting from acute coronary occlusion. In contrast, alcoholic cardiomyopathy (ACM) presents with non-ischemic, diffuse mid-wall fibrosis. EMIDEC tissue characterization serves as a viability quantification benchmark and must never be conflated with ACM fibrosis.
 
-#### Reproduction Commands:
-```bash
-# 1. Quantify tissue compartments across all 100 annotated EMIDEC cases
-python -m crip.emidec.tissue_metrics
-
-# 2. Re-export all 6 publication poster figures in PNG, SVG, and PDF
-python -m crip.evaluation.poster_figures_emidec
-```
-
-*(For detailed methodology, MVO correlation analyses, clinical severity stratification, and deep-learning training feasibility assessment, see [docs/evaluation/emidec_integration_report.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/emidec_integration_report.md) and [docs/evaluation/external_datasets/emidec/](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/external_datasets/emidec/))*
-
 ---
 
-### 24.6 Unified Multi-Dataset Architecture & Empirical Feature Bank
+### 27.5 Unified Multi-Dataset Architecture & Empirical Feature Bank
 
 CRIP provides a unified research pipeline incorporating all three real cardiac MRI datasets (ACDC cine, M&Ms multi-vendor cine, and EMIDEC viability LGE):
 
@@ -1439,39 +1689,11 @@ CRIP provides a unified research pipeline incorporating all three real cardiac M
 - **Viability Sizing Distribution ($N=67$ Infarction Cases):** Scar Burden: $18.71 \pm 9.46\%$, MVO Prevalence: $59.7\%$
 - **Leakage Protection:** Patient-level partitioning guarantees zero overlap between training, validation, and test cohorts.
 
-#### Pipeline CLI Commands:
-```bash
-# 1. Audit datasets, file existence, and label contracts
-python -m crip.pipeline audit
-
-# 2. Generate and persist unified patient-level split manifests
-python -m crip.pipeline prepare
-
-# 3. Assemble unified empirical feature bank across 314 studies
-python -m crip.pipeline features
-
-# 4. Simulate synthetic cohort with empirical priors and scenario provenance
-python -m crip.pipeline synthesize --n-patients 3000 --empirical
-
-# 5. Display verified benchmarks across in-domain and external test cohorts
-python -m crip.pipeline evaluate
-
-# 6. Inspect multi-task training configurations (with safety safeguards)
-python -m crip.pipeline train --task cine
-python -m crip.pipeline train --task lge
-```
-
-*(For complete architectural diagrams, multi-task comparison, leakage audits, and synthetic bridge details, see [docs/architecture/unified_multidataset_pipeline.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/architecture/unified_multidataset_pipeline.md) and [docs/evaluation/unified_pipeline_design_audit.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/unified_pipeline_design_audit.md))*
-
 ---
 
-### 24.7 Joint Cine Multi-Dataset Training & Matched Evaluation (Stage 5A)
+### 27.6 Joint Cine Multi-Dataset Training & Matched Evaluation (Stage 5A)
 
 CRIP Stage 5A implements true multi-dataset training for cine CMR segmentation by uniting **120 training patients** (60 ACDC + 60 M&Ms) and **40 validation patients** (20 ACDC + 20 M&Ms) using balanced slice sampling and canonical label harmonization.
-
-#### Model Checkpoints:
-- **Baseline Checkpoint (ACDC Only):** `models/mri/best_unet_model.pt` (SHA-256: `71ea54235803562acc67b8903deecaaf113d45a1c7b443a97ba9fbe6573072c9`, preserved and untouched).
-- **Joint Cine Checkpoint (ACDC + M&Ms):** `models/multidataset/cine_joint_unet.pt` (SHA-256: `7f934319bf4de2493b9b9e769ad716a828cd6968d163a81106edb02252b2d1f8`, trained via `python -m crip.pipeline train --task cine`).
 
 #### Matched Evaluation Benchmark (54 Test Cases):
 
@@ -1491,20 +1713,9 @@ CRIP Stage 5A implements true multi-dataset training for cine CMR segmentation b
 - **Philips (N=10):** Baseline Dice $0.787 \to 0.824$ ($\mathbf{+0.036}$), LVEF MAE $3.07\% \to 3.97\%$.
 - **Canon (N=10):** Baseline Dice $0.685 \to 0.668$ ($-0.017$), LVEF $\le 5\%$ agreement rate improved from $10\% \to 50\%$.
 
-#### Execution Commands:
-```bash
-# Train the joint cine segmentation U-Net (20 epochs)
-python -m crip.pipeline train --task cine --epochs 20
-
-# Run matched evaluation across both models and all 54 holdout cases
-python -m crip.pipeline evaluate
-```
-
-*(For full methodology, convergence dynamics, loss formulations, and vendor stratification figures, see [docs/evaluation/joint_cine_training_report.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/joint_cine_training_report.md) and [docs/evaluation/multidataset/](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/multidataset/))*
-
 ---
 
-### 24.8 Dedicated EMIDEC LGE Tissue Segmentation Benchmark (Stage 5B)
+### 27.7 Dedicated EMIDEC LGE Tissue Segmentation Benchmark (Stage 5B)
 
 CRIP Stage 5B incorporates a dedicated **5-class 2D U-Net** for delayed-enhancement (LGE) tissue characterization, isolating static viability quantification from dynamic cine bSSFP kinematics:
 - **Target Classes:** 0=Background, 1=LV Cavity, 2=Normal Myocardium, 3=Myocardial Infarction, 4=Microvascular Obstruction (MVO / No-Reflow).
@@ -1527,20 +1738,9 @@ CRIP Stage 5B incorporates a dedicated **5-class 2D U-Net** for delayed-enhancem
 | **Infarction Detection** | All Cases ($N=20$) | **Sensitivity 100.0%** | Zero missed myocardial infarctions ($13/13$) |
 | **MVO Detection** | All Cases ($N=20$) | **Sensitivity 100.0%** | Complete identification of no-reflow cases ($8/8$) |
 
-#### Execution Commands:
-```bash
-# 1. Train dedicated EMIDEC 5-class LGE U-Net (30 epochs)
-python -m crip.pipeline train --task lge --epochs 30
-
-# 2. Run held-out evaluation across all models and test cohorts
-python -m crip.pipeline evaluate
-```
-
-*(For full methodology, class distributions, HD95 boundary statistics, and multi-panel figures, see [docs/evaluation/emidec_segmentation_training_report.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/emidec_segmentation_training_report.md) and [docs/evaluation/multidataset/emidec_training/](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/multidataset/emidec_training/))*
-
 ---
 
-### 24.9 Unified Empirically Informed Synthetic Data and Recovery Modeling (Stage 5C)
+### 27.8 Unified Empirically Informed Synthetic Data and Recovery Modeling (Stage 5C)
 
 CRIP Stage 5C establishes a mathematically rigorous, empirically grounded synthetic patient generator and recovery modeling benchmark combining clinical priors from all three cardiac MRI datasets (**ACDC**, **M&Ms**, and **EMIDEC**).
 
@@ -1563,120 +1763,105 @@ CRIP Stage 5C establishes a mathematically rigorous, empirically grounded synthe
 | **Brier Score** | 0.2134 | **0.1304** ($-38.9\%$) | 0.2061 | **0.1217** ($-41.0\%$) |
 | **ECE** | 0.1068 | 0.1238 | 0.1145 | **0.1037** |
 
-#### Execution Commands:
-```bash
-# 1. Compile empirical feature bank from all 3 datasets (314 records)
-python -m crip.pipeline features
-
-# 2. Synthesize 3,000-patient empirically informed cohort
-python -m crip.pipeline synthesize --n-patients 3000 --empirical --seed 42
-
-# 3. Train and benchmark recovery models & generate 24 scientific figures
-python -m crip.pipeline train --task recovery
-
-# 4. Display verified benchmark summary
-python -m crip.pipeline evaluate --summary-only
-```
-
-*(For full methodology, Gaussian copula formulations, held-out clinical validation statistics, and multi-format poster figures, see [docs/evaluation/unified_synthetic_integration_report.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/unified_synthetic_integration_report.md) and [docs/evaluation/multidataset/synthetic_integration/](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/multidataset/synthetic_integration/))*
-
-
 ---
 
-## 25. Troubleshooting & Frequently Asked Questions
+## 28. Troubleshooting & Frequently Asked Questions
 
-### 1. `ModuleNotFoundError: No module named 'crip'`
-- **Cause:** The package was not installed in editable mode or the virtual environment is not activated.
-- **Fix:** Activate `.venv` and run `pip install -e .` from the repository root.
+This section provides verified diagnoses and actionable remedies organized by failure domain.
 
-### 2. Windows PowerShell Execution Policy Error
+### 28.1 Python and Virtual Environment Problems
+
+#### 1. `ModuleNotFoundError: No module named 'crip'`
+- **Cause:** The package was not installed in editable mode or the virtual environment is not activated in the current terminal session.
+- **Remedy:** Activate your virtual environment (`source .venv/bin/activate`) and run:
+  ```bash
+  pip install -e .
+  ```
+
+#### 2. Windows PowerShell Execution Policy Restrictions
 - **Error:** `File Activate.ps1 cannot be loaded because running scripts is disabled on this system.`
-- **Cause:** Default Windows PowerShell security policy restricts script execution.
-- **Fix:** Allow script execution for the active terminal process:
+- **Cause:** Default Windows PowerShell security policy restricts unsigned script execution.
+- **Remedy:** Allow script execution for the active terminal process:
   ```powershell
   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
   .venv\Scripts\Activate.ps1
   ```
 
-### 3. Unsupported Python Version (< 3.11)
+#### 3. Unsupported Python Version (< 3.11)
 - **Error:** `ERROR: Package 'crip' requires a different Python: 3.10.x not in '>=3.11'`
-- **Cause:** CRIP requires Python 3.11, 3.12, or 3.13 due to modern typing syntax and dependency constraints.
-- **Fix:** Install Python 3.12 via Homebrew (`brew install python@3.12`), apt (`sudo apt-get install python3.12 python3.12-venv`), or python.org, then rebuild `.venv`.
+- **Cause:** CRIP requires Python 3.11, 3.12, or 3.13 due to modern typing syntax and dependency specifications.
+- **Remedy:** Install Python 3.12 via Homebrew (`brew install python@3.12`), apt (`sudo apt-get install python3.12 python3.12-venv`), or python.org, then recreate `.venv`:
+  ```bash
+  rm -rf .venv
+  python3.12 -m venv .venv
+  source .venv/bin/activate
+  pip install -r requirements.txt
+  pip install -e .
+  ```
 
-### 4. SimpleITK NIfTI Coordinate Warning
-- **Warning:** `NiftiImageIO: patientXXX_frameYY.nii.gz has unexpected scales in sform`
-- **Cause:** Standard ITK notice for anisotropic voxels or minor scaling discrepancies between NIfTI `qform` and `sform` matrices.
-- **Fix:** Harmless informational notice; does not affect voxel counts or volumetric math.
-
-### 5. Matplotlib Font Cache Warning or Permission Denied
-- **Warning:** `Matplotlib is building the font cache; this may take a moment` or `Path is not writable`.
-- **Fix:** Set a local writable cache directory before running scripts:
+#### 4. Matplotlib Font Cache Warnings or Permission Errors
+- **Notice:** `Matplotlib is building the font cache; this may take a moment` or `Path /Users/<user>/.matplotlib is not writable`.
+- **Cause:** Matplotlib attempts to write its font cache to the user home directory, which may have restricted permissions in certain sandboxed or automated environments.
+- **Remedy:** Point Matplotlib to a temporary writable directory:
   ```bash
   export MPLCONFIGDIR=/tmp/matplotlib
   ```
 
-### 6. Streamlit Port 8501 Conflicts
-- **Error:** `Port 8501 is already in use.`
-- **Fix:** Launch on a different port:
+---
+
+### 28.2 Dataset Acquisition and Organization Problems
+
+#### 1. Missing ACDC Dataset in Path A vs. Path B
+- **Behavior:** In Path A (Synthetic Quick Start), Pages 1, 3, and 4 work completely. Pages 2 and 5 display an informative notice indicating that raw CMR scans have not been downloaded. **The application does not crash.**
+- **Remedy:** To enable Pages 2 and 5, follow [Path B (Section 12)](#12-path-b--complete-real-mri-dataset-acquisition-and-setup) to download and extract the dataset into `data/raw/acdc/training/`.
+
+#### 2. Windows/WSL NTFS Alternate Data Stream Metadata (`*:Zone.Identifier`)
+- **Symptoms:** Globbing mismatches, unexpected filenames like `patient001_frame01.nii.gz:Zone.Identifier`, or SimpleITK reader errors on WSL2.
+- **Cause:** Downloading archives via Windows web browsers or extracting files across NTFS partitions attaches Windows Security Zone metadata streams.
+- **Remedy:**
   ```bash
-  python -m streamlit run src/crip/app/main.py --server.port 8502
+  # 1. Review affected metadata files (diagnostic check):
+  find data/raw -type f -name '*:Zone.Identifier' -print
+
+  # 2. Safely remove only the Zone.Identifier metadata sidecars:
+  find data/raw -type f -name '*:Zone.Identifier' -delete
   ```
+  *(Never delete actual `.nii.gz` image volumes or ground-truth masks).*
 
-### 7. Missing ACDC Dataset in Path A vs. Path B
-- **Behavior:** In Path A (Synthetic Data Only), Pages 1, 3, and 4 work completely. Pages 2 and 5 display an informative banner indicating that raw CMR scans have not been downloaded. **The application does not crash.**
-- **Fix to Enable Page 2 & 5:** Follow [Path B (Section 12)](#12-path-b--complete-real-mri-dataset-acquisition-and-setup) to download and extract the dataset into `data/raw/acdc/training`.
+#### 3. Case Sensitivity and Nested Extraction Folders
+- **Symptoms:** `FileNotFoundError: Expected patient directory patient001 not found.`
+- **Cause:** Archive extraction utilities occasionally create nested wrapper directories (e.g. `data/raw/acdc/training/training/patient001` or `data/raw/mnms/OpenDataset/Training/`).
+- **Remedy:** Verify your directory layout against Section 12.3. Ensure patient folders reside directly under `data/raw/acdc/training/patientXXX` and M&Ms folders reside under `data/raw/mnms/Training/Labeled/`.
 
-### 8. Missing MRI Checkpoints
-- **Error:** `FileNotFoundError: Checkpoint not found at models/mri/best_unet_model.pt`
-- **Behavior:** If deep learning weights are not present, Page 2 falls back to displaying expert ground-truth contours.
-- **Fix:** Train the baseline U-Net (`python src/crip/mri/train_segmentation.py --epochs 25`) or joint U-Net (`python -m crip.pipeline train --task cine`).
+---
 
-### 9. Missing Recovery Model Checkpoint
-- **Behavior:** If `models/recovery/recovery_pipeline.joblib` is missing, Streamlit will automatically train and serialize the default model on startup. Alternatively, run `python -m crip.modeling.train`.
+### 28.3 Cohort Partition and Split Repair Problems
 
-### 10. PyTorch CUDA / MPS Device Fallback
-- **Notice:** `Using CPU device.`
-- **Fix:** Normal on systems without dedicated GPUs. To force CPU execution explicitly:
-  ```bash
-  python src/crip/mri/train_segmentation.py --device cpu
-  ```
-
-### 11. WSL2 Localhost Connection from Windows Host
-- **Issue:** Unable to open `http://localhost:8501` from Windows host browser.
-- **Fix:** Ensure WSL2 is using mirrored networking or launch Streamlit binding to all addresses:
-  ```bash
-  python -m streamlit run src/crip/app/main.py --server.address 0.0.0.0
-  ```
-
-### 12. Empty EMIDEC Splits on Ubuntu/WSL (`train=0, val=0, held_out_test=0` / `num_samples=0`)
+#### 1. Empty EMIDEC Splits on Ubuntu/WSL (`train=0, val=0, held_out_test=0`)
 - **Error:** `ValueError: num_samples should be a positive integer value, but got num_samples=0` or `Loaded EMIDEC splits: train=0, val=0, held_out_test=0`.
-- **Cause:** `data/processed/unified/cohort_splits.json` was generated prior to downloading or extracting the EMIDEC dataset into `data/raw/emidec/`.
-- **Fix:** Confirm EMIDEC case folders are extracted under `data/raw/emidec/` (or `data/raw/emidec/emidec-dataset-1.0.1/`), then restore the canonical 60/20/20 stratified splits:
+- **Cause:** `python -m crip.pipeline prepare` was executed before downloading or extracting the EMIDEC dataset into `data/raw/emidec/`. The manifest generator safely skipped unextracted cases, resulting in an empty split block in `data/processed/unified/cohort_splits.json`.
+- **Remedy:** Confirm EMIDEC case folders are extracted under `data/raw/emidec/`, then restore the canonical 60/20/20 stratified splits:
   ```bash
   python -m crip.pipeline prepare --repair-missing-splits
   ```
-  Validate that the preflight audit passes before retraining:
+  Verify with the preflight dry-run check before retraining:
   ```bash
   python -m crip.pipeline train --task lge --dry-run
   ```
 
-### 13. Windows/WSL NTFS Alternate Data Stream Metadata (`*:Zone.Identifier`)
-- **Error:** Unhandled file parsing error, unexpected filenames like `patient001_frame01.nii.gz:Zone.Identifier`, or globbing mismatches.
-- **Cause:** Downloading archives via Windows web browsers or extracting across NTFS drives attaches Windows Security Zone metadata streams.
-- **Fix:** Remove all zone identifier streams recursively from the data directory:
-  ```bash
-  find data/ -name "*:Zone.Identifier" -delete
-  ```
+---
 
-### 14. Missing Empirical Feature Bank (`empirical_feature_bank.csv`)
+### 28.4 Preprocessing and Feature Bank Dependency Problems
+
+#### 1. Missing Empirical Feature Bank (`empirical_feature_bank.csv`)
 - **Error:** `FileNotFoundError: Feature bank not found at data/processed/unified/empirical_feature_bank.csv` when executing `python -m crip.pipeline train --task recovery`.
 - **Cause:** Attempting to train recovery models or compile the feature bank before generating the three prerequisite source measurement CSVs.
-- **Fix:** Execute the three physical metric extraction scripts in order, verify them with the preflight smoke test, and compile the feature bank:
+- **Remedy:** Execute the three physical metric extraction scripts in order, verify them with the preflight smoke test, and compile the feature bank:
   ```bash
-  # 1. ACDC (100 cases)
+  # 1. ACDC (100 cases -> cardiac_measurements.csv)
   python -m crip.mri.pipeline --data-dir data/raw/acdc/training --output-dir data/processed/acdc
 
-  # 2. M&Ms (114 cases)
+  # 2. M&Ms (114 cases -> external_evaluation.csv)
   python -m crip.evaluation.external_mnms
 
   # 3. EMIDEC (100 cases -> tissue_measurements.csv)
@@ -1686,18 +1871,60 @@ python -m crip.pipeline evaluate --summary-only
   python -m crip.pipeline features
   ```
 
-### 15. Recovery Pipeline Preflight Validation Failure
+#### 2. Recovery Pipeline Preflight Validation Failure
 - **Error:** `RuntimeError: Recovery pipeline preflight validation failed.`
 - **Cause:** One or more required datasets or processed artifacts are missing or incomplete.
-- **Fix:** Run the preflight dry-run check to identify the exact missing file:
+- **Remedy:** Run the preflight dry-run check to identify the exact missing file:
   ```bash
   python -m crip.pipeline train --task recovery --dry-run
   ```
   Follow the specific remediation command output by the preflight validator for each missing component.
 
-### 16. Streamlit Evaluation Page — Recovery Benchmark JSON Schema Mismatch
-- **Error:** `AttributeError: 'str' object has no attribute 'get'` in `src/crip/app/pages/4_Evaluation.py` at line 603 (`pred_p = [b.get("mean_predicted_prob", 0) for b in cc]`).
-- **Verified Root Cause:** The multi-dataset recovery pipeline (`src/crip/pipeline/recovery_trainer.py`) serializes calibration curves into `data/processed/multidataset/synthetic_recovery_comparison.json` as a dictionary of parallel coordinate arrays (`{"mean_predicted": [...], "fraction_positives": [...]}`). The Streamlit evaluation page assumed a list of per-bin dictionaries (`[{"mean_predicted_prob": ...}, ...]`), causing a dictionary iteration loop (`for b in cc`) where `b` was a string (`'mean_predicted'`), raising an `AttributeError` when `.get()` was called on the string.
+---
+
+### 28.5 Model Checkpoint and Evaluation Problems
+
+#### 1. Missing MRI Checkpoints
+- **Error:** `FileNotFoundError: Checkpoint not found at models/mri/best_unet_model.pt`
+- **Behavior:** If deep learning weights are not present, Page 2 falls back to displaying expert ground-truth contours.
+- **Remedy:** Train the baseline U-Net (`python src/crip/mri/train_segmentation.py --epochs 25`) or joint U-Net (`python -m crip.pipeline train --task cine --epochs 20`).
+
+#### 2. Missing Segmentation Evaluation Artifact (`segmentation_evaluation.csv`)
+- **Warning:** `⚠️ segmentation_evaluation.csv not found. Please run the evaluation pipeline first.` on Page 4 Tab 2.
+- **Cause:** The 20 held-out ACDC test cases have not been evaluated with the trained checkpoint.
+- **Remedy:** Execute the held-out segmentation evaluation script:
+  ```bash
+  python -m crip.evaluation.segmentation_metrics --split test
+  ```
+
+#### 3. PyTorch CUDA / MPS Device Fallback
+- **Notice:** `Using CPU device.`
+- **Remedy:** Normal on systems without dedicated GPUs. To force CPU execution explicitly:
+  ```bash
+  python src/crip/mri/train_segmentation.py --device cpu
+  ```
+
+---
+
+### 28.6 Streamlit Web Platform Problems
+
+#### 1. Port 8501 Already in Use
+- **Error:** `Port 8501 is already in use.`
+- **Remedy:** Launch on an alternative port:
+  ```bash
+  python -m streamlit run src/crip/app/main.py --server.port 8502
+  ```
+
+#### 2. WSL2 Localhost Connection from Windows Host
+- **Issue:** Unable to open `http://localhost:8501` in the Windows web browser when running Streamlit inside WSL2.
+- **Remedy:** Launch Streamlit binding to all network interfaces:
+  ```bash
+  python -m streamlit run src/crip/app/main.py --server.address 0.0.0.0 --server.port 8501
+  ```
+
+#### 3. Recovery Benchmark JSON Schema Mismatch
+- **Historical Error:** `AttributeError: 'str' object has no attribute 'get'` in `src/crip/app/pages/4_Evaluation.py` at line 603 (`pred_p = [b.get("mean_predicted_prob", 0) for b in cc]`).
+- **Verified Root Cause:** The multi-dataset recovery pipeline (`src/crip/pipeline/recovery_trainer.py`) serializes calibration curves into `data/processed/multidataset/synthetic_recovery_comparison.json` as a dictionary of parallel coordinate arrays (`{"mean_predicted": [...], "fraction_positives": [...]}`). The Streamlit evaluation page originally assumed a list of per-bin dictionaries (`[{"mean_predicted_prob": ...}, ...]`), causing a dictionary iteration loop (`for b in cc`) where `b` was a string key (`'mean_predicted'`), raising an `AttributeError` when `.get()` was called on the string.
 - **Corrected Behavior:** Implemented `extract_calibration_curve_points()` in `src/crip/evaluation/model_comparison.py` to robustly detect and normalize both dictionary-of-arrays format (`mean_predicted`, `fraction_positives`) and historical list-of-dicts format (`mean_predicted_prob`, `observed_frequency`). Missing values are never fabricated or defaulted to zero.
 - **Regenerating Artifacts (Optional):** If existing benchmark files are intact, regeneration is NOT required. To re-run recovery benchmarks if needed:
   ```bash
@@ -1707,15 +1934,12 @@ python -m crip.pipeline evaluate --summary-only
   ```bash
   # Launch Streamlit
   python -m streamlit run src/crip/app/main.py
-
-  # On Ubuntu/WSL, bind to all interfaces for Windows host browser access:
-  python -m streamlit run src/crip/app/main.py --server.address 0.0.0.0
   ```
   Open `http://localhost:8501`, navigate to **Model Evaluation (Page 4) $\to$ Tab 3: Recovery Prediction Benchmarks $\to$ Select "Experiment 2: Unselected All-Comers Cohort"** to confirm calibration curves and comparative metrics render cleanly.
 
 ---
 
-## 26. Reproducibility and Limitations
+## 29. Reproducibility and Limitations
 
 ### Computational Reproducibility
 - All synthetic cohort generation, dataset splitting, U-Net training, and Scikit-learn pipelines use fixed seeds (seed 42).
@@ -1728,12 +1952,12 @@ python -m crip.pipeline evaluate --summary-only
 
 ---
 
-## 27. License, Dataset Attribution, and References
+## 30. License, Dataset Attribution, and References
 
-### 27.1 ACDC Dataset License
+### 30.1 ACDC Dataset License
 The Automated Cardiac Diagnosis Challenge (ACDC) dataset is used under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** license.
 
-### 27.2 Mandatory Academic Citation
+### 30.2 Mandatory Academic Citation
 Any academic publication, presentation, or derived work utilizing this platform must cite the foundational ACDC challenge paper:
 
 > **O. Bernard, A. Lalande, C. Zotti, F. Cervenansky, et al.**  
@@ -1741,9 +1965,10 @@ Any academic publication, presentation, or derived work utilizing this platform 
 > **IEEE Transactions on Medical Imaging**, vol. 37, no. 11, pp. 2514–2525, Nov. 2018.  
 > **DOI:** [10.1109/TMI.2018.2837502](https://doi.org/10.1109/TMI.2018.2837502)
 
-### 27.3 Key Scientific References
+### 30.3 Key Scientific References
 1. **Cerqueira MD, et al.** *Standardized Myocardial Segmentation and Nomenclature for Tomographic Imaging of the Heart.* **Circulation**, 2002; 105(4):539-542.
 2. **Schulz-Menger J, et al.** *Standardized Image Interpretation and Post-Processing in Cardiovascular Magnetic Resonance: SCMR Guidelines.* **Journal of Cardiovascular Magnetic Resonance**, 2020; 22(1):19.
 3. **Stewart SH, et al.** *Phosphatidylethanol (PEth) in Blood as a Marker of Heavy Alcohol Consumption.* **Alcoholism: Clinical and Experimental Research**, 2014; 38(6):1700-1707.
 4. **Ware JS, et al.** *Truncations of Titin Causing Dilated Cardiomyopathy.* **New England Journal of Medicine**, 2016; 374(3):258-267.
 5. **Richards S, et al.** *Standards and Guidelines for the Interpretation of Sequence Variants: ACMG and AMP Consensus.* **Genetics in Medicine**, 2015; 17(5):405-424.
+
