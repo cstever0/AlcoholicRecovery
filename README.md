@@ -785,10 +785,19 @@ python -m crip.pipeline train --task cine --epochs 20
 - Saved Checkpoint: `models/multidataset/cine_joint_unet.pt`
 
 ### 16.3 Dedicated EMIDEC 5-Class LGE U-Net
-Dedicated model segmenting static delayed enhancement: Background (0), LV Cavity (1), Normal Myo (2), Infarct (3), MVO (4):
+Dedicated model segmenting static delayed enhancement: Background (0), LV Cavity (1), Normal Myo (2), Infarct (3), MVO (4).
+
+> [!IMPORTANT]
+> **Dataset Layout & Manifest Repair:** Training requires 100 expert-annotated EMIDEC cases (`Case_001` through `Case_100` or `Case_N001`–`Case_P100`) containing `Images/` and `Contours/` subdirectories under `data/raw/emidec/`.
+> If `cohort_splits.json` was generated before downloading EMIDEC, the EMIDEC section will be unpopulated (`train=0, val=0, test=0`).
+> Safely restore the canonical 60/20/20 stratified splits without rebuilding or touching ACDC/M&Ms assignments:
+> ```bash
+> python -m crip.pipeline prepare --repair-missing-splits
+> ```
+> Always execute the preflight dry-run audit before training to verify case pairing, mask presence, slice distributions (432 train, 136 val), and zero patient overlap:
 
 ```bash
-# Dry-run configuration validation (instant)
+# Dry-run preflight audit and dataset validation (recommended before training)
 python -m crip.pipeline train --task lge --dry-run
 
 # Full training with DiceFocalLoss (30 epochs)
@@ -1482,6 +1491,18 @@ python -m crip.pipeline evaluate --summary-only
 - **Fix:** Ensure WSL2 is using mirrored networking or launch Streamlit binding to all addresses:
   ```bash
   python -m streamlit run src/crip/app/main.py --server.address 0.0.0.0
+  ```
+
+### 12. Empty EMIDEC Splits on Ubuntu/WSL (`train=0, val=0, held_out_test=0` / `num_samples=0`)
+- **Error:** `ValueError: num_samples should be a positive integer value, but got num_samples=0` or `Loaded EMIDEC splits: train=0, val=0, held_out_test=0`.
+- **Cause:** `data/processed/unified/cohort_splits.json` was generated prior to downloading or extracting the EMIDEC dataset into `data/raw/emidec/`.
+- **Fix:** Confirm EMIDEC case folders are extracted under `data/raw/emidec/` (or `data/raw/emidec/emidec-dataset-1.0.1/`), then restore the canonical 60/20/20 stratified splits:
+  ```bash
+  python -m crip.pipeline prepare --repair-missing-splits
+  ```
+  Validate that the preflight audit passes before retraining:
+  ```bash
+  python -m crip.pipeline train --task lge --dry-run
   ```
 
 ---

@@ -11,8 +11,12 @@ Manages patient-level partitioning across ACDC, M&Ms, and EMIDEC to ensure:
 
 from __future__ import annotations
 
+import copy
 import json
 import logging
+import os
+import shutil
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -44,11 +48,47 @@ def load_acdc_splits(split_json_path: Path = DEFAULT_ACDC_SPLIT_JSON) -> Dict[st
 def create_emidec_splits(
     measurements_csv: Path = DEFAULT_EMIDEC_MEASUREMENTS_CSV,
     seed: int = 42,
+    use_canonical: bool = True,
+    canonical_manifest_path: Path = CANONICAL_UNIFIED_SPLITS_PATH,
 ) -> Dict[str, Any]:
     """Generate stratified patient-level 60/20/20 splits and 5-fold CV for EMIDEC.
 
     Stratified by pathology (Normal vs Myocardial Infarction) and MVO presence.
+
+    If use_canonical=True and canonical_manifest_path exists, loads the verified canonical
+    assignments to guarantee exact reproducibility across all platforms.
     """
+    if use_canonical and canonical_manifest_path.is_file():
+        try:
+            with open(canonical_manifest_path, "r", encoding="utf-8") as f:
+                c_manifest = json.load(f)
+            em_sec = c_manifest.get("datasets", {}).get("emidec", {})
+            c_splits = em_sec.get("splits", {})
+            if (
+                em_sec.get("counts", {}).get("total_annotated", 0) == 100
+                and len(c_splits.get("train", [])) == 60
+                and len(c_splits.get("val", [])) == 20
+                and len(c_splits.get("test", [])) == 20
+            ):
+                return {
+                    "seed": seed,
+                    "total_annotated": 100,
+                    "strata_counts": em_sec.get("strata_counts", {
+                        "normal": 33,
+                        "pathological_mvo_positive": 40,
+                        "pathological_mvo_negative": 27,
+                    }),
+                    "split_counts": {
+                        "train": 60,
+                        "val": 20,
+                        "test": 20,
+                    },
+                    "splits": c_splits,
+                    "five_fold_cv": em_sec.get("five_fold_cv", {}),
+                }
+        except Exception as e:
+            logger.warning(f"Could not load canonical EMIDEC splits from {canonical_manifest_path}: {e}")
+
     if measurements_csv.is_file():
         df = pd.read_csv(measurements_csv)
         normals = sorted(df[df["pathology_group"] == "Normal"]["case_id"].tolist())
@@ -307,3 +347,155 @@ def build_unified_cohort_manifest(
 
     logger.info(f"Unified cohort splits saved to {output_path}")
     return manifest
+
+
+def repair_unified_cohort_manifest(
+    manifest_path: Path = DEFAULT_UNIFIED_SPLITS_PATH,
+    canonical_manifest_path: Path = CANONICAL_UNIFIED_SPLITS_PATH,
+    backup: bool = True,
+) -> Dict[str, Any]:
+    """Inspect and safely repair incomplete or empty dataset sections in cohort_splits.json.
+
+    Idempotent operation:
+    1. If manifest_path does not exist, copies from canonical_manifest_path.
+    2. If EMIDEC splits are already complete and valid (60/20/20, 0 overlap), leaves unchanged.
+    3. If EMIDEC splits are empty (0 cases), verifies 100 annotated cases exist on disk,
+       loads canonical EMIDEC partition, creates a backup file (.json.bak), atomically writes
+       repaired manifest, and revalidates all dataset partitions.
+    4. If EMIDEC splits are non-empty but conflicting, raises ValueError.
+
+    Returns:
+        Dict containing repair status, backup path, and final cohort counts.
+    """
+    manifest_path = Path(manifest_path)
+    canonical_manifest_path = Path(canonical_manifest_path)
+
+    if not canonical_manifest_path.is_file():
+        raise FileNotFoundError(f"Canonical cohort manifest not found at {canonical_manifest_path}")
+
+    # Case 1: manifest does not exist at all
+    if not manifest_path.is_file():
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(canonical_manifest_path, manifest_path)
+        logger.info(f"Initialized manifest from canonical reference at {manifest_path}")
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return {
+            "repaired": True,
+            "status": "INITIALIZED_FROM_CANONICAL",
+            "manifest_path": str(manifest_path),
+            "backup_path": None,
+            "canonical_source": str(canonical_manifest_path),
+            "emidec_counts": data["datasets"]["emidec"]["counts"],
+        }
+
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        manifest = json.load(f)
+
+    with open(canonical_manifest_path, "r", encoding="utf-8") as f:
+        canonical = json.load(f)
+
+    em_data = manifest.get("datasets", {}).get("emidec", {})
+    em_splits = em_data.get("splits", {})
+    tr = em_splits.get("train", [])
+    va = em_splits.get("val", [])
+    te = em_splits.get("test", [])
+
+    is_valid = (
+        len(tr) == 60
+        and len(va) == 20
+        and len(te) == 20
+        and len(set(tr) & set(va)) == 0
+        and len(set(tr) & set(te)) == 0
+        and len(set(va) & set(te)) == 0
+    )
+
+    if is_valid:
+        logger.info("EMIDEC cohort manifest is already complete and valid. No repair required.")
+        return {
+            "repaired": False,
+            "status": "ALREADY_VALID",
+            "manifest_path": str(manifest_path),
+            "backup_path": None,
+            "canonical_source": str(canonical_manifest_path),
+            "emidec_counts": em_data.get("counts"),
+        }
+
+    is_empty = (
+        len(tr) == 0
+        and len(va) == 0
+        and len(te) == 0
+    ) or (em_data.get("counts", {}).get("total_annotated", 0) == 0)
+
+    if not is_empty:
+        raise ValueError(
+            f"Conflicting, non-empty EMIDEC splits detected in {manifest_path}: "
+            f"train={len(tr)}, val={len(va)}, test={len(te)} (expected 60/20/20). "
+            "Refusing to overwrite without explicit manual resolution."
+        )
+
+    # Verify physical raw dataset on disk
+    loader = EMIDECDataLoader()
+    cases_dict = loader.discover_cases()
+    annotated_available = {cid for cid, info in cases_dict.items() if info.get("has_contour")}
+    if len(annotated_available) < 100:
+        raise RuntimeError(
+            f"Cannot repair EMIDEC manifest: Found {len(annotated_available)} / 100 annotated cases on disk. "
+            "Please ensure the full EMIDEC dataset is extracted into data/raw/emidec/."
+        )
+
+    # Verify canonical case IDs exist on disk
+    c_em = canonical["datasets"]["emidec"]
+    c_all = set(c_em["splits"]["train"]) | set(c_em["splits"]["val"]) | set(c_em["splits"]["test"])
+    missing_ids = c_all - annotated_available
+    if missing_ids:
+        raise RuntimeError(
+            f"Cannot repair EMIDEC manifest: Authoritative canonical cases missing from disk: {sorted(missing_ids)}"
+        )
+
+    # Create backup
+    backup_path = None
+    if backup:
+        backup_path = manifest_path.with_suffix(".json.bak")
+        shutil.copyfile(manifest_path, backup_path)
+        logger.info(f"Created backup of previous manifest at {backup_path}")
+
+    # Restore EMIDEC section while strictly preserving ACDC and M&Ms
+    manifest["datasets"]["emidec"] = copy.deepcopy(c_em)
+
+    # Validate leakage across all datasets
+    for d_name in ["acdc", "emidec"]:
+        s = manifest["datasets"][d_name]["splits"]
+        if set(s["train"]) & set(s["val"]) or set(s["train"]) & set(s["test"]) or set(s["val"]) & set(s["test"]):
+            raise ValueError(f"Integrity check failed: Patient leakage detected in {d_name} splits!")
+    mnms_s = manifest["datasets"]["mnms"]["splits"]
+    if set(mnms_s["train"]) & set(mnms_s["val"]) or set(mnms_s["train"]) & set(mnms_s.get("held_out_external", [])):
+        raise ValueError("Integrity check failed: Patient leakage detected in M&Ms splits!")
+
+    # Atomic write via temporary file
+    temp_fd, temp_file_path = tempfile.mkstemp(dir=manifest_path.parent, prefix="cohort_splits_", suffix=".tmp")
+    try:
+        with open(temp_fd, "w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2)
+        os.replace(temp_file_path, manifest_path)
+    except Exception:
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+        raise
+
+    # Re-read to verify persisted file
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        re_read = json.load(f)
+    assert len(re_read["datasets"]["emidec"]["splits"]["train"]) == 60
+    assert len(re_read["datasets"]["emidec"]["splits"]["val"]) == 20
+    assert len(re_read["datasets"]["emidec"]["splits"]["test"]) == 20
+
+    logger.info(f"Successfully repaired EMIDEC cohort splits in {manifest_path}")
+    return {
+        "repaired": True,
+        "status": "REPAIRED_FROM_CANONICAL",
+        "manifest_path": str(manifest_path),
+        "backup_path": str(backup_path) if backup_path else None,
+        "canonical_source": str(canonical_manifest_path),
+        "emidec_counts": re_read["datasets"]["emidec"]["counts"],
+    }

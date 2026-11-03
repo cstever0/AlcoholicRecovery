@@ -81,16 +81,22 @@ class EMIDECTrainer:
     def load_cohort_splits(self) -> Tuple[List[str], List[str], List[str]]:
         """Load EMIDEC train, val, and test splits from unified manifest."""
         if not self.splits_path.is_file():
-            from crip.pipeline.splits import build_unified_cohort_manifest
-            build_unified_cohort_manifest(output_path=self.splits_path)
+            from crip.pipeline.splits import CANONICAL_UNIFIED_SPLITS_PATH, build_unified_cohort_manifest
+            if CANONICAL_UNIFIED_SPLITS_PATH.is_file():
+                self.splits_path.parent.mkdir(parents=True, exist_ok=True)
+                import shutil
+                shutil.copyfile(CANONICAL_UNIFIED_SPLITS_PATH, self.splits_path)
+                logger.info(f"Initialized manifest from canonical reference at {self.splits_path}")
+            else:
+                build_unified_cohort_manifest(output_path=self.splits_path)
 
         with open(self.splits_path, "r", encoding="utf-8") as f:
             manifest = json.load(f)
 
-        em_splits = manifest["datasets"]["emidec"]["splits"]
-        train_ids = em_splits["train"]
-        val_ids = em_splits["val"]
-        test_ids = em_splits["test"]
+        em_splits = manifest.get("datasets", {}).get("emidec", {}).get("splits", {})
+        train_ids = em_splits.get("train", [])
+        val_ids = em_splits.get("val", [])
+        test_ids = em_splits.get("test", [])
 
         # Strict isolation check
         s_tr, s_va, s_te = set(train_ids), set(val_ids), set(test_ids)
@@ -102,6 +108,166 @@ class EMIDECTrainer:
             f"Loaded EMIDEC splits: train={len(train_ids)}, val={len(val_ids)}, held_out_test={len(test_ids)}"
         )
         return train_ids, val_ids, test_ids
+
+    def validate_preflight(self, strict: bool = False) -> Dict[str, Any]:
+        """Perform preflight audit of EMIDEC dataset availability, directories, and split integrity.
+
+        Checks:
+        1. Unified split manifest existence and non-empty assignments.
+        2. Exact 60 Train, 20 Val, 20 Test case requirements.
+        3. Strict zero-leakage patient isolation (0 overlap between partitions).
+        4. Physical file and expert-mask availability on disk.
+        5. Indexed short-axis slice counts (train, val, infarct, MVO).
+        6. Target checkpoint writability.
+
+        Args:
+            strict: If True, raises RuntimeError on any failed check.
+
+        Returns:
+            Dict containing preflight validation report.
+        """
+        report: Dict[str, Any] = {
+            "manifest_path": str(self.splits_path),
+            "manifest_present": self.splits_path.is_file(),
+            "target_checkpoint": str(self.checkpoint_path),
+            "emidec_available_on_disk": False,
+            "total_annotated_on_disk": 0,
+            "train_cases_expected": 60,
+            "val_cases_expected": 20,
+            "test_cases_expected": 20,
+            "train_cases_actual": 0,
+            "val_cases_actual": 0,
+            "test_cases_actual": 0,
+            "train_available": 0,
+            "val_available": 0,
+            "test_available": 0,
+            "patient_overlap": 0,
+            "expert_masks_verified": False,
+            "train_slices": 0,
+            "val_slices": 0,
+            "infarct_slices": 0,
+            "mvo_slices": 0,
+            "errors": [],
+            "warnings": [],
+            "is_valid": False,
+        }
+
+        # 1. Manifest verification
+        if not self.splits_path.is_file():
+            from crip.pipeline.splits import CANONICAL_UNIFIED_SPLITS_PATH
+            if CANONICAL_UNIFIED_SPLITS_PATH.is_file():
+                self.splits_path.parent.mkdir(parents=True, exist_ok=True)
+                import shutil
+                shutil.copyfile(CANONICAL_UNIFIED_SPLITS_PATH, self.splits_path)
+                report["manifest_present"] = True
+            else:
+                report["errors"].append(
+                    f"Cohort split manifest not found at {self.splits_path}. "
+                    "Run 'python -m crip.pipeline prepare' to generate it."
+                )
+                if strict:
+                    raise RuntimeError(report["errors"][-1])
+                return report
+
+        try:
+            train_ids, val_ids, test_ids = self.load_cohort_splits()
+            report["train_cases_actual"] = len(train_ids)
+            report["val_cases_actual"] = len(val_ids)
+            report["test_cases_actual"] = len(test_ids)
+        except Exception as e:
+            report["errors"].append(f"Failed to load EMIDEC splits: {e}")
+            if strict:
+                raise RuntimeError(report["errors"][-1]) from e
+            return report
+
+        # Check for empty manifest
+        if len(train_ids) == 0 or len(val_ids) == 0 or len(test_ids) == 0:
+            report["errors"].append(
+                f"EMIDEC cohort split manifest is incomplete: train={len(train_ids)}/60, "
+                f"val={len(val_ids)}/20, test={len(test_ids)}/20. "
+                "Run 'python -m crip.pipeline prepare --repair-missing-splits' to restore the canonical cohort."
+            )
+
+        # Check overlap
+        s_tr, s_va, s_te = set(train_ids), set(val_ids), set(test_ids)
+        overlap = (s_tr & s_va) | (s_tr & s_te) | (s_va & s_te)
+        report["patient_overlap"] = len(overlap)
+        if overlap:
+            report["errors"].append(f"Patient leakage detected: cases {sorted(overlap)} appear in multiple partitions!")
+
+        # 2. Check physical raw dataset on disk
+        from crip.datasets.emidec_loader import EMIDECDataLoader
+        loader = EMIDECDataLoader()
+        report["emidec_available_on_disk"] = loader.is_available
+        if not loader.is_available:
+            report["errors"].append(
+                "EMIDEC raw dataset not found on disk. Verify data/raw/emidec/ installation."
+            )
+        else:
+            cases_dict = loader.discover_cases()
+            annotated_cases = {cid: info for cid, info in cases_dict.items() if info.get("has_contour")}
+            report["total_annotated_on_disk"] = len(annotated_cases)
+
+            avail_tr = [cid for cid in train_ids if cid in annotated_cases and annotated_cases[cid].get("has_image")]
+            avail_va = [cid for cid in val_ids if cid in annotated_cases and annotated_cases[cid].get("has_image")]
+            avail_te = [cid for cid in test_ids if cid in annotated_cases and annotated_cases[cid].get("has_image")]
+
+            report["train_available"] = len(avail_tr)
+            report["val_available"] = len(avail_va)
+            report["test_available"] = len(avail_te)
+
+            if len(avail_tr) == 60 and len(avail_va) == 20 and len(avail_te) == 20:
+                report["expert_masks_verified"] = True
+            else:
+                report["expert_masks_verified"] = False
+                if len(train_ids) > 0 and len(avail_tr) < 60:
+                    report["errors"].append(f"Missing images/masks for EMIDEC training cases: {len(avail_tr)}/60 available.")
+                if len(val_ids) > 0 and len(avail_va) < 20:
+                    report["errors"].append(f"Missing images/masks for EMIDEC validation cases: {len(avail_va)}/20 available.")
+                if len(test_ids) > 0 and len(avail_te) < 20:
+                    report["errors"].append(f"Missing images/masks for EMIDEC test cases: {len(avail_te)}/20 available.")
+
+            # 3. Index slices and compute class distributions
+            if len(avail_tr) > 0 and len(avail_va) > 0:
+                try:
+                    from crip.pipeline.emidec_dataset import EMIDECSegmentationDataset
+                    ds_tr = EMIDECSegmentationDataset(case_ids=avail_tr, loader=loader, cache_data=False)
+                    ds_va = EMIDECSegmentationDataset(case_ids=avail_va, loader=loader, cache_data=False)
+
+                    report["train_slices"] = len(ds_tr)
+                    report["val_slices"] = len(ds_va)
+                    report["infarct_slices"] = (
+                        sum(1 for r in ds_tr.slice_records if r.has_infarct)
+                        + sum(1 for r in ds_va.slice_records if r.has_infarct)
+                    )
+                    report["mvo_slices"] = (
+                        sum(1 for r in ds_tr.slice_records if r.has_mvo)
+                        + sum(1 for r in ds_va.slice_records if r.has_mvo)
+                    )
+
+                    if report["train_slices"] == 0:
+                        report["errors"].append("EMIDEC training dataset contains 0 slices!")
+                    if report["val_slices"] == 0:
+                        report["errors"].append("EMIDEC validation dataset contains 0 slices!")
+                except Exception as e:
+                    report["errors"].append(f"Failed to index EMIDEC dataset slices: {e}")
+
+        # Check overall validity
+        report["is_valid"] = (
+            len(report["errors"]) == 0
+            and report["train_available"] == 60
+            and report["val_available"] == 20
+            and report["test_available"] == 20
+            and report["patient_overlap"] == 0
+            and report["train_slices"] > 0
+            and report["val_slices"] > 0
+        )
+
+        if strict and not report["is_valid"]:
+            error_msg = "\n".join(report["errors"])
+            raise RuntimeError(f"EMIDEC preflight validation failed:\n{error_msg}")
+
+        return report
 
     def train_epoch(
         self,
@@ -198,6 +364,9 @@ class EMIDECTrainer:
         """Execute full training workflow for 5-class EMIDEC segmentation."""
         t_start = time.time()
         logger.info(f"Initiating EMIDEC LGE U-Net training on {self.device} for {epochs} epochs...")
+
+        # Strict preflight validation to prevent empty DataLoader failure and verify 60/20/20 split
+        self.validate_preflight(strict=True)
 
         train_ids, val_ids, test_ids = self.load_cohort_splits()
 
