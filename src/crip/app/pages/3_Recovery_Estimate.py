@@ -46,6 +46,7 @@ from crip.modeling.explain import (
 )
 from crip.modeling.train import train_baseline_models
 from crip.evaluation.recovery_metrics import evaluate_final_model_on_test
+from crip.evaluation.model_comparison import extract_calibration_curve_points
 
 MODEL_DIR = Path("models/recovery")
 METRICS_PATH = Path("data/processed/recovery_test_metrics.json")
@@ -625,24 +626,32 @@ def render_page() -> None:
                 st.metric("Test Accuracy", f"{m['accuracy']:.1%}", delta=f"Prevalence: {m['prevalence']:.1%}")
 
             # Calibration curve plot
-            calib_points = report.get("calibration_curve", [])
-            if calib_points:
-                st.markdown("#### Binned Reliability Calibration Diagram")
-                df_cal = pd.DataFrame(calib_points)
-                fig_cal = go.Figure()
-                fig_cal.add_trace(go.Scatter(
-                    x=df_cal["mean_predicted_prob"],
-                    y=df_cal["observed_frequency"],
-                    mode="lines+markers",
-                    name="Model Reliability",
-                    line=dict(color="#1f77b4", width=3),
-                ))
-                fig_cal.add_trace(go.Scatter(
-                    x=[0, 1], y=[0, 1],
-                    mode="lines",
-                    name="Perfect Calibration",
-                    line=dict(color="gray", dash="dash"),
-                ))
+            calib_raw = report.get("calibration_curve")
+            if calib_raw:
+                pred_p, obs_f = extract_calibration_curve_points(calib_raw)
+                if pred_p and obs_f:
+                    st.markdown("#### Binned Reliability Calibration Diagram")
+                    fig_cal = go.Figure()
+                    fig_cal.add_trace(go.Scatter(
+                        x=pred_p,
+                        y=obs_f,
+                        mode="lines+markers",
+                        name="Model Reliability",
+                        line=dict(color="#1f77b4", width=3),
+                    ))
+                    fig_cal.add_trace(go.Scatter(
+                        x=[0, 1], y=[0, 1],
+                        mode="lines",
+                        name="Perfect Calibration",
+                        line=dict(color="gray", dash="dash"),
+                    ))
+                    fig_cal.update_layout(
+                        xaxis_title="Mean Predicted Probability",
+                        yaxis_title="Observed Fraction of Recoveries",
+                        template="plotly_dark",
+                        height=350,
+                    )
+                    st.plotly_chart(fig_cal, use_container_width=True)
                 fig_cal.update_layout(
                     xaxis_title="Mean Predicted Probability",
                     yaxis_title="Empirical Observed Recovery Rate",

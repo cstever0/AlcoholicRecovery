@@ -1695,6 +1695,24 @@ python -m crip.pipeline evaluate --summary-only
   ```
   Follow the specific remediation command output by the preflight validator for each missing component.
 
+### 16. Streamlit Evaluation Page — Recovery Benchmark JSON Schema Mismatch
+- **Error:** `AttributeError: 'str' object has no attribute 'get'` in `src/crip/app/pages/4_Evaluation.py` at line 603 (`pred_p = [b.get("mean_predicted_prob", 0) for b in cc]`).
+- **Verified Root Cause:** The multi-dataset recovery pipeline (`src/crip/pipeline/recovery_trainer.py`) serializes calibration curves into `data/processed/multidataset/synthetic_recovery_comparison.json` as a dictionary of parallel coordinate arrays (`{"mean_predicted": [...], "fraction_positives": [...]}`). The Streamlit evaluation page assumed a list of per-bin dictionaries (`[{"mean_predicted_prob": ...}, ...]`), causing a dictionary iteration loop (`for b in cc`) where `b` was a string (`'mean_predicted'`), raising an `AttributeError` when `.get()` was called on the string.
+- **Corrected Behavior:** Implemented `extract_calibration_curve_points()` in `src/crip/evaluation/model_comparison.py` to robustly detect and normalize both dictionary-of-arrays format (`mean_predicted`, `fraction_positives`) and historical list-of-dicts format (`mean_predicted_prob`, `observed_frequency`). Missing values are never fabricated or defaulted to zero.
+- **Regenerating Artifacts (Optional):** If existing benchmark files are intact, regeneration is NOT required. To re-run recovery benchmarks if needed:
+  ```bash
+  python -m crip.pipeline train --task recovery
+  ```
+- **Launching & Verifying:**
+  ```bash
+  # Launch Streamlit
+  python -m streamlit run src/crip/app/main.py
+
+  # On Ubuntu/WSL, bind to all interfaces for Windows host browser access:
+  python -m streamlit run src/crip/app/main.py --server.address 0.0.0.0
+  ```
+  Open `http://localhost:8501`, navigate to **Model Evaluation (Page 4) $\to$ Tab 3: Recovery Prediction Benchmarks $\to$ Select "Experiment 2: Unselected All-Comers Cohort"** to confirm calibration curves and comparative metrics render cleanly.
+
 ---
 
 ## 26. Reproducibility and Limitations

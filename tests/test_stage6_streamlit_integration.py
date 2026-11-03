@@ -98,6 +98,12 @@ class TestEvaluationPageMultiDataset:
         # Experiment 2 mentions
         assert "Experiment 2" in full_text or "All-Comers" in full_text
 
+        # Toggle to Experiment 2 (All-Comers) and ensure zero exceptions
+        at.radio[2].set_value("Experiment 2: Unselected All-Comers Cohort (N = 450, Baseline vs. Empirical)").run()
+        assert not at.exception
+        full_text_exp2 = " ".join([m.value for m in at.markdown] + [c.value for c in at.caption] + [m.label for m in at.metric])
+        assert "450" in full_text_exp2
+
     def test_synthetic_cohort_explorer_present(self):
         script_path = ROOT_DIR / "src/crip/app/pages/4_Evaluation.py"
         at = AppTest.from_file(str(script_path), default_timeout=15)

@@ -235,6 +235,143 @@ def create_pr_comparison_plot(
     return fig
 
 
+def extract_calibration_curve_points(
+    curve_data: Any,
+    strict: bool = False,
+) -> Tuple[List[float], List[float]]:
+    """Safely extract, normalize, and validate calibration curve coordinates.
+
+    Supports:
+    1. Dict format with parallel coordinate arrays (emitted by recovery_trainer):
+       {"mean_predicted": [float, ...], "fraction_positives": [float, ...]}
+       (aliases accepted: 'mean_predicted_prob', 'observed_frequency', 'prob_pred', 'prob_true', 'x', 'y')
+    2. List-of-dicts format (emitted by recovery_metrics / single model reports):
+       [{"mean_predicted_prob": float, "observed_frequency": float}, ...]
+       (aliases accepted: 'mean_predicted', 'fraction_positives')
+
+    Args:
+        curve_data: Calibration curve data structure (dict or list of dicts).
+        strict: If True, raises TypeError or ValueError on invalid/corrupted schema.
+                If False, logs warning and returns empty lists `([], [])`.
+
+    Returns:
+        Tuple of (mean_predicted_probabilities, observed_frequencies).
+        Both lists contain validated, finite, float values bounded in [0.0, 1.0] of identical length.
+    """
+    if curve_data is None:
+        if strict:
+            raise ValueError("curve_data cannot be None")
+        return [], []
+
+    pred_candidates = ("mean_predicted", "mean_predicted_prob", "prob_pred", "predicted", "x")
+    obs_candidates = ("fraction_positives", "observed_frequency", "prob_true", "observed", "y")
+
+    preds: List[float] = []
+    obs: List[float] = []
+
+    def _validate_num(val: Any, name: str) -> Optional[float]:
+        try:
+            if isinstance(val, (int, float, np.floating, np.integer)):
+                fval = float(val)
+            elif isinstance(val, str):
+                fval = float(val.strip())
+            else:
+                return None
+            if np.isnan(fval) or np.isinf(fval):
+                return None
+            # Probability and frequency must be roughly bounded in [0.0, 1.0]
+            if not (-0.02 <= fval <= 1.02):
+                return None
+            return max(0.0, min(1.0, fval))
+        except (ValueError, TypeError):
+            return None
+
+    # Case 1: Dictionary of parallel lists/arrays
+    if isinstance(curve_data, dict):
+        if not curve_data:
+            if strict:
+                raise ValueError("Empty calibration curve dictionary")
+            return [], []
+
+        pred_key = next((k for k in pred_candidates if k in curve_data), None)
+        obs_key = next((k for k in obs_candidates if k in curve_data), None)
+
+        if not pred_key or not obs_key:
+            if strict:
+                raise KeyError(
+                    f"Calibration dict missing required coordinate keys. Found: {list(curve_data.keys())}. "
+                    f"Expected one of {pred_candidates} and one of {obs_candidates}."
+                )
+            logger.warning(f"Calibration dict missing coordinate keys: {list(curve_data.keys())}")
+            return [], []
+
+        raw_preds = curve_data[pred_key]
+        raw_obs = curve_data[obs_key]
+
+        if not isinstance(raw_preds, (list, tuple, np.ndarray)) or not isinstance(raw_obs, (list, tuple, np.ndarray)):
+            if strict:
+                raise TypeError(f"Expected list/array for calibration coordinates, got {type(raw_preds)} and {type(raw_obs)}")
+            return [], []
+
+        if len(raw_preds) != len(raw_obs):
+            if strict:
+                raise ValueError(f"Mismatched calibration coordinate lengths: {len(raw_preds)} vs {len(raw_obs)}")
+            return [], []
+
+        if len(raw_preds) == 0:
+            if strict:
+                raise ValueError("Empty calibration coordinate arrays")
+            return [], []
+
+        for p_val, o_val in zip(raw_preds, raw_obs):
+            vp = _validate_num(p_val, "mean_predicted")
+            vo = _validate_num(o_val, "fraction_positives")
+            if vp is None or vo is None:
+                if strict:
+                    raise ValueError(f"Invalid numeric value in calibration curve: p={p_val}, o={o_val}")
+                return [], []
+            preds.append(vp)
+            obs.append(vo)
+
+    # Case 2: List of per-bin dictionaries
+    elif isinstance(curve_data, (list, tuple)):
+        if len(curve_data) == 0:
+            if strict:
+                raise ValueError("Empty calibration curve list")
+            return [], []
+
+        for idx, item in enumerate(curve_data):
+            if not isinstance(item, dict):
+                if strict:
+                    raise TypeError(f"Expected dict at index {idx} of calibration list, got {type(item).__name__}")
+                return [], []
+
+            pred_key = next((k for k in pred_candidates if k in item), None)
+            obs_key = next((k for k in obs_candidates if k in item), None)
+
+            if not pred_key or not obs_key:
+                if strict:
+                    raise KeyError(f"Item {idx} missing coordinate keys: {list(item.keys())}")
+                return [], []
+
+            vp = _validate_num(item[pred_key], "mean_predicted")
+            vo = _validate_num(item[obs_key], "observed_frequency")
+            if vp is None or vo is None:
+                if strict:
+                    raise ValueError(f"Invalid numeric value at index {idx}: {item}")
+                return [], []
+            preds.append(vp)
+            obs.append(vo)
+
+    else:
+        if strict:
+            raise TypeError(f"Expected dict or list for calibration_curve, got {type(curve_data).__name__}")
+        logger.warning(f"Unexpected type for calibration_curve: {type(curve_data).__name__}")
+        return [], []
+
+    return preds, obs
+
+
 def create_calibration_comparison_plot(
     comp: Dict[str, Any],
     height: int = 420,
@@ -259,22 +396,23 @@ def create_calibration_comparison_plot(
     names = {"logistic_regression": "Logistic Regression", "random_forest": "Random Forest"}
 
     for key, color in colors.items():
-        if key in comp["models"]:
+        if key in comp.get("models", {}):
             m_data = comp["models"][key]
-            brier = m_data["metrics"]["brier_score"]
-            x_pred = m_data["calibration_curve"]["mean_predicted"]
-            y_obs = m_data["calibration_curve"]["fraction_positives"]
-
-            fig.add_trace(
-                go.Scatter(
-                    x=x_pred,
-                    y=y_obs,
-                    mode="lines+markers",
-                    name=f"{names[key]} (Brier = {brier:.4f})",
-                    line=dict(color=color, width=2),
-                    marker=dict(size=7),
+            brier = m_data.get("metrics", {}).get("brier_score")
+            cc_data = m_data.get("calibration_curve")
+            x_pred, y_obs = extract_calibration_curve_points(cc_data)
+            if x_pred and y_obs:
+                label = f"{names.get(key, key)} (Brier = {brier:.4f})" if brier is not None else names.get(key, key)
+                fig.add_trace(
+                    go.Scatter(
+                        x=x_pred,
+                        y=y_obs,
+                        mode="lines+markers",
+                        name=label,
+                        line=dict(color=color, width=2),
+                        marker=dict(size=7),
+                    )
                 )
-            )
 
     fig.update_layout(
         title="Reliability Calibration Curves (10 Bins) — Synthetic Test Cohort (n = 419)",

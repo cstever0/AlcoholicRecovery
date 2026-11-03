@@ -38,6 +38,7 @@ from crip.evaluation.model_comparison import (
     create_confusion_matrix_figure,
     create_pr_comparison_plot,
     create_roc_comparison_plot,
+    extract_calibration_curve_points,
     generate_recovery_model_comparison,
 )
 from crip.evaluation.segmentation_metrics import DEFAULT_EVAL_SUMMARY_PATH
@@ -519,19 +520,44 @@ def render_page() -> None:
             multi_data = _load_multidataset_recovery_data()
             if multi_data:
                 recon = multi_data.get("benchmark_reconciliation", {}).get("experiment_2_unselected_all_comers", {})
-                models_dict = multi_data.get("models", {})
+                models_dict = multi_data.get("models", {}) if isinstance(multi_data, dict) else {}
 
-                # Metric cards
+                # Metric cards: read dynamically from artifact when available
+                emp_lr_auc = models_dict.get("empirical_logistic_regression", {}).get("test_metrics", {}).get("roc_auc") if isinstance(models_dict.get("empirical_logistic_regression"), dict) else None
+                base_lr_auc = models_dict.get("baseline_logistic_regression", {}).get("test_metrics", {}).get("roc_auc") if isinstance(models_dict.get("baseline_logistic_regression"), dict) else None
+                emp_rf_auc = models_dict.get("empirical_random_forest", {}).get("test_metrics", {}).get("roc_auc") if isinstance(models_dict.get("empirical_random_forest"), dict) else None
+                base_rf_auc = models_dict.get("baseline_random_forest", {}).get("test_metrics", {}).get("roc_auc") if isinstance(models_dict.get("baseline_random_forest"), dict) else None
+                n_test_samples = multi_data.get("sample_partitions", {}).get("n_test", 450) if isinstance(multi_data, dict) else 450
+
                 c_m1, c_m2, c_m3 = st.columns(3)
                 with c_m1:
-                    st.metric("Test Sample Size", "450", delta="All-comers presentation")
+                    st.metric("Test Sample Size", f"{n_test_samples}", delta="All-comers presentation")
                 with c_m2:
-                    st.metric("Empirical LR ROC-AUC", "0.9048", delta="+0.1947 vs Baseline 0.7101")
+                    if emp_lr_auc is not None and base_lr_auc is not None:
+                        delta_lr = emp_lr_auc - base_lr_auc
+                        st.metric("Empirical LR ROC-AUC", f"{emp_lr_auc:.4f}", delta=f"{delta_lr:+.4f} vs Baseline {base_lr_auc:.4f}")
+                    elif emp_lr_auc is not None:
+                        st.metric("Empirical LR ROC-AUC", f"{emp_lr_auc:.4f}", delta="All-comers presentation")
+                    else:
+                        st.metric("Empirical LR ROC-AUC", "0.9048", delta="+0.1947 vs Baseline 0.7101")
                 with c_m3:
-                    st.metric("Empirical RF ROC-AUC", "0.9052", delta="+0.2077 vs Baseline 0.6975")
+                    if emp_rf_auc is not None and base_rf_auc is not None:
+                        delta_rf = emp_rf_auc - base_rf_auc
+                        st.metric("Empirical RF ROC-AUC", f"{emp_rf_auc:.4f}", delta=f"{delta_rf:+.4f} vs Baseline {base_rf_auc:.4f}")
+                    elif emp_rf_auc is not None:
+                        st.metric("Empirical RF ROC-AUC", f"{emp_rf_auc:.4f}", delta="All-comers presentation")
+                    else:
+                        st.metric("Empirical RF ROC-AUC", "0.9052", delta="+0.2077 vs Baseline 0.6975")
 
                 st.divider()
-                st.markdown("#### 📊 Comparative Model Performance on All-Comers Test Cohort (N = 450)")
+                st.markdown(f"#### 📊 Comparative Model Performance on All-Comers Test Cohort (N = {n_test_samples})")
+
+                def _fmt_metric(val: Any, is_pct: bool = False, decimals: int = 4) -> str:
+                    if val is None or not isinstance(val, (int, float, np.floating, np.integer)) or np.isnan(val):
+                        return "—"
+                    if is_pct:
+                        return f"{val * 100:.1f}%"
+                    return f"{val:.{decimals}f}"
 
                 exp2_table_rows = []
                 for m_id, m_label, m_type in [
@@ -540,20 +566,24 @@ def render_page() -> None:
                     ("empirical_logistic_regression", "Empirical Generator — Logistic Regression", "Empirically Informed"),
                     ("empirical_random_forest", "Empirical Generator — Random Forest", "Empirically Informed"),
                 ]:
-                    if m_id in models_dict:
-                        tm = models_dict[m_id].get("test_metrics", {})
-                        exp2_table_rows.append({
-                            "Model": m_label,
-                            "Cohort Paradigm": m_type,
-                            "ROC-AUC": f"{tm.get('roc_auc', 0.0):.4f}",
-                            "PR-AUC": f"{tm.get('pr_auc', 0.0):.4f}",
-                            "Brier Score": f"{tm.get('brier_score', 0.0):.4f}",
-                            "Accuracy": f"{tm.get('accuracy', 0.0)*100:.1f}%",
-                            "Sensitivity": f"{tm.get('sensitivity', 0.0)*100:.1f}%",
-                            "Specificity": f"{tm.get('specificity', 0.0)*100:.1f}%",
-                            "F1-Score": f"{tm.get('f1_score', 0.0):.4f}",
-                        })
-                st.dataframe(pd.DataFrame(exp2_table_rows), use_container_width=True, hide_index=True)
+                    if m_id in models_dict and isinstance(models_dict[m_id], dict):
+                        tm = models_dict[m_id].get("test_metrics")
+                        if isinstance(tm, dict):
+                            exp2_table_rows.append({
+                                "Model": m_label,
+                                "Cohort Paradigm": m_type,
+                                "ROC-AUC": _fmt_metric(tm.get("roc_auc")),
+                                "PR-AUC": _fmt_metric(tm.get("pr_auc")),
+                                "Brier Score": _fmt_metric(tm.get("brier_score")),
+                                "Accuracy": _fmt_metric(tm.get("accuracy"), is_pct=True),
+                                "Sensitivity": _fmt_metric(tm.get("sensitivity"), is_pct=True),
+                                "Specificity": _fmt_metric(tm.get("specificity"), is_pct=True),
+                                "F1-Score": _fmt_metric(tm.get("f1_score")),
+                            })
+                if exp2_table_rows:
+                    st.dataframe(pd.DataFrame(exp2_table_rows), use_container_width=True, hide_index=True)
+                else:
+                    st.warning("⚠️ No valid model metrics found in benchmark records.")
 
                 st.divider()
 
@@ -562,62 +592,91 @@ def render_page() -> None:
                 with c_exp2_roc:
                     st.markdown("#### 📈 All-Comers ROC Curves")
                     fig_e2_roc = go.Figure()
+                    n_roc_traces = 0
                     for m_id, m_name, color, dash in [
-                        ("baseline_logistic_regression", "Baseline LR (AUC: 0.710)", "#94a3b8", "dash"),
-                        ("baseline_random_forest", "Baseline RF (AUC: 0.698)", "#f97316", "dash"),
-                        ("empirical_logistic_regression", "Empirical LR (AUC: 0.905)", "#38bdf8", "solid"),
-                        ("empirical_random_forest", "Empirical RF (AUC: 0.905)", "#22c55e", "solid"),
+                        ("baseline_logistic_regression", "Baseline LR", "#94a3b8", "dash"),
+                        ("baseline_random_forest", "Baseline RF", "#f97316", "dash"),
+                        ("empirical_logistic_regression", "Empirical LR", "#38bdf8", "solid"),
+                        ("empirical_random_forest", "Empirical RF", "#22c55e", "solid"),
                     ]:
-                        if m_id in models_dict and "roc_curve" in models_dict[m_id]:
-                            rc = models_dict[m_id]["roc_curve"]
-                            fig_e2_roc.add_trace(go.Scatter(
-                                x=rc.get("fpr", [0, 1]),
-                                y=rc.get("tpr", [0, 1]),
-                                mode="lines",
-                                name=m_name,
-                                line=dict(color=color, dash=dash, width=2.5),
-                            ))
-                    fig_e2_roc.add_trace(go.Scatter(
-                        x=[0, 1], y=[0, 1], mode="lines", name="Random Guess (0.50)",
-                        line=dict(color="#64748b", dash="dot")
-                    ))
-                    fig_e2_roc.update_layout(
-                        xaxis_title="False Positive Rate (1 - Specificity)",
-                        yaxis_title="True Positive Rate (Sensitivity)",
-                        template="plotly_dark",
-                        height=380,
-                        margin=dict(l=20, r=20, t=30, b=20),
-                    )
-                    st.plotly_chart(fig_e2_roc, use_container_width=True)
+                        if m_id in models_dict and isinstance(models_dict[m_id], dict):
+                            rc = models_dict[m_id].get("roc_curve")
+                            if isinstance(rc, dict):
+                                fpr_raw = rc.get("fpr")
+                                tpr_raw = rc.get("tpr")
+                                if isinstance(fpr_raw, (list, tuple, np.ndarray)) and isinstance(tpr_raw, (list, tuple, np.ndarray)):
+                                    if len(fpr_raw) == len(tpr_raw) > 0:
+                                        try:
+                                            fpr = [float(v) for v in fpr_raw if not (np.isnan(v) or np.isinf(v))]
+                                            tpr = [float(v) for v in tpr_raw if not (np.isnan(v) or np.isinf(v))]
+                                            if len(fpr) == len(tpr) > 0:
+                                                auc_val = models_dict[m_id].get("test_metrics", {}).get("roc_auc")
+                                                trace_label = f"{m_name} (AUC: {auc_val:.3f})" if isinstance(auc_val, (int, float)) else m_name
+                                                fig_e2_roc.add_trace(go.Scatter(
+                                                    x=fpr,
+                                                    y=tpr,
+                                                    mode="lines",
+                                                    name=trace_label,
+                                                    line=dict(color=color, dash=dash, width=2.5),
+                                                ))
+                                                n_roc_traces += 1
+                                        except (ValueError, TypeError):
+                                            pass
+
+                    if n_roc_traces > 0:
+                        fig_e2_roc.add_trace(go.Scatter(
+                            x=[0, 1], y=[0, 1], mode="lines", name="Random Guess (0.50)",
+                            line=dict(color="#64748b", dash="dot")
+                        ))
+                        fig_e2_roc.update_layout(
+                            xaxis_title="False Positive Rate (1 - Specificity)",
+                            yaxis_title="True Positive Rate (Sensitivity)",
+                            template="plotly_dark",
+                            height=380,
+                            margin=dict(l=20, r=20, t=30, b=20),
+                        )
+                        st.plotly_chart(fig_e2_roc, use_container_width=True)
+                    else:
+                        st.warning("⚠️ No valid ROC curve coordinates found for All-Comers models.")
 
                 with c_exp2_pr:
                     st.markdown("#### 🎯 Reliability Calibration Curves (10 Bins)")
                     fig_e2_cal = go.Figure()
+                    n_cal_traces = 0
                     for m_id, m_name, color in [
                         ("baseline_logistic_regression", "Baseline LR", "#94a3b8"),
+                        ("baseline_random_forest", "Baseline RF", "#f97316"),
                         ("empirical_logistic_regression", "Empirical LR", "#38bdf8"),
                         ("empirical_random_forest", "Empirical RF", "#22c55e"),
                     ]:
-                        if m_id in models_dict and "calibration_curve" in models_dict[m_id]:
-                            cc = models_dict[m_id]["calibration_curve"]
-                            pred_p = [b.get("mean_predicted_prob", 0) for b in cc]
-                            obs_f = [b.get("observed_frequency", 0) for b in cc]
-                            fig_e2_cal.add_trace(go.Scatter(
-                                x=pred_p, y=obs_f, mode="lines+markers",
-                                name=m_name, line=dict(color=color, width=2)
-                            ))
-                    fig_e2_cal.add_trace(go.Scatter(
-                        x=[0, 1], y=[0, 1], mode="lines", name="Perfect Calibration",
-                        line=dict(color="#64748b", dash="dash")
-                    ))
-                    fig_e2_cal.update_layout(
-                        xaxis_title="Mean Predicted Probability",
-                        yaxis_title="Observed True Fraction",
-                        template="plotly_dark",
-                        height=380,
-                        margin=dict(l=20, r=20, t=30, b=20),
-                    )
-                    st.plotly_chart(fig_e2_cal, use_container_width=True)
+                        if m_id in models_dict and isinstance(models_dict[m_id], dict):
+                            cc_raw = models_dict[m_id].get("calibration_curve")
+                            if cc_raw is not None:
+                                pred_p, obs_f = extract_calibration_curve_points(cc_raw)
+                                if pred_p and obs_f:
+                                    brier_val = models_dict[m_id].get("test_metrics", {}).get("brier_score") if isinstance(models_dict[m_id].get("test_metrics"), dict) else None
+                                    label = f"{m_name} (Brier: {brier_val:.4f})" if isinstance(brier_val, (int, float)) else m_name
+                                    fig_e2_cal.add_trace(go.Scatter(
+                                        x=pred_p, y=obs_f, mode="lines+markers",
+                                        name=label, line=dict(color=color, width=2)
+                                    ))
+                                    n_cal_traces += 1
+
+                    if n_cal_traces > 0:
+                        fig_e2_cal.add_trace(go.Scatter(
+                            x=[0, 1], y=[0, 1], mode="lines", name="Perfect Calibration",
+                            line=dict(color="#64748b", dash="dash")
+                        ))
+                        fig_e2_cal.update_layout(
+                            xaxis_title="Mean Predicted Probability",
+                            yaxis_title="Observed True Fraction",
+                            template="plotly_dark",
+                            height=380,
+                            margin=dict(l=20, r=20, t=30, b=20),
+                        )
+                        st.plotly_chart(fig_e2_cal, use_container_width=True)
+                    else:
+                        st.warning("⚠️ No valid reliability calibration curve data found for All-Comers models.")
 
                 st.info(
                     "🔬 **Scientific Synthesis — Why Experiment 1 and 2 Differ:**\n\n"
