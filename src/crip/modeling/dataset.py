@@ -75,6 +75,8 @@ FORBIDDEN_LEAKAGE_COLUMNS: List[str] = [
     "adverse_cardiac_events",
     "sustained_abstinence_confirmed",
     "six_month_lvef",
+    "assumed_abstinence_scenario",
+    "pathology_scenario",
 ]
 
 TARGET_COLUMN: str = "recovery_binary"

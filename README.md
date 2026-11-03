@@ -600,25 +600,38 @@ python -m streamlit run src/crip/app/main.py --server.port 8502 --server.address
 
 ## 20. Application Usage and Demonstration
 
-### Walkthrough of the 6 Application Pages
+### Walkthrough of the Application Pages & Unified Workspaces
 
 0. **Page 0: Overview Dashboard (`🏠`)**
-   - Consolidated system landing view presenting real-time status and artifact checks across all 5 core subsystems (ACDC training scans, testing scans, MONAI U-Net checkpoint, synthetic cohort, and recovery pipeline).
-   - Clinical study selector with diagnostic group badge, acquisition timing (ED/ES frames), and provenance trail.
-   - Primary cardiac functional metrics cards (LVEF with preserved/reduced tags, LVEDV, LVESV, LVSV, RVEF, RVEDV, Myocardial Mass at $1.05\text{ g/mL}$, and physiology check $ESV < EDV$).
-   - Guided workflow quick-links to all exploration and modeling modules.
+   - Consolidated system landing view presenting real-time status and artifact checks across all core subsystems.
+   - **Multi-Dataset Ingestion Status:** Real-time metrics across **ACDC 2017** (100 cine scans), **M&Ms 2020** (114 multi-vendor cine scans), and **EMIDEC 2020** (100 delayed-enhancement LGE scans).
+   - **AI Model Checkpoint Inventory:** Direct tracking of sha256 checksums, disk footprints, and validation metrics for the In-Domain Cine U-Net (`best_unet_model.pt`), Joint Cine U-Net (`cine_joint_unet.pt`), and Experimental EMIDEC LGE U-Net (`emidec_lge_unet.pt`).
+   - **Empirical Feature Bank & Splits:** Direct status reporting for the 314 unified clinical feature records and non-leaking train/val/test splits.
+   - **Reproducibility CLI Command Registry:** Quick-reference commands for headless terminal execution.
 
 1. **Page 1: Patient Profile & Clinical Cohort (`👤`)**
    - Explore the 3,000 synthetic patient cohort or reference cases.
    - Filter by sex, Titin genetics, LGE scar pattern, PEth risk tier, and recovery outcome.
    - Inspect individual records across 6 tabs: CMR Volumetrics, PEth Toxicology, Titin Genetics, CMR Tissue Fibrosis, 6-Month Trajectory, and Parameter Provenance trails.
 
-2. **Page 2: Real Cardiac MRI Analysis (`🫀`)**
-   - Select any patient from the 100-case ACDC training cohort.
-   - Toggle between **Ground Truth Masks** and **Automated U-Net Predictions**.
-   - Navigate short-axis slices and cine phases (ED and ES) with synchronized multi-structure contours (RV cavity, myocardium, LV cavity).
-   - Inspect live biventricular volumes and examine the patient's percentile rank in the ACDC cohort.
-   - Click **"Transfer to Recovery Predictor"** to bridge real imaging into Page 3.
+2. **Page 2: Cardiac MRI Analysis & Multi-Dataset Workspaces (`🫀`)**
+   - **Tab 1 — ACDC Cine MRI Analysis:**
+     - Select any patient from the 100-case ACDC cohort.
+     - Toggle between **Ground Truth Masks** and **Automated U-Net Predictions**.
+     - Navigate short-axis slices and cine phases (ED and ES) with synchronized multi-structure contours (RV cavity, myocardium, LV cavity).
+     - Inspect live biventricular volumes and examine the patient's percentile rank in the ACDC cohort.
+     - Click **"Transfer to Recovery Predictor"** to bridge real imaging into Page 3.
+   - **Tab 2 — Cine Model Comparison Workspace:**
+     - Select from held-out in-domain ACDC test cases ($N=20$) or external M&Ms multi-vendor holdout cases ($N=34$).
+     - Real-time 4-panel comparative display: (1) Grayscale Cine CMR, (2) Expert Reference Mask, (3) In-Domain ACDC U-Net Prediction, (4) Joint Cine U-Net Prediction.
+     - Spatial AI Disagreement Map highlighting boundary discrepancies between models.
+     - Per-case Dice similarity and boundary distance metrics.
+     - Matched 54-case evaluation summary demonstrating cross-vendor generalization gains.
+   - **Tab 3 — EMIDEC LGE Tissue Workspace:**
+     - **Mandatory Scientific Notice:** Prominently warns that deep learning lesion segmentation is experimental (Infarct Dice: ~0.28, MVO Dice: ~0.01) and unsuitable for clinical decision-making.
+     - Interactive case browser across 100 delayed-enhancement studies (normal controls, acute infarcts, microvascular obstruction).
+     - 4-panel delayed-enhancement viewer: Raw Inversion-Recovery CMR, Expert Ground Truth, Experimental 5-Class AI Prediction, and Tissue Legend (Background, LV cavity, Viable Myocardium, Hyper-enhanced Infarction, Hypointense No-Reflow Core).
+     - Clinical tissue volumetrics: Infarction volume (mL), viable myocardial mass (g), and MVO burden.
 
 3. **Page 5: Dedicated Cardiac Measurements (`📊`)**
    - Comprehensive tabular and visual breakdown of Left and Right Ventricular parameters.
@@ -640,10 +653,14 @@ python -m streamlit run src/crip/app/main.py --server.port 8502 --server.address
    - Export clinical research audit reports in Markdown (`.md`), HTML (`.html`), JSON (`.json`), or HL7 FHIR R4 JSON.
 
 5. **Page 4: Model Evaluation & Statistical Governance (`🔬`)**
-   - **Tab 1 (Real MRI Segmentation & Spatial Geometry):** Multi-structure Dice scores (LV: 0.906, RV: 0.807, Myo: 0.804), 95th-percentile Hausdorff Distance distributions (ED medians: LV 2.91 mm, RV 7.16 mm, Myo 4.94 mm), and clinical subgroup breakdowns (DCM, HCM, MINF, NOR, RV).
-   - **Tab 2 (Cardiac Measurement Agreement & Bland–Altman):** Method comparison across LVEF, LVEDV, LVESV, and LVSV with interactive identity scatter plots ($y = x$), Bland–Altman difference plots with Mean Bias and 95% Limits of Agreement, and 95% Confidence Interval bounds distinguishing estimation uncertainty from population agreement spread.
-   - **Tab 3 (Synthetic Recovery Model Comparison):** Head-to-head comparison between Logistic Regression (Primary) and Random Forest (Nonlinear Ensemble) featuring comparative metrics table (ROC-AUC 0.957 vs 0.931, Brier 0.069 vs 0.093), comparative ROC curves, PR curves with prevalence baseline, 10-bin calibration curves, and confusion matrices.
-   - **Tab 4 (Scientific Audit & Governance):** Complete reconciliation of cohort counts, separation of real MRI ($n=20$) vs synthetic recovery ($n=419$) sample sizes, and non-clinical research declarations.
+   - **Tab 1 — Real MRI Segmentation Benchmarks:** Multi-dataset performance metrics across ACDC in-domain ($N=20$), M&Ms multi-vendor external evaluation ($N=114$), Joint Cine matched comparison ($N=54$), and EMIDEC five-class LGE evaluation ($N=20$).
+   - **Tab 2 — Cardiac Measurement Agreement (Bland–Altman):** Paired method comparison across LVEF, LVEDV, LVESV, and LVSV with identity scatter plots ($y = x$), Bland–Altman difference plots with Mean Bias, 95% Limits of Agreement, and 95% Confidence Intervals.
+   - **Tab 3 — Recovery Prediction Benchmarks (Experiment 1 vs 2):**
+     - *Experiment 1 (Sustained Abstinence, $N=419$):* Canonical benchmark under guaranteed abstinence (Logistic Regression AUC = 0.9565, Random Forest AUC = 0.9310).
+     - *Experiment 2 (All-Comers Presentation, $N=450$):* General population presentation including 30% continued drinking and 25% ischemic phenocopies. Demonstrates how empirical multi-dataset priors elevate recovery discrimination from Baseline AUC 0.7101 to Empirical AUC 0.9048.
+   - **Tab 4 — Synthetic Cohort Explorer:** Interactive comparison between Baseline Generator and Empirically Informed Generator ($N=3,000$ each) with 75% ACM vs 25% Ischemic composition, mathematical cardiac invariant audit (0.0% violations), kernel density distributions, and physiological correlation heatmaps.
+   - **Tab 5 — Scientific Figure Explorer:** Interactive browser and multi-format exporter for all 36 publication/poster figures across 6 collections with direct downloads for PNG, vector SVG, and vector publication PDF.
+   - **Tab 6 — Scientific Audit & Governance:** Exhaustive audit reconciling sample sizes, real-vs-synthetic data separation, non-leaking split partitions, experimental EMIDEC lesion limitations, and non-clinical research declarations.
 
 ---
 
@@ -1051,6 +1068,48 @@ python -m crip.pipeline evaluate
 ```
 
 *(For full methodology, class distributions, HD95 boundary statistics, and multi-panel figures, see [docs/evaluation/emidec_segmentation_training_report.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/emidec_segmentation_training_report.md) and [docs/evaluation/multidataset/emidec_training/](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/multidataset/emidec_training/))*
+
+---
+
+### 23.9 Unified Empirically Informed Synthetic Data and Recovery Modeling (Stage 5C)
+
+CRIP Stage 5C establishes a mathematically rigorous, empirically grounded synthetic patient generator and recovery modeling benchmark combining clinical priors from all three cardiac MRI datasets (**ACDC**, **M&Ms**, and **EMIDEC**).
+
+#### Key Architecture & Governance:
+- **Zero Data Leakage:** Empirical Gaussian copula parameters are estimated strictly from the **240 source training cases** (80 ACDC, 80 M&Ms, 80 EMIDEC). All **74 held-out evaluation cases** are quarantined exclusively for external realism testing.
+- **Physical Invariants:** 100% adherence to physical identities across all 3,000 synthetic patients ($\text{LVSV} = \text{LVEDV} - \text{LVESV}$, $\text{LVEF} = 100 \times \text{LVSV} / \text{LVEDV}$, $\text{LVESV} < \text{LVEDV}$, $\text{RVESV} < \text{RVEDV}$; 0.0% constraint violations).
+- **Correlation Preservation:** 5D Gaussian copula operating in log-volume and logit-EF space preserves key clinical trade-offs ($r(\text{LVEDV}, \text{LVEF}) = -0.685$, $r(\text{LVEDV}, \text{Mass}) = +0.858$, $r(\text{LVEF}, \text{RVEF}) = +0.632$).
+- **Dual Clinical Scenarios:** 75% Non-Ischemic ACM (remodeling, 0% ischemic infarct/MVO) vs 25% Ischemic Viability (grounded in EMIDEC; mean 19.5% scar burden, 62.3% MVO prevalence).
+- **Immutable Preservations:** Baseline ACDC U-Net, Joint Cine U-Net, and EMIDEC LGE U-Net checkpoints remain byte-identical to original SHA-256 digests. Canonical baseline cohort (`data/synthetic/synthetic_cardiomyopathy_cohort.csv`) is preserved.
+
+#### Recovery Model Benchmark (Held-Out Test Set, $N=450$):
+
+| Evaluation Metric | Baseline Logistic Reg. (ACDC Prior) | Empirical Logistic Reg. (Unified Multi-Dataset) | Baseline Random Forest (ACDC Prior) | Empirical Random Forest (Unified Multi-Dataset) |
+| :--- | :---: | :---: | :---: | :---: |
+| **ROC-AUC** | 0.7101 | **0.9048** ($\mathbf{+0.1947}$) | 0.6975 | **0.9052** ($\mathbf{+0.2077}$) |
+| **PR-AUC** | 0.7005 | **0.7742** ($\mathbf{+0.0737}$) | 0.6722 | **0.7587** ($\mathbf{+0.0865}$) |
+| **Accuracy** | 65.11% | **80.89%** ($\mathbf{+15.78\%}$) | 68.00% | **83.78%** ($\mathbf{+15.78\%}$) |
+| **Sensitivity** | 67.07% | **91.33%** | 84.14% | **92.00%** |
+| **Specificity** | 62.75% | **75.67%** | 50.42% | **79.67%** |
+| **Brier Score** | 0.2134 | **0.1304** ($-38.9\%$) | 0.2061 | **0.1217** ($-41.0\%$) |
+| **ECE** | 0.1068 | 0.1238 | 0.1145 | **0.1037** |
+
+#### Execution Commands:
+```bash
+# 1. Compile empirical feature bank from all 3 datasets (314 records)
+python -m crip.pipeline features
+
+# 2. Synthesize 3,000-patient empirically informed cohort
+python -m crip.pipeline synthesize --n-patients 3000 --empirical --seed 42
+
+# 3. Train and benchmark recovery models & generate 24 scientific figures
+python -m crip.pipeline train --task recovery
+
+# 4. Display verified benchmark summary
+python -m crip.pipeline evaluate --summary-only
+```
+
+*(For full methodology, Gaussian copula formulations, held-out clinical validation statistics, and multi-format poster figures, see [docs/evaluation/unified_synthetic_integration_report.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/unified_synthetic_integration_report.md) and [docs/evaluation/multidataset/synthetic_integration/](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/multidataset/synthetic_integration/))*
 
 
 ---

@@ -140,15 +140,38 @@ def run_synthesize(args: argparse.Namespace) -> int:
     print("================================================================================")
     n_patients = args.n_patients if hasattr(args, "n_patients") else 3000
     empirical_mode = args.empirical if hasattr(args, "empirical") else False
+    output_dir = getattr(args, "output_dir", None)
+    export_flag = getattr(args, "export", False)
 
-    gen = EmpiricallyGroundedCohortGenerator(seed=args.seed, empirical_mode=empirical_mode)
-    profiles, outcomes, summary = gen.generate_cohort(n_patients=n_patients)
-
-    print(f"\nCohort Generation Complete:")
-    print(f"  - Generated Patients: {len(profiles)}")
-    print(f"  - Mode: {'Empirically Grounded (ACDC + M&Ms + EMIDEC)' if empirical_mode else 'Canonical Baseline (Seed 42)'}")
-    print(f"  - Scenario Provenance: {summary['scenario_provenance']}")
-    return 0
+    if empirical_mode:
+        from crip.pipeline.empirical_generator import EmpiricallyInformedCohortGenerator
+        gen = EmpiricallyInformedCohortGenerator(seed=args.seed)
+        profiles, meta = gen.generate_cohort(n_patients=n_patients)
+        print(f"\nEmpirically Informed Cohort Generation Complete:")
+        print(f"  - Generated Patients: {len(profiles)}")
+        print(f"  - Scenario Breakdown: {meta['scenario_breakdown']}")
+        if output_dir is not None:
+            paths = gen.export_cohort(profiles, meta, output_dir=output_dir)
+            print(f"  - Exported CSV: {paths['csv']}")
+        elif n_patients == 3000 or export_flag:
+            paths = gen.export_cohort(profiles, meta)
+            print(f"  - Exported CSV: {paths['csv']}")
+            print(f"  - Exported JSON: {paths['json']}")
+            print(f"  - Provenance Manifest: {paths['provenance']}")
+        return 0
+    else:
+        from crip.synthetic.cohort_generator import SyntheticCohortGenerator
+        gen = SyntheticCohortGenerator(seed=args.seed)
+        profiles, invalid, meta = gen.generate_cohort(n_patients=n_patients)
+        print(f"\nBaseline Cohort Generation Complete:")
+        print(f"  - Generated Patients: {len(profiles)}")
+        if output_dir is not None:
+            paths = gen.export_cohort(profiles, invalid, meta, output_dir=output_dir)
+            print(f"  - Exported CSV: {paths['csv']}")
+        elif n_patients == 3000 or export_flag:
+            paths = gen.export_cohort(profiles, invalid, meta)
+            print(f"  - Exported CSV: {paths['csv']}")
+        return 0
 
 
 def run_evaluate(args: argparse.Namespace) -> int:
@@ -217,6 +240,35 @@ def run_evaluate(args: argparse.Namespace) -> int:
             print(f"        * MVO:     Sensitivity {lcc['mvo_detection']['sensitivity']*100:.1f}%, Specificity {lcc['mvo_detection']['specificity']*100:.1f}%, Precision {lcc['mvo_detection']['precision']*100:.1f}%")
         print("    - Status: DEDICATED 5-CLASS LGE MODEL EVALUATED")
         print("    - Figures exported to docs/evaluation/multidataset/emidec_training/.")
+
+    # Check if synthetic recovery evaluation results exist
+    recovery_summary_path = Path("data/processed/multidataset/synthetic_recovery_comparison.json")
+    realism_summary_path = Path("data/processed/multidataset/feature_realism_evaluation.json")
+    if recovery_summary_path.is_file():
+        with open(recovery_summary_path, "r", encoding="utf-8") as f:
+            rec_summary = json.load(f)
+        print("\n[5] Synthetic Recovery Models & Realism Evaluation:")
+        m_lr_base = rec_summary["models"]["baseline_logistic_regression"]["test_metrics"]
+        m_lr_emp = rec_summary["models"]["empirical_logistic_regression"]["test_metrics"]
+        m_rf_base = rec_summary["models"]["baseline_random_forest"]["test_metrics"]
+        m_rf_emp = rec_summary["models"]["empirical_random_forest"]["test_metrics"]
+        print(f"    - Baseline Logistic Regression Test ROC-AUC:  {m_lr_base['roc_auc']:.4f} (Acc: {m_lr_base['accuracy']*100:.1f}%, Brier: {m_lr_base['brier_score']:.4f})")
+        print(f"    - Empirical Logistic Regression Test ROC-AUC: {m_lr_emp['roc_auc']:.4f} (Acc: {m_lr_emp['accuracy']*100:.1f}%, Brier: {m_lr_emp['brier_score']:.4f})")
+        print(f"    - Baseline Random Forest Test ROC-AUC:        {m_rf_base['roc_auc']:.4f} (Acc: {m_rf_base['accuracy']*100:.1f}%, Brier: {m_rf_base['brier_score']:.4f})")
+        print(f"    - Empirical Random Forest Test ROC-AUC:       {m_rf_emp['roc_auc']:.4f} (Acc: {m_rf_emp['accuracy']*100:.1f}%, Brier: {m_rf_emp['brier_score']:.4f})")
+
+        if realism_summary_path.is_file():
+            with open(realism_summary_path, "r", encoding="utf-8") as f:
+                realism_res = json.load(f)
+            ci = realism_res.get("constraint_integrity", {})
+            print(f"    - Feature Realism vs 74 Held-Out Source Cases:")
+            print(f"        * Constraint Violations: {ci.get('violation_rate_percent', 0.0):.1f}%")
+            for var, stats in realism_res.get("distributional_fidelity", {}).items():
+                wd = stats.get("wasserstein_distance")
+                if wd is not None:
+                    print(f"        * {var} Wasserstein Distance: {wd:.2f}")
+        print("    - Status: SYNTHETIC RECOVERY MODELS EVALUATED")
+        print("    - Figures exported to docs/evaluation/multidataset/synthetic_integration/.")
         return 0
 
     if DEFAULT_JOINT_CHECKPOINT_PATH.is_file():
@@ -326,8 +378,32 @@ def run_train(args: argparse.Namespace) -> int:
         print(f"  - Original ACDC Checkpoint Preserved: {meta['preserved_checkpoints']['original_acdc_intact']}")
         print(f"  - Joint Cine Checkpoint Preserved: {meta['preserved_checkpoints']['joint_cine_intact']}")
         return 0
+
+    elif task == "recovery":
+        print(f"\nTask: Synthetic Recovery Model Training & Benchmarking")
+        print("  Models: Logistic Regression (Interpretable) & Random Forest (Ensemble)")
+        print("  Cohorts Compared: Baseline (ACDC-DCM prior) vs Empirically Informed (ACDC+M&Ms+EMIDEC)")
+        print("  Target Variable: recovery_binary (Delta LVEF >= 10.0% at 6 months)")
+        print("  Prespecified Feature Whitelist: 13 numerical, 4 categorical, 3 binary indicators")
+        print("  Target Artifacts: models/recovery/, data/processed/multidataset/synthetic_recovery_comparison.json")
+
+        if hasattr(args, "dry_run") and args.dry_run:
+            print("\n[DRY RUN MODE]: Configuration validated. Execution bypassed.")
+            return 0
+
+        from crip.pipeline.recovery_trainer import run_full_synthetic_recovery_pipeline
+        seed_val = args.seed if hasattr(args, "seed") and args.seed else 42
+        res = run_full_synthetic_recovery_pipeline(seed=seed_val)
+        comp = res["comparison_summary"]
+        print("\nRecovery Model Benchmarking Completed Successfully:")
+        print(f"  - Baseline LR Test ROC-AUC:   {comp['models']['baseline_logistic_regression']['test_metrics']['roc_auc']:.4f}")
+        print(f"  - Empirical LR Test ROC-AUC:  {comp['models']['empirical_logistic_regression']['test_metrics']['roc_auc']:.4f}")
+        print(f"  - Baseline RF Test ROC-AUC:   {comp['models']['baseline_random_forest']['test_metrics']['roc_auc']:.4f}")
+        print(f"  - Empirical RF Test ROC-AUC:  {comp['models']['empirical_random_forest']['test_metrics']['roc_auc']:.4f}")
+        print(f"  - Figures Generated: {len(res['figure_files'])} in docs/evaluation/multidataset/synthetic_integration/")
+        return 0
     else:
-        print(f"Error: Unknown task '{task}'. Supported tasks: 'cine', 'lge'.", file=sys.stderr)
+        print(f"Error: Unknown task '{task}'. Supported tasks: 'cine', 'lge', 'recovery'.", file=sys.stderr)
         return 1
 
 
@@ -357,6 +433,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     synth_parser.add_argument("--n-patients", type=int, default=3000)
     synth_parser.add_argument("--empirical", action="store_true", help="Use multi-dataset empirical priors")
     synth_parser.add_argument("--seed", type=int, default=42)
+    synth_parser.add_argument("--output-dir", type=str, default=None, help="Directory to export cohort files")
+    synth_parser.add_argument("--export", action="store_true", help="Explicitly write cohort files to disk")
 
     # evaluate
     eval_parser = subparsers.add_parser("evaluate", help="Report verified benchmarks across in-domain and external test sets")
@@ -364,11 +442,12 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # train
     train_parser = subparsers.add_parser("train", help="Execute or inspect multi-task training configurations")
-    train_parser.add_argument("--task", type=str, required=True, choices=["cine", "lge"], help="Target segmentation task")
+    train_parser.add_argument("--task", type=str, required=True, choices=["cine", "lge", "recovery"], help="Target task")
     train_parser.add_argument("--epochs", type=int, default=25, help="Number of training epochs")
     train_parser.add_argument("--batch-size", type=int, default=16, help="Batch size for training")
     train_parser.add_argument("--device", type=str, default=None, help="Device to use ('mps', 'cuda', 'cpu')")
     train_parser.add_argument("--dry-run", action="store_true", help="Validate configuration without training")
+    train_parser.add_argument("--seed", type=int, default=42, help="Random seed for training")
 
     args = parser.parse_args(argv)
 

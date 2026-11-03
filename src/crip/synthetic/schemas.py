@@ -331,6 +331,50 @@ class PatientProfile(BaseModel):
         default="SYNTHETIC_SIMULATED",
         description="Origin of structural cardiac dimensions (e.g. ACDC_DERIVED vs SYNTHETIC).",
     )
+    infarct_burden_percent: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=100.0,
+        description="Infarction burden as percentage of total LV myocardium (EMIDEC grounded).",
+    )
+    infarct_volume_ml: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=300.0,
+        description="Estimated infarction volume in mL.",
+    )
+    no_reflow_burden_percent: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=50.0,
+        description="Microvascular obstruction / no-reflow burden as percentage of LV myocardium.",
+    )
+    no_reflow_volume_ml: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=100.0,
+        description="Estimated microvascular obstruction volume in mL.",
+    )
+    has_microvascular_obstruction: Optional[bool] = Field(
+        default=None,
+        description="Whether microvascular obstruction (MVO / no-reflow core) is present.",
+    )
+    pathology_scenario: str = Field(
+        default="NON_ISCHEMIC_ACM",
+        description="Cardiomyopathy scenario subtype (e.g. NON_ISCHEMIC_ACM vs ISCHEMIC_VIABILITY).",
+    )
+    hypertension: Optional[bool] = Field(
+        default=None,
+        description="Hypertension clinical history indicator.",
+    )
+    diabetes: Optional[bool] = Field(
+        default=None,
+        description="Type 2 diabetes clinical history indicator.",
+    )
+    cad_family_history: Optional[bool] = Field(
+        default=None,
+        description="Family history of premature coronary artery disease.",
+    )
     measurement_date: Optional[date] = Field(
         default=None,
         description="Date of baseline cardiac MRI acquisition.",

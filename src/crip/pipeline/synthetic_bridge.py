@@ -28,6 +28,7 @@ import pandas as pd
 
 from crip.pipeline.feature_bank import DEFAULT_OUTPUT_CSV as DEFAULT_FEATURE_BANK_CSV
 from crip.pipeline.feature_bank import DEFAULT_OUTPUT_SUMMARY as DEFAULT_FEATURE_BANK_SUMMARY
+from crip.pipeline.empirical_generator import EmpiricallyInformedCohortGenerator
 from crip.synthetic.cohort_generator import SyntheticCohortGenerator
 from crip.synthetic.schemas import (
     FollowUpOutcomes,
@@ -135,17 +136,26 @@ class EmpiricallyGroundedCohortGenerator:
         If empirical_mode is False, delegates exactly to the verified baseline generator,
         guaranteeing 100% deterministic reproducibility.
         """
+        if self.empirical_mode:
+            emp_gen = EmpiricallyInformedCohortGenerator(seed=self.seed)
+            profiles, metadata = emp_gen.generate_cohort(
+                n_patients=n_patients,
+                abstinence_prob=abstinence_prob,
+            )
+            outcomes = [p.follow_up for p in profiles]
+            summary = {
+                "empirical_mode": True,
+                "scenario_provenance": "empirically_grounded_multidataset_v1",
+                "generation_metadata": metadata,
+            }
+            if self.priors is not None:
+                summary["empirical_priors"] = asdict(self.priors)
+            return profiles, outcomes, summary
+
         profiles, outcomes, summary = self.baseline_generator.generate_cohort(
             n_patients=n_patients,
             abstinence_prob=abstinence_prob,
         )
-
-        if self.empirical_mode and self.priors is not None:
-            summary["empirical_mode"] = True
-            summary["empirical_priors"] = asdict(self.priors)
-            summary["scenario_provenance"] = "empirically_grounded_multidataset_v1"
-        else:
-            summary["empirical_mode"] = False
-            summary["scenario_provenance"] = "canonical_baseline_acdc_dcm"
-
+        summary["empirical_mode"] = False
+        summary["scenario_provenance"] = "canonical_baseline_acdc_dcm"
         return profiles, outcomes, summary

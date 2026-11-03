@@ -35,6 +35,8 @@ from crip.evaluation.segmentation_metrics import (
 )
 from crip.mri.segmentation_inference import PatientInferenceResult, SegmentationInferenceEngine
 from crip.mri.segmentation_model import DEFAULT_CHECKPOINT_PATH
+from crip.app.components.cine_comparison import render_cine_comparison_workspace
+from crip.app.components.emidec_workspace import render_emidec_tissue_workspace
 
 DEFAULT_COHORT_CSV = Path("data/processed/acdc/cardiac_measurements.csv")
 
@@ -92,26 +94,8 @@ def create_overlay_rgb(
     return np.clip(overlay, 0.0, 1.0)
 
 
-def render_page() -> None:
-    st.set_page_config(
-        page_title="CRIP - MRI Analysis",
-        page_icon="🫀",
-        layout="wide",
-    )
-
-    render_clinical_disclaimer(location="main")
-    render_clinical_disclaimer(location="sidebar")
-
-    st.title("🫀 Cardiac MRI Volumetric Analysis & Visualization")
-    st.markdown(
-        """
-        Interactive exploration of short-axis Cine cardiac magnetic resonance (CMR) imaging
-        from the Automated Cardiac Diagnosis Challenge (ACDC) dataset with quantitative
-        biventricular functional measurements derived from **expert ground-truth annotations**
-        or **automated 2D U-Net deep learning predictions**.
-        """
-    )
-
+def _render_acdc_tab() -> None:
+    """Render the primary ACDC Cine MRI analysis tab."""
     # Sidebar: Dataset configuration and patient selector
     st.sidebar.header("📁 Dataset Configuration")
     dataset_path_input = st.sidebar.text_input(
@@ -622,6 +606,41 @@ def _render_volumetric_simulator() -> None:
         | IV. Clinical Validation & Metrics | Queued (Milestone 4) | `crip.evaluation` | Calibration curves, Brier scores, decision curves |
         """
     )
+
+
+def render_page() -> None:
+    """Master entry point for MRI analysis page."""
+    st.set_page_config(
+        page_title="CRIP - MRI Analysis",
+        page_icon="🫀",
+        layout="wide",
+    )
+
+    render_clinical_disclaimer(location="main")
+    render_clinical_disclaimer(location="sidebar")
+
+    st.title("🫀 Cardiac MRI Volumetric Analysis & Visualization")
+    st.markdown(
+        """
+        Interactive exploration of short-axis Cine and Delayed-Enhancement (LGE) cardiac magnetic resonance imaging
+        across the **ACDC 2017**, **M&Ms 2020**, and **EMIDEC 2020** datasets with automated deep learning predictions.
+        """
+    )
+
+    tab_acdc, tab_cine_comp, tab_emidec = st.tabs([
+        "🫀 1. ACDC Cine MRI Analysis",
+        "⚖️ 2. Cine Model Comparison (ACDC + M&Ms)",
+        "🔬 3. EMIDEC LGE Tissue Workspace",
+    ])
+
+    with tab_acdc:
+        _render_acdc_tab()
+
+    with tab_cine_comp:
+        render_cine_comparison_workspace()
+
+    with tab_emidec:
+        render_emidec_tissue_workspace()
 
 
 if __name__ == "__main__" or True:
