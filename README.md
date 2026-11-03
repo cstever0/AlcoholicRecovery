@@ -10,32 +10,57 @@
 
 ## Table of Contents
 
-1. [Project Title and Overview](#1-project-title-and-overview)
-2. [Problem Statement](#2-problem-statement)
-3. [Research Objectives](#3-research-objectives)
-4. [Important Clinical Research Disclaimer](#4-important-clinical-research-disclaimer)
-5. [Features and Capabilities](#5-features-and-capabilities)
-6. [Application Architecture](#6-application-architecture)
-7. [Technology Stack](#7-technology-stack)
-8. [System Requirements](#8-system-requirements)
-9. [Repository Structure](#9-repository-structure)
-10. [Quick Start](#10-quick-start)
-11. [Full Installation Guide](#11-full-installation-guide)
-12. [ACDC Dataset Acquisition and Setup](#12-acdc-dataset-acquisition-and-setup)
-13. [Python Environment and Dependency Installation](#13-python-environment-and-dependency-installation)
-14. [Synthetic Cohort Generation](#14-synthetic-cohort-generation)
-15. [MRI Measurement Pipeline](#15-mri-measurement-pipeline)
-16. [MRI Segmentation Model Training](#16-mri-segmentation-model-training)
-17. [Recovery Prediction Model Training](#17-recovery-prediction-model-training)
-18. [Model Artifact Restoration](#18-model-artifact-restoration)
-19. [Launching the Streamlit Application](#19-launching-the-streamlit-application)
-20. [Application Usage and Demonstration](#20-application-usage-and-demonstration)
-21. [Mock FHIR Import/Export](#21-mock-fhir-importexport)
-22. [Running Automated Tests](#22-running-automated-tests)
-23. [Reproducing Evaluation Metrics](#23-reproducing-evaluation-metrics)
-24. [Troubleshooting](#24-troubleshooting)
-25. [Reproducibility and Limitations](#25-reproducibility-and-limitations)
-26. [License, Dataset Attribution, and References](#26-license-dataset-attribution-and-references)
+- **Platform Overview & Scientific Background**
+  1. [Project Title and Overview](#1-project-title-and-overview)
+  2. [Problem Statement](#2-problem-statement)
+  3. [Research Objectives](#3-research-objectives)
+  4. [Important Clinical Research Disclaimer](#4-important-clinical-research-disclaimer)
+  5. [Features and Capabilities](#5-features-and-capabilities)
+  6. [Application Architecture](#6-application-architecture)
+  7. [Technology Stack](#7-technology-stack)
+  8. [System Requirements](#8-system-requirements)
+  9. [Repository Structure](#9-repository-structure)
+
+- **PATH A — QUICK START: SYNTHETIC DATA ONLY (Zero External Downloads Required)**
+  10. [Path A — Quick Start: Synthetic Data Only](#10-path-a--quick-start-synthetic-data-only)
+      - [10.1 Quick Start Prerequisites](#101-quick-start-prerequisites)
+      - [10.2 Clone Repository & Setup Virtual Environment](#102-clone-repository--setup-virtual-environment)
+      - [10.3 Dependency Installation & Environment Smoke Test](#103-dependency-installation--environment-smoke-test)
+      - [10.4 Synthetic Cohort Generation](#104-synthetic-cohort-generation)
+      - [10.5 Baseline Recovery Prediction Model Training](#105-baseline-recovery-prediction-model-training)
+      - [10.6 Launching the Streamlit Clinical Research Platform](#106-launching-the-streamlit-clinical-research-platform)
+      - [10.7 What Works Out-of-the-Box in Synthetic Mode](#107-what-works-out-of-the-box-in-synthetic-mode)
+
+- **Cross-Platform System Installation & Setup**
+  11. [Cross-Platform System Installation Guide](#11-cross-platform-system-installation-guide)
+      - [11.1 macOS (Apple Silicon arm64 & Intel)](#111-macos-apple-silicon-arm64--intel)
+      - [11.2 Ubuntu Linux (Native 22.04 / 24.04 LTS)](#112-ubuntu-linux-native-2204--2404-lts)
+      - [11.3 Ubuntu on Windows Subsystem for Linux (WSL2)](#113-ubuntu-on-windows-subsystem-for-linux-wsl2)
+      - [11.4 Native Windows (PowerShell & Experimental Execution)](#114-native-windows-powershell--experimental-execution)
+      - [11.5 Hardware Acceleration & CPU Fallback](#115-hardware-acceleration--cpu-fallback)
+
+- **PATH B — OPTIONAL: COMPLETE MRI DATASET AND MODEL REPRODUCTION**
+  12. [Path B — Complete Real MRI Dataset Acquisition and Setup](#12-path-b--complete-real-mri-dataset-acquisition-and-setup)
+      - [12.1 Overview of Integrated Medical Imaging Datasets](#121-overview-of-integrated-medical-imaging-datasets)
+      - [12.2 Official Acquisition Portals & Download Instructions](#122-official-acquisition-portals--download-instructions)
+      - [12.3 Expected Raw Data Directory Layout](#123-expected-raw-data-directory-layout)
+      - [12.4 Ingestion Verification & Multi-Dataset Auditing](#124-ingestion-verification--multi-dataset-auditing)
+  13. [Python Environment and Dependency Verification](#13-python-environment-and-dependency-verification)
+  14. [Synthetic Cohort Generation (Baseline vs. Empirical)](#14-synthetic-cohort-generation-baseline-vs-empirical)
+  15. [Physical Cardiac MRI Volumetric Pipeline](#15-physical-cardiac-mri-volumetric-pipeline)
+  16. [MRI Segmentation Model Training & Inference](#16-mri-segmentation-model-training--inference)
+  17. [Recovery Prediction Model Training & Benchmarking](#17-recovery-prediction-model-training--benchmarking)
+  18. [Model Checkpoint Inventory and Artifact Restoration](#18-model-checkpoint-inventory-and-artifact-restoration)
+
+- **Application Tour, Interoperability, Verification & References**
+  19. [Launching the Streamlit Clinical Research Platform](#19-launching-the-streamlit-clinical-research-platform)
+  20. [Application Workspaces and Demonstration Tour](#20-application-workspaces-and-demonstration-tour)
+  21. [Mock FHIR Import/Export](#21-mock-fhir-importexport)
+  22. [Running Automated Tests](#22-running-automated-tests)
+  23. [Reproducing Scientific Evaluation Metrics](#23-reproducing-scientific-evaluation-metrics)
+  24. [Troubleshooting & Frequently Asked Questions](#24-troubleshooting--frequently-asked-questions)
+  25. [Reproducibility and Limitations](#25-reproducibility-and-limitations)
+  26. [License, Dataset Attribution, and References](#26-license-dataset-attribution-and-references)
 
 ---
 
@@ -114,7 +139,7 @@ records. Never utilize CRIP outputs to guide patient care or medical decision-ma
 - **Statistical Method Comparison & Bland–Altman Analysis:** Formal measurement agreement module (`crip.evaluation.measurement_agreement`) calculating mean bias, 95% limits of agreement, standard errors, and confidence intervals alongside interactive identity-line scatter plots ($y = x$).
 - **Poster-Ready Figures & Artifacts:** Standalone generator exporting 8 publication-quality 300-DPI exhibits (PNG, SVG, PDF) with full provenance manifest.
 - **Mock HL7 FHIR R4 Interoperability:** Bidirectional export, import, and schema validation of standard FHIR R4 bundles covering `Patient`, `Observation` (LOINC-coded), and `DiagnosticReport` resources.
-- **Rigorous Automated Testing:** 178 automated pytest unit, integration, and regression tests ensuring zero mathematical contradictions, zero data leakage, and verified reproducible metrics.
+- **Rigorous Automated Testing:** 296 automated pytest unit, integration, and regression tests ensuring zero mathematical contradictions, zero data leakage, and verified reproducible metrics.
 
 ---
 
@@ -248,7 +273,7 @@ AlcoholicRecovery/
 │       ├── mri/                        # SimpleITK/NiBabel CMR reader and MONAI U-Net
 │       ├── pipeline/                   # Unified multi-dataset CLI, splits, feature bank, bridge
 │       └── synthetic/                  # Pydantic schemas, generator, and validators
-├── tests/                              # 268 automated pytest unit & integration tests
+├── tests/                              # 296 automated pytest unit & integration tests
 ├── pyproject.toml                      # Modern build metadata and pytest configuration
 ├── requirements.txt                    # Pinned, tested dependencies
 └── README.md                           # Master setup and execution manual
@@ -256,292 +281,115 @@ AlcoholicRecovery/
 
 ---
 
-## 10. Quick Start
+## 10. Path A — Quick Start: Synthetic Data Only
 
-For experienced developers with Python 3.11+ and Git already installed:
+> [!TIP]
+> ### Two Independent Pathways to Reproduce CRIP
+> - **PATH A (Quick Start: Synthetic Data Only):** Takes **3 to 5 minutes** from cloning to a fully interactive clinical dashboard. **No medical imaging downloads or challenge accounts required.** It uses deterministic synthetic clinical cohort generation ($N=3,000$ patients) and Scikit-learn recovery modeling. Fully powers the Streamlit Dashboard, Cohort Explorer, Recovery Estimator, and Evaluation metrics out of the box.
+> - **PATH B (Complete MRI Multi-Dataset & Model Reproduction):** For researchers wishing to train or evaluate deep learning 2D U-Net models on **314 real cardiac MRI scans** across **ACDC 2017**, **M&Ms 2020**, and **EMIDEC 2020** (described in [Section 12](#12-path-b--complete-real-mri-dataset-acquisition-and-setup)).
+
+Path A is completely self-contained and independently executable. Follow these step-by-step instructions:
+
+### 10.1 Quick Start Prerequisites
+- **Operating System:** macOS (Apple Silicon or Intel), Ubuntu Linux 22.04+, Ubuntu on WSL2, or Windows 10/11.
+- **Python:** Version **3.11**, **3.12**, or **3.13** (tested through Python 3.13.15).
+- **Git:** Version 2.25+.
+- **Disk Space:** ~1.5 GB for the virtual environment, dependencies, and generated synthetic databases (no large MRI datasets needed).
+- **RAM:** Minimum 8 GB.
+
+---
+
+### 10.2 Clone Repository & Setup Virtual Environment
+
+Clone the official repository remote:
 
 ```bash
-# 1. Clone repository and navigate
+# Clone the repository
 git clone https://github.com/cstever0/AlcoholicRecovery.git
 cd AlcoholicRecovery
+```
 
-# 2. Create and activate virtual environment
+Create and activate an isolated Python virtual environment:
+
+#### On macOS, Ubuntu Linux, or Ubuntu on WSL2:
+```bash
 python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\Activate.ps1
-
-# 3. Install dependencies and CRIP package
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
-
-# 4. Generate synthetic cohort and train recovery model (no external data needed)
-python -m crip.synthetic.cohort_generator --n-patients 3000 --seed 42
-python -m crip.modeling.train
-
-# 5. Launch Streamlit clinical research dashboard
-python -m streamlit run src/crip/app/main.py
+source .venv/bin/activate
 ```
 
-> [!NOTE]
-> **Fresh Clone Self-Sufficiency:** The Quick Start provides an immediately functional platform. Pages 1, 3, and 4 (Cohort Explorer, Recovery Estimator, Scientific Evaluation) operate completely from the generated synthetic data. To enable real cine MRI visualization and deep learning segmentation on Page 2, download and place the public ACDC dataset as described in [Section 12](#12-acdc-dataset-acquisition-and-setup).
+#### On Windows (PowerShell):
+```powershell
+# Set execution policy for the current process if script activation is restricted:
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+py -3 -m venv .venv
+.venv\Scripts\Activate.ps1
+```
 
+Confirm that the virtual environment is active:
+```bash
+# Your prompt should show (.venv)
+python --version
+# Should output: Python 3.11.x, 3.12.x, or 3.13.x
+```
 
 ---
 
-## 11. Full Installation Guide
+### 10.3 Dependency Installation & Environment Smoke Test
 
-This section assumes a clean computer without pre-existing project files.
-
-### 11.1 Clone the Repository
-Clone the repository using the official remote origin:
+With the virtual environment activated, upgrade `pip` and install project dependencies:
 
 ```bash
-git clone https://github.com/cstever0/AlcoholicRecovery.git
-cd AlcoholicRecovery
-```
-
-Verify that the working directory is the repository root:
-```bash
-pwd
-# Must show the path ending in AlcoholicRecovery
-```
-
----
-
-### 11.2 Platform-Specific Setup
-
-#### A. macOS (Apple Silicon & Intel)
-1. Install Homebrew (if not present): `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
-2. Install Python 3.11, 3.12, or 3.13:
-   ```bash
-   brew install python@3.12
-   ```
-3. Create and activate the virtual environment:
-   ```bash
-   python3.12 -m venv .venv
-   source .venv/bin/activate
-   ```
-4. Check Apple Silicon MPS support:
-   ```bash
-   python -c "import torch; print('MPS Available:', torch.backends.mps.is_available())"
-   ```
-   *(For full macOS tips, see [docs/setup/macos.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/setup/macos.md))*
-
-#### B. Ubuntu Linux (Native 22.04 / 24.04 LTS)
-1. Install system build prerequisites:
-   ```bash
-   sudo apt-get update
-   sudo apt-get install -y python3 python3-venv python3-pip git build-essential
-   ```
-2. Create and activate the virtual environment:
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
-3. Check NVIDIA CUDA support (if an NVIDIA GPU is installed):
-   ```bash
-   python -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
-   ```
-   *(For full Ubuntu tips, see [docs/setup/ubuntu_wsl.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/setup/ubuntu_wsl.md))*
-
-#### C. Ubuntu on Windows Subsystem for Linux (WSL2)
-1. Ensure WSL2 is updated in Windows PowerShell: `wsl --update`
-2. Launch Ubuntu inside WSL2. **Important:** Clone the repository into the Linux filesystem (e.g. `~/projects/AlcoholicRecovery`), NOT under `/mnt/c/`, to prevent file-locking and I/O slowdowns.
-3. Follow the standard Ubuntu Linux setup steps above.
-4. Access the Streamlit interface directly in your Windows browser at `http://localhost:8501`.
-
----
-
-### 11.3 CPU-Only Execution Fallback
-CRIP automatically detects hardware acceleration:
-- If neither CUDA nor MPS is present, PyTorch and MONAI run cleanly on the CPU.
-- **Practical Implication:** 2D U-Net segmentation inference runs quickly on CPU (~1 second per 3D volume). Training the 2D U-Net for 25 epochs on CPU takes approximately 15–20 minutes, compared to ~3 minutes on Apple Silicon MPS or modern NVIDIA GPUs.
-
----
-
-## 12. ACDC Dataset Acquisition and Setup
-
-The real cardiac MRI data originates from the **Automated Cardiac Diagnosis Challenge (ACDC 2017)** hosted by CREATIS and the University of Lyon.
-
-> [!IMPORTANT]
-> The raw MRI scans cannot be distributed in GitHub due to licensing restrictions and file sizes. They must be downloaded independently.
-
-### 12.1 Download Instructions
-1. Navigate to the official challenge portal: [humanheart-project.creatis.insa-lyon.fr](https://humanheart-project.creatis.insa-lyon.fr).
-2. Register for a research account and download `training.zip` (patients 001–100) and `testing.zip` (patients 101–150).
-3. Unzip the archives into `data/raw/acdc/`.
-
-### 12.2 Expected Directory Layout
-```text
-data/raw/acdc/
-├── training/
-│   ├── patient001/
-│   │   ├── Info.cfg                    # Patient metadata (Group, Height, Weight, ED/ES frames)
-│   │   ├── patient001_4d.nii.gz        # 4D cine MRI sequence
-│   │   ├── patient001_frame01.nii.gz   # 3D End-Diastolic volume
-│   │   ├── patient001_frame01_gt.nii.gz# Ground truth segmentation mask at ED
-│   │   ├── patient001_frame12.nii.gz   # 3D End-Systolic volume
-│   │   └── patient001_frame12_gt.nii.gz# Ground truth segmentation mask at ES
-│   └── ... (patient001 to patient100)
-└── testing/
-    └── patient101 to patient150 (Unannotated challenge test partition)
-```
-
-### 12.3 Automated Ingestion Verification CLI
-Run the automated dataset inspector to confirm all 100 training patients are present and valid:
-
-```bash
-python -m crip.mri.inspect_acdc --data-dir data/raw/acdc/training --output data/processed/acdc/acdc_validation_report.json
-```
-
-**Expected Verification Output:**
-```text
-Inspecting ACDC dataset directory: data/raw/acdc/training
-Discovered 100 patient directories.
-  DCM: 20 patients
-  HCM: 20 patients
-  MINF: 20 patients
-  NOR: 20 patients
-  RV: 20 patients
-Validation passed: All 100 patients contain required Info.cfg and 3D NIfTI volumes.
-```
-
-*(For complete details, see [docs/setup/datasets.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/setup/datasets.md))*
-
----
-
-### 12.4 Multi-Dataset Integration & Registry (EMIDEC & M&Ms)
-
-CRIP features a modular multi-dataset ingestion framework supporting multi-center cine CMR and tissue viability imaging alongside canonical ACDC data:
-
-- **EMIDEC 2020 (`data/raw/emidec/`)**: 150 static 3D Late Gadolinium Enhancement (LGE) viability CMR scans (100 training with contours, 50 held-out test). Used for myocardial infarction and microvascular obstruction (no-reflow) quantification. **Clinical Invariant:** Because EMIDEC scans are single-phase static acquisitions, the platform strictly disables dynamic ejection fraction (LVEF) computation on EMIDEC cases.
-- **M&Ms 2020 (`data/raw/mnms/`)**: 345 multi-center, multi-vendor 4D cine CMR cases across Siemens, Philips, GE, and Canon scanners (114 fully paired image + contour cases). **Critical Governance:** Raw M&Ms annotations invert the ventricular chambers relative to ACDC ($1 = \text{LV}, 3 = \text{RV}$ vs ACDC $1 = \text{RV}, 3 = \text{LV}$). CRIP's `MNMSDataLoader` automatically translates M&Ms ground-truth masks to canonical ACDC label conventions on load (`map_mnms_to_canonical`).
-- **Sunnybrook & MyoPS 2020**: Pre-registered in the registry under `BLOCKED` status pending local download.
-
-#### Running Multi-Dataset Audits:
-```bash
-# Audit both EMIDEC and M&Ms cohorts and update manifests
-python -m crip.datasets.validation --dataset all
-
-# Manifests saved to:
-# data/processed/emidec/dataset_manifest.json
-# data/processed/mnms/dataset_manifest.json
-```
-
-*(For comprehensive label tables, clinical governance rules, and loader APIs, see [docs/datasets/multidataset_integration.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/datasets/multidataset_integration.md) and [docs/evaluation/multidataset_stage1_report.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/multidataset_stage1_report.md))*
-
----
-
-## 13. Python Environment and Dependency Installation
-
-With your virtual environment activated:
-
-```bash
-# 1. Ensure pip is up to date
+# 1. Upgrade pip
 python -m pip install --upgrade pip
 
-# 2. Install all pinned scientific and ML libraries
+# 2. Install pinned dependencies and CRIP package in editable mode
 pip install -r requirements.txt
-
-# 3. Install the CRIP package in editable mode
 pip install -e .
 ```
 
-Verify that the `crip` package is recognized:
+*(Alternative single-command install with developer test tools: `pip install -e ".[dev]"`).*
+
+#### Verification Smoke Test:
+Run the following one-line command to verify that all core libraries (CRIP, Streamlit, PyTorch, Scikit-learn, Plotly) are imported successfully:
+
 ```bash
-python -c "import crip; print('CRIP Version:', crip.__version__)"
-# Output: CRIP Version: 0.1.0
+python -c "import crip, streamlit, torch, sklearn, plotly; print('CRIP Environment Verified')"
+```
+
+**Expected Console Output:**
+```text
+CRIP Environment Verified
 ```
 
 ---
 
-## 14. Synthetic Cohort Generation
+### 10.4 Synthetic Cohort Generation
 
-CRIP uses a literature-grounded synthetic cohort generator to model clinical biomarkers, genetics, and 6-month LVEF trajectories without compromising patient privacy.
-
-### 14.1 Generate the 3,000-Patient Cohort
-Execute the cohort generation CLI with fixed seed 42:
+Generate the literature-grounded synthetic clinical database ($N=3,000$ patients) using fixed random seed 42:
 
 ```bash
 python -m crip.synthetic.cohort_generator --n-patients 3000 --seed 42 --abstinence-prob 0.70 --output-dir data/synthetic
 ```
 
-### 14.2 Run Standalone Cohort Quality & Bounds Audit
+**Generated Artifacts in `data/synthetic/`:**
+- `synthetic_cardiomyopathy_cohort.csv`: Full tabular cohort with 3,000 synthetic patient records.
+- `ehr_synthetic.db`: SQLite database seeded with synthetic EHR tables (`patients`, `observations`, `genetics`, `fibrosis`).
+- `synthetic_cardiomyopathy_cohort.json`: Structured records with complete parameter provenance trails.
+- `generation_report.json`: Population demographics and biomarker distribution summaries.
+
+*(Optional Quality Audit):*
 ```bash
 python -m crip.synthetic.cohort_validation --csv-path data/synthetic/synthetic_cardiomyopathy_cohort.csv --summary-path data/synthetic/cohort_validation_summary.json
 ```
 
-**Generated Artifacts in `data/synthetic/`:**
-- `synthetic_cardiomyopathy_cohort.csv`: Complete tabular dataset (3,000 rows).
-- `synthetic_cardiomyopathy_cohort.json`: Structured records with variable-level literature provenance trails.
-- `generation_report.json`: Population demographics and biomarker distributions.
-- `ehr_synthetic.db`: SQLite database seeded with synthetic patient records.
-
 ---
 
-## 15. MRI Measurement Pipeline
+### 10.5 Baseline Recovery Prediction Model Training
 
-To extract ground-truth physical cardiac volumetrics from expert segmentation masks across all 100 ACDC training patients:
+Train and evaluate the Scikit-learn recovery models on the 2,095 eligible sustained-abstinence patients:
 
-```bash
-python -m crip.mri.pipeline --data-dir data/raw/acdc/training --output-dir data/processed/acdc
-```
-
-**Generated Outputs in `data/processed/acdc/`:**
-- `cardiac_measurements.csv`: Tabular physical parameters (LVEDV, LVESV, LVSV, LVEF, RVEDV, RVESV, RVSV, RVEF, Mass).
-- `cardiac_measurements.json`: Structured JSON measurement records.
-- `measurement_validation_report.json`: Cohort summary statistics stratified by diagnostic group.
-- `figures/`: Cohort-wide distribution plots (LVEF distributions, LVEDV vs LVEF scatter plots).
-
----
-
-## 16. MRI Segmentation Model Training
-
-CRIP trains a 2D U-Net using MONAI and PyTorch to predict 3 cardiac structures from short-axis slices: RV cavity (label 1), myocardium (label 2), and LV cavity (label 3).
-
-### 16.1 Train the Model (25 Epochs)
-```bash
-python src/crip/mri/train_segmentation.py --epochs 25 --batch-size 16 --lr 1e-3
-```
-- Automatically uses MPS (macOS) or CUDA (Linux/WSL) with CPU fallback.
-- Saves the best checkpoint to `models/mri/best_unet_model.pt`.
-- Logs training metrics to `models/mri/training_history.json`.
-
-*(Quick Verification Smoke Test):*
-```bash
-python src/crip/mri/train_segmentation.py --smoke-test
-```
-
-### 16.2 Evaluate Segmentation Accuracy on Held-Out Test Split
-Evaluate volumetric error against withheld expert ground-truth masks across the 20 held-out test patients:
-
-```bash
-python -c "from crip.evaluation.segmentation_metrics import run_cohort_segmentation_evaluation; run_cohort_segmentation_evaluation()"
-```
-
-**Verified Milestone 4.1 Benchmark Results ($N=20$ Held-Out Test Patients):**
-- **Mean Absolute LVEF Error:** **3.86 percentage points** (Target $\le 5.0$ percentage points **MET**)
-- **Median Absolute LVEF Error:** **3.14 percentage points**
-- **Root Mean Squared Error (RMSE):** **4.99 percentage points**
-- **Cases Meeting $\le 5.0\%$ Error Target:** **75.0%** (15 / 20 patients)
-- **Mean Foreground Spatial Dice:** **0.839** (LV: 0.906, RV: 0.807, Myocardium: 0.804)
-
-*(For complete training details, see [docs/setup/model_training.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/setup/model_training.md))*
-
----
-
-## 17. Recovery Prediction Model Training
-
-The recovery prediction model predicts 6-month functional recovery ($\Delta \text{LVEF} \ge 10.0\%$) under sustained abstinence using an interpretable regularized Logistic Regression pipeline.
-
-### 17.1 Train and Serialize the Recovery Model
 ```bash
 python -m crip.modeling.train
-```
-
-*(Optional Feature Modality Ablation Study):*
-```bash
-python -m crip.modeling.train --run-ablation
 ```
 
 **Console Output:**
@@ -558,26 +406,443 @@ Saved recovery model artifacts to models/recovery
 ```
 
 **Serialized Artifacts in `models/recovery/`:**
-- `recovery_pipeline.joblib`: Serialized Scikit-learn Pipeline (StandardScaler + OneHotEncoder + LogisticRegression).
-- `metadata.json`: Model version (`v1.0-m3b`), seed (42), sample counts, and metrics.
-- `feature_schema.json`: Strict 20-feature whitelist enforcing data leakage prevention.
-- `splits.json`: Disjoint patient IDs for train (1,257), validation (419), and test (419).
-- `test_metrics.json`: Comprehensive discrimination, calibration, and sensitivity metrics.
+- `recovery_pipeline.joblib`: Serialized regularized Logistic Regression pipeline (`StandardScaler` + `OneHotEncoder` + `LogisticRegression`).
+- `metadata.json`, `splits.json`, `feature_schema.json`, and `test_metrics.json`.
 
 ---
 
-## 18. Model Artifact Restoration
+### 10.6 Launching the Streamlit Clinical Research Platform
 
-Because raw imaging data, database binaries, and model weights are excluded from Git via `.gitignore`, use this checklist to confirm or restore required local artifacts:
+Start the interactive Streamlit clinical web application:
 
-| Excluded Artifact | Local Target Path | How to Restore / Recreate | Application Fallback if Missing |
-| :--- | :--- | :--- | :--- |
-| **ACDC Raw MRI Data** | `data/raw/acdc/training/` | Download from CREATIS portal & unpack | Pages 1, 3, 4 fully functional; Page 2 prompts for data |
-| **Processed Measurements** | `data/processed/acdc/cardiac_measurements.csv` | Run `python -m crip.mri.pipeline` | Recalculated dynamically on the fly |
-| **Trained U-Net Model** | `models/mri/best_unet_model.pt` | Run `python src/crip/mri/train_segmentation.py` | Page 2 uses expert ground truth masks only |
-| **Synthetic Cohort CSV** | `data/synthetic/synthetic_cardiomyopathy_cohort.csv` | Run `python -m crip.synthetic.cohort_generator` | Auto-generated by Streamlit on first launch |
-| **SQLite EHR Database** | `data/synthetic/ehr_synthetic.db` | Run `cohort_generator` or let Streamlit auto-seed | Auto-seeded with reference cases |
-| **Recovery Model Pipeline**| `models/recovery/recovery_pipeline.joblib` | Run `python -m crip.modeling.train` | Streamlit auto-trains and serializes default model |
+```bash
+python -m streamlit run src/crip/app/main.py
+```
+
+Open your web browser and navigate to:
+```
+http://localhost:8501
+```
+
+To run on a specific port or bind to all interfaces (e.g. for WSL2 or remote servers):
+```bash
+python -m streamlit run src/crip/app/main.py --server.port 8502 --server.address 0.0.0.0
+```
+
+---
+
+### 10.7 What Works Out-of-the-Box in Synthetic Mode
+
+On a fresh clone without downloading any real MRI scans, the following features and application pages are **100% operational**:
+
+| Page / Component | Operational Status | Key Interactive Capabilities |
+| :--- | :---: | :--- |
+| **Page 0: Overview Dashboard (`🏠`)** | **Active** | System status, artifact presence audit, model inventory, and CLI registry. |
+| **Page 1: Patient Profile & Cohort (`👤`)** | **Active** | Explore all 3,000 synthetic patients; filter by sex, Titin mutations, fibrosis patterns, and PEth risk tiers; inspect biomarker provenance. |
+| **Page 3: Recovery Estimation (`📈`)** | **Active** | Interactive recovery prediction meter ($\Delta\text{LVEF} \ge 10\%$); additive log-odds feature attribution waterfall ($\beta_j \times x_j$); What-If scenario sliders; clinical report export in Markdown, HTML, JSON, and mock HL7 FHIR R4. |
+| **Page 4: Model Evaluation (`🔬`)** | **Active** | Synthetic recovery benchmarks (Experiment 1 Sustained Abstinence vs Experiment 2 All-Comers), ROC/PR curves, Bland–Altman agreement, synthetic cohort distribution explorer, and publication figure viewer. |
+| **Demonstration Scenarios (Cases A, B, C)** | **Active** | Execute benchmark scenarios directly from the UI or via CLI (`execute_demonstration_case`). |
+| **Pages 2 & 5 (Cardiac MRI Analysis & Measurements)** | *Graceful Notice* | Display an informative notice indicating that real CMR scans are omitted in Path A. **The application does NOT crash.** To enable real cine MRI contouring and deep learning segmentation, proceed to [Path B](#12-path-b--complete-real-mri-dataset-acquisition-and-setup). |
+
+---
+
+## 11. Cross-Platform System Installation Guide
+
+This section provides comprehensive, platform-specific environment setup and hardware configuration instructions.
+
+### 11.1 macOS (Apple Silicon arm64 & Intel)
+1. **Package Manager:** Install Homebrew if not already installed:
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+2. **Install Python:**
+   ```bash
+   brew install python@3.12
+   ```
+3. **Create & Activate Virtual Environment:**
+   ```bash
+   python3.12 -m venv .venv
+   source .venv/bin/activate
+   ```
+4. **Apple Silicon Hardware Acceleration:** PyTorch automatically detects Apple Silicon Metal Performance Shaders (`mps`):
+   ```bash
+   python -c "import torch; print('Apple Silicon MPS Available:', torch.backends.mps.is_available())"
+   ```
+5. **Matplotlib Font Cache:** On macOS, set `MPLCONFIGDIR` if writable permissions are needed:
+   ```bash
+   export MPLCONFIGDIR=/tmp/matplotlib
+   ```
+   *(For full macOS tips, see [docs/setup/macos.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/setup/macos.md))*
+
+---
+
+### 11.2 Ubuntu Linux (Native 22.04 / 24.04 LTS)
+1. **Install System Build Tools & Python:**
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y python3 python3-venv python3-pip git build-essential
+   ```
+2. **Create & Activate Virtual Environment:**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+3. **NVIDIA CUDA GPU Verification (Optional):**
+   ```bash
+   python -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
+   ```
+   *(For full Ubuntu tips, see [docs/setup/ubuntu_wsl.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/setup/ubuntu_wsl.md))*
+
+---
+
+### 11.3 Ubuntu on Windows Subsystem for Linux (WSL2)
+1. Ensure WSL2 is up to date in Windows PowerShell: `wsl --update`
+2. Launch Ubuntu inside WSL2.
+3. **CRITICAL PERFORMANCE DIRECTIVE:** Clone the repository inside the native Linux filesystem (e.g. `~/projects/AlcoholicRecovery` or `/home/<user>/AlcoholicRecovery`), **NEVER** under the Windows mount `/mnt/c/`.
+   > [!WARNING]
+   > Storing medical NIfTI volumes or SQLite databases under `/mnt/c/` causes severe 9p filesystem translation overhead, leading to 10× slower I/O and potential file locking issues during batch processing.
+4. Follow the standard Ubuntu Linux setup steps in [Section 11.2](#112-ubuntu-linux-native-2204--2404-lts).
+5. Open `http://localhost:8501` in your Windows web browser. If the host cannot reach the WSL2 port, launch Streamlit with `--server.address 0.0.0.0`.
+
+---
+
+### 11.4 Native Windows (PowerShell & Experimental Execution)
+> [!NOTE]
+> **Native Windows Status:** CRIP's core synthetic generation, recovery prediction modeling, and Streamlit dashboards run on native Windows. However, for medical imaging pipelines that process multi-slice 3D/4D NIfTI files via SimpleITK and MONAI, **Ubuntu on WSL2 is the officially verified and recommended Windows environment**. Native Windows is considered experimental.
+
+1. **Install Python 3.11 or 3.12:** Download from [python.org](https://www.python.org/downloads/). Ensure you check the box: **"Add python.exe to PATH"**.
+2. **Launch Windows PowerShell** and configure script execution if blocked:
+   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+   ```
+3. **Create & Activate Virtual Environment:**
+   ```powershell
+   py -3 -m venv .venv
+   .venv\Scripts\Activate.ps1
+   ```
+4. **Install Dependencies:**
+   ```powershell
+   python -m pip install --upgrade pip
+   pip install -r requirements.txt
+   pip install -e .
+   ```
+
+---
+
+### 11.5 Hardware Acceleration & CPU Fallback
+CRIP automatically probes for available compute accelerators on every training and inference invocation:
+- **macOS:** Apple Silicon MPS (`mps`) device auto-selected.
+- **Linux / WSL2:** NVIDIA CUDA (`cuda`) auto-selected if CUDA 12+ and compatible GPU drivers are present.
+- **CPU Fallback:** If neither CUDA nor MPS is present, PyTorch and MONAI fall back smoothly to the CPU (`cpu`).
+- **Benchmark Execution Times:**
+  - 2D U-Net Inference: ~1 second per 3D volume on CPU; ~0.25 seconds on MPS/CUDA.
+  - 2D U-Net Training (25 epochs): ~15–20 minutes on modern CPU; ~3 minutes on Apple Silicon MPS or NVIDIA GPU.
+
+---
+
+## 12. Path B — Complete Real MRI Dataset Acquisition and Setup
+
+Path B guides researchers through acquiring the public medical imaging cohorts, validating directory structures, and reproducing deep learning segmentation and empirical synthetic modeling.
+
+### 12.1 Overview of Integrated Medical Imaging Datasets
+
+CRIP unites three distinct cardiac magnetic resonance (CMR) imaging datasets:
+
+| Dataset | Modality | Cohort Size | Annotations & Structures | Clinical Purpose |
+| :--- | :--- | :---: | :--- | :--- |
+| **ACDC 2017** | Cine SSFP CMR | 100 annotated cases (70 train, 10 val, 20 test) | RV cavity (1), Myocardium (2), LV cavity (3) at ED & ES | Primary biventricular volumetric and dynamic LVEF benchmark |
+| **M&Ms 2020** | Cine SSFP CMR | 345 cases (114 paired image + mask) | LV cavity, Myocardium, RV cavity across 4 scanner vendors | Multi-vendor, multi-center cross-domain generalizability |
+| **EMIDEC 2020** | Static LGE CMR | 100 annotated cases (33 Normal, 67 Infarct/MVO) | LV cavity (1), Normal Myo (2), Infarct (3), MVO (4) | Myocardial viability, ischemic scar burden, and microvascular obstruction |
+
+---
+
+### 12.2 Official Acquisition Portals & Download Instructions
+
+Due to data use agreements and challenge terms, raw MRI files cannot be hosted directly in Git. Download them from the official challenge portals:
+
+1. **ACDC 2017 (Automated Cardiac Diagnosis Challenge):**
+   - **Portal:** [humanheart-project.creatis.insa-lyon.fr](https://humanheart-project.creatis.insa-lyon.fr)
+   - **Download:** `training.zip` (100 patients: `patient001` through `patient100`) and `testing.zip` (50 patients: `patient101` through `patient150`).
+   - **Target Directory:** Extract into `data/raw/acdc/`.
+   - **License:** Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+
+2. **M&Ms 2020 (Multi-Centre, Multi-Vendor Challenge):**
+   - **Portal:** [ub.edu/mnms](https://www.ub.edu/mnms/)
+   - **Download:** Challenge training and validation archives containing multi-vendor 4D cine NIfTI volumes and contours.
+   - **Target Directory:** Extract into `data/raw/mnms/`.
+   - **Label Harmonization Note:** M&Ms uses inverted ventricular labels ($1=\text{LV}, 3=\text{RV}$); CRIP automatically harmonizes these to canonical ACDC convention ($1=\text{RV}, 3=\text{LV}$) on load.
+
+3. **EMIDEC 2020 (Delayed-Enhancement Viability CMR Challenge):**
+   - **Portal:** [emidec.com/dataset](https://emidec.com/dataset)
+   - **Download:** 100 annotated clinical cases (`Case_N001`–`Case_N033`, `Case_P034`–`Case_P100`) and 50 unannotated testing cases (`Case_101`–`Case_150`).
+   - **Target Directory:** Extract into `data/raw/emidec/`.
+   - **Clinical Invariant:** EMIDEC contains static delayed-enhancement scans; computing dynamic ejection fraction (LVEF) on EMIDEC cases is strictly prohibited.
+
+---
+
+### 12.3 Expected Raw Data Directory Layout
+
+Ensure your `data/raw/` directory matches the following structure:
+
+```text
+data/raw/
+├── acdc/
+│   ├── training/
+│   │   ├── patient001/
+│   │   │   ├── Info.cfg                    # Patient metadata (Group, Height, Weight, ED/ES frames)
+│   │   │   ├── patient001_4d.nii.gz        # 4D cine MRI sequence
+│   │   │   ├── patient001_frame01.nii.gz   # 3D End-Diastolic volume
+│   │   │   ├── patient001_frame01_gt.nii.gz# Ground truth segmentation mask at ED
+│   │   │   ├── patient001_frame12.nii.gz   # 3D End-Systolic volume
+│   │   │   └── patient001_frame12_gt.nii.gz# Ground truth segmentation mask at ES
+│   │   └── ... (patient001 to patient100)
+│   └── testing/
+│       └── patient101 to patient150 (Unannotated challenge test partition)
+├── mnms/
+│   └── (345 studies across Siemens, Philips, GE, and Canon)
+└── emidec/
+    ├── Case_N001 to Case_N033 (Normal controls with contours)
+    ├── Case_P034 to Case_P100 (Pathological infarction cases with contours)
+    └── Case_101 to Case_150 (Unannotated challenge competition partition)
+```
+
+---
+
+### 12.4 Ingestion Verification & Multi-Dataset Auditing
+
+Execute CRIP's automated auditing commands to verify raw data integrity:
+
+```bash
+# 1. Audit ACDC 100 training patients
+python -m crip.mri.inspect_acdc --data-dir data/raw/acdc/training --output data/processed/acdc/acdc_validation_report.json
+
+# 2. Audit EMIDEC and M&Ms datasets and build manifests
+python -m crip.datasets.validation --dataset all
+
+# 3. Comprehensive multi-dataset pipeline audit
+python -m crip.pipeline audit
+```
+
+**Expected Pipeline Audit Output:**
+```text
+================================================================================
+ CRIP MULTI-DATASET INTEGRITY & MODALITY AUDIT
+================================================================================
+[1] ACDC 2017: Available (100 patients, Cine SSFP, LVEF Supported)
+[2] M&Ms 2020: Available (345 studies, 114 paired, 4 vendors, Label Inversion Harmonized)
+[3] EMIDEC 2020: Available (100 annotated cases, Static LGE, Dynamic LVEF Prohibited)
+[4] Trained Model Checkpoints: All 3 checkpoints verified and structurally intact.
+Audit Complete: All 3 datasets and operational models verified and structurally intact.
+```
+
+*(For comprehensive label tables, clinical governance rules, and loader APIs, see [docs/datasets/multidataset_integration.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/datasets/multidataset_integration.md) and [docs/evaluation/multidataset_stage1_report.md](file:///Users/cstever/Desktop/AlcoholicRecovery/docs/evaluation/multidataset_stage1_report.md))*
+
+---
+
+## 13. Python Environment and Dependency Verification
+
+With your virtual environment activated:
+
+```bash
+# 1. Verify installed package versions
+python -c "
+import torch, monai, SimpleITK, sklearn, streamlit, crip
+print('CRIP Version:     ', crip.__version__)
+print('PyTorch Version:  ', torch.__version__)
+print('MONAI Version:    ', monai.__version__)
+print('SimpleITK Version:', SimpleITK.__version__)
+print('Scikit-Learn:     ', sklearn.__version__)
+print('Streamlit Version:', streamlit.__version__)
+"
+```
+
+---
+
+## 14. Synthetic Cohort Generation (Baseline vs. Empirical)
+
+CRIP provides two distinct synthetic patient cohort generation workflows, modeling clinical biomarkers, genetics, and 6-month LVEF trajectories without compromising patient privacy.
+
+### 14.1 Baseline Cohort Generation (ACDC Prior)
+Generates the foundational 3,000-subject synthetic clinical cohort using literature-derived priors from the ACDC DCM cohort:
+
+```bash
+python -m crip.synthetic.cohort_generator --n-patients 3000 --seed 42 --abstinence-prob 0.70 --output-dir data/synthetic
+```
+
+**Generated Artifacts in `data/synthetic/`:**
+- `synthetic_cardiomyopathy_cohort.csv`: Full tabular cohort (3,000 rows).
+- `ehr_synthetic.db`: SQLite database seeded with synthetic patient records.
+- `synthetic_cardiomyopathy_cohort.json`: Structured records with complete provenance trails.
+- `generation_report.json`: Population demographics and biomarker distributions.
+
+### 14.2 Unified Empirical Feature Bank Assembly
+Compile the unified empirical feature bank across all 314 expert-annotated CMR cases (100 ACDC, 114 M&Ms, 100 EMIDEC):
+
+```bash
+python -m crip.pipeline features
+```
+
+**Output Artifacts in `data/processed/unified/`:**
+- `empirical_feature_bank.csv`: 314 rows of physical chamber volumetrics and tissue metrics.
+- `empirical_feature_bank_summary.json`: Population statistics (Cine LVEDV: $161.3 \pm 64.4\text{ mL}$, LVEF: $51.7 \pm 17.7\%$, EMIDEC Infarct Burden: $18.7 \pm 9.5\%$, MVO Prevalence: $59.7\%$).
+
+### 14.3 Empirically Informed Multi-Dataset Cohort Generation
+Simulate a realistic clinical presentation cohort ($N=3,000$) grounded in the empirical feature bank (75% ACM vs 25% Ischemic phenocopies):
+
+```bash
+python -m crip.pipeline synthesize --n-patients 3000 --empirical --seed 42 --export
+```
+
+### 14.4 Standalone Cohort Quality & Bounds Audit
+```bash
+python -m crip.synthetic.cohort_validation --csv-path data/synthetic/synthetic_cardiomyopathy_cohort.csv --summary-path data/synthetic/cohort_validation_summary.json
+```
+
+---
+
+## 15. Physical Cardiac MRI Volumetric Pipeline
+
+Extract ground-truth physical cardiac volumetrics from expert segmentation masks using geometric slice-by-slice voxel volume integration:
+
+$$\text{Volume} = \sum \text{voxels} \times \frac{dx \cdot dy \cdot dz}{1000.0} \text{ mL}, \quad \text{Mass} = V_{\text{myo, ED}} \times 1.05\text{ g/mL}$$
+
+### 15.1 ACDC Biventricular Volumetric Extraction
+```bash
+python -m crip.mri.pipeline --data-dir data/raw/acdc/training --output-dir data/processed/acdc
+```
+
+**Generated Outputs in `data/processed/acdc/`:**
+- `cardiac_measurements.csv`: Tabular physical parameters (LVEDV, LVESV, LVSV, LVEF, RVEDV, RVESV, RVSV, RVEF, Mass).
+- `cardiac_measurements.json`: Structured JSON measurement records.
+- `measurement_validation_report.json`: Cohort summary statistics stratified by diagnostic group.
+
+### 15.2 EMIDEC Delayed-Enhancement Tissue Quantification
+```bash
+python -m crip.emidec.tissue_metrics
+```
+
+**Generated Outputs in `data/processed/emidec/`:**
+- `emidec_tissue_measurements.csv`: Infarction volume, viable myocardium mass, and microvascular obstruction (MVO) core burden.
+
+---
+
+## 16. MRI Segmentation Model Training & Inference
+
+CRIP provides three distinct deep learning segmentation workflows using MONAI 2D U-Net architectures:
+
+### 16.1 Baseline In-Domain ACDC 2D U-Net (4 Classes)
+Trains on 60 ACDC patients, validates on 20, and evaluates on 20 held-out test patients:
+
+```bash
+# Full training (25 epochs, ~3 min on Apple Silicon MPS or NVIDIA GPU)
+python src/crip/mri/train_segmentation.py --epochs 25 --batch-size 16 --lr 1e-3
+
+# Rapid verification smoke test (1 epoch, 2 patients)
+python src/crip/mri/train_segmentation.py --smoke-test
+```
+- Saved Checkpoint: `models/mri/best_unet_model.pt`
+
+### 16.2 Joint Cine Multi-Dataset U-Net (ACDC + M&Ms)
+Unites 120 training patients (60 ACDC + 60 M&Ms) and 40 validation patients (20 ACDC + 20 M&Ms) with balanced slice sampling and label harmonization:
+
+```bash
+# Dry-run configuration validation (instant)
+python -m crip.pipeline train --task cine --dry-run
+
+# Full multi-dataset training (20 epochs)
+python -m crip.pipeline train --task cine --epochs 20
+```
+- Saved Checkpoint: `models/multidataset/cine_joint_unet.pt`
+
+### 16.3 Dedicated EMIDEC 5-Class LGE U-Net
+Dedicated model segmenting static delayed enhancement: Background (0), LV Cavity (1), Normal Myo (2), Infarct (3), MVO (4):
+
+```bash
+# Dry-run configuration validation (instant)
+python -m crip.pipeline train --task lge --dry-run
+
+# Full training with DiceFocalLoss (30 epochs)
+python -m crip.pipeline train --task lge --epochs 30
+```
+- Saved Checkpoint: `models/multidataset/emidec_lge_unet.pt`
+
+### 16.4 Held-Out Test Case Inference Smoke Test
+Verify model inference execution on confirmed held-out test cases (disjoint from training):
+
+```bash
+# Run inference verification on held-out ACDC patient (patient007) and EMIDEC (Case_P003)
+python -c "
+import torch
+from crip.mri.acdc_loader import ACDCDatasetLoader
+from crip.mri.segmentation_inference import predict_cardiac_frame_volume, build_unet_model
+
+loader = ACDCDatasetLoader('data/raw/acdc/training')
+patient = loader.load_patient('patient007')
+model = build_unet_model(in_channels=1, out_channels=4, device='cpu')
+chk = torch.load('models/mri/best_unet_model.pt', map_location='cpu', weights_only=False)
+model.load_state_dict(chk['model_state_dict'])
+pred_ed = predict_cardiac_frame_volume(patient.frame_ed.image_data, model, device='cpu')
+print('ACDC patient007 ED Prediction Shape:', pred_ed.shape)
+"
+```
+
+---
+
+## 17. Recovery Prediction Model Training & Benchmarking
+
+Predict 6-month functional recovery ($\Delta \text{LVEF} \ge 10.0\%$) using interpretable regularized Logistic Regression and Random Forest ensembles.
+
+### 17.1 Baseline Sustained-Abstinence Model Training
+```bash
+python -m crip.modeling.train
+```
+
+*(Optional Feature Modality Ablation Study):*
+```bash
+python -m crip.modeling.train --run-ablation
+```
+
+**Established Benchmark Results (Held-Out Test Split, $N=419$):**
+- **Logistic Regression:** ROC-AUC: **0.9565**, PR-AUC: **0.9835**, Brier: **0.0694**, Accuracy: **89.26%**
+- **Random Forest:** ROC-AUC: **0.9310**, PR-AUC: **0.9760**, Brier: **0.0930**
+
+### 17.2 Empirically Informed Multi-Dataset Recovery Benchmark
+Train and evaluate recovery models on the all-comers presentation cohort ($N=3,000$) incorporating multi-dataset empirical priors:
+
+```bash
+# Dry run verification
+python -m crip.pipeline train --task recovery --dry-run
+
+# Full empirical recovery training and benchmark export
+python -m crip.pipeline train --task recovery
+```
+
+---
+
+## 18. Model Checkpoint Inventory and Artifact Restoration
+
+Because raw imaging data, database binaries, and model weights are excluded from Git via `.gitignore`, use this checklist to inspect, verify, or restore required local artifacts:
+
+| Excluded Artifact | Local Target Path | SHA-256 Checksum | How to Restore / Recreate | Application Fallback if Missing |
+| :--- | :--- | :---: | :--- | :--- |
+| **Baseline Cine U-Net** | `models/mri/best_unet_model.pt` | `71ea5423...` | Run `python src/crip/mri/train_segmentation.py` | Page 2 displays expert ground truth contours only |
+| **Joint Cine U-Net** | `models/multidataset/cine_joint_unet.pt` | `fd4f7da4...` | Run `python -m crip.pipeline train --task cine` | Page 2 Tab 2 comparison is bypassed |
+| **EMIDEC LGE U-Net** | `models/multidataset/emidec_lge_unet.pt` | `d62fb350...` | Run `python -m crip.pipeline train --task lge` | Page 2 Tab 3 displays expert contours only |
+| **Recovery Model Pipeline** | `models/recovery/recovery_pipeline.joblib` | — | Run `python -m crip.modeling.train` | Streamlit auto-trains baseline model on startup |
+| **Synthetic Cohort CSV** | `data/synthetic/synthetic_cardiomyopathy_cohort.csv` | — | Run `python -m crip.synthetic.cohort_generator` | Streamlit prompts or auto-generates cohort |
+| **SQLite EHR Database** | `data/synthetic/ehr_synthetic.db` | — | Run `cohort_generator` or let Streamlit auto-seed | Streamlit auto-seeds reference demonstration cases |
+
+#### Verifying Checkpoint Checksums:
+```bash
+shasum -a 256 models/mri/best_unet_model.pt models/multidataset/cine_joint_unet.pt models/multidataset/emidec_lge_unet.pt
+```
+
+**Expected Checksum Verification:**
+```text
+71ea54235803562acc67b8903deecaaf113d45a1c7b443a97ba9fbe6573072c9  models/mri/best_unet_model.pt
+fd4f7da40f756794c99d9e2cad1e06a080701e86b5386afcd686a24b5c12e50d  models/multidataset/cine_joint_unet.pt
+d62fb350fed747d7c69cd8bfe6a78c5cea71ba5857bc28d140ef5f464b588c56  models/multidataset/emidec_lge_unet.pt
+```
 
 ---
 
@@ -742,76 +1007,86 @@ print("Round-trip FHIR data preservation verified successfully.")
 
 ## 22. Running Automated Tests
 
-The test suite separates **self-contained unit tests** (which use deterministic synthetic fixtures and run on any clean checkout) from **empirical integration tests** (which validate results against real ACDC CMR imaging and trained model weights).
+The test suite separates **self-contained unit tests** (which use deterministic synthetic fixtures and run on any clean checkout) from **empirical integration tests** (which validate results against real CMR imaging and trained model checkpoints).
 
-### 22.1 Running Tests on a Fresh Clone (Without External Assets)
-On a fresh clone where raw MRI scans (`data/raw/acdc/`) and model weights (`models/mri/*.pt`) are not present, all 174 core unit tests run and pass without error. Four empirical integration tests skip cleanly with informative messages:
-
-```bash
-# Run tests with short summary reporting skips
-pytest -q -rs
-# Expected output: 174 passed, 4 skipped, 1 warning (0 failures)
-```
-
-### 22.2 Running Full Empirical Integration Tests
-When evaluation artifacts or raw dataset assets are available:
+### 22.1 Complete Test Suite Execution
+Execute the entire 296-test automated regression suite:
 
 ```bash
-# Run all 178 tests
-pytest
+# Run tests with short summary
+pytest -q
 
-# Run tests with detailed verbosity
+# Run tests with detailed test name reporting
 pytest -v
 
-# Run with line-by-line code coverage
+# Run with line-by-line code coverage audit
 pytest --cov=src/crip --cov-report=term-missing
+```
+
+**Verified Test Suite Output:**
+```text
+======================= 296 passed, 1 warning in ~18s ========================
+```
+
+### 22.2 Running Tests on a Fresh Clone (Without External Medical Imaging Assets)
+On a fresh clone where raw MRI scans (`data/raw/acdc/`, `data/raw/mnms/`, `data/raw/emidec/`) and model checkpoints (`models/mri/*.pt`, `models/multidataset/*.pt`) have not been acquired or trained, all self-contained unit tests run and pass without error. External empirical tests that require local NIfTI assets skip cleanly with informative messages:
+
+```bash
+pytest -q -rs
+# Unit tests pass; empirical data-dependent tests skip gracefully with clear reasons
 ```
 
 ### 22.3 Running Targeted Test Modules
 ```bash
-# Run EMIDEC LGE tissue segmentation training and evaluation tests (7 tests)
-pytest tests/test_emidec_training.py
-
-# Run joint cine multi-dataset training and sampling tests (6 tests)
-pytest tests/test_joint_cine_training.py
-
-# Run unified multi-dataset pipeline architecture tests (16 tests)
+# Unified multi-dataset pipeline architecture and commands (16 tests)
 pytest tests/test_unified_pipeline.py
 
-# Run EMIDEC delayed-enhancement tissue characterization tests (12 tests)
+# Joint cine multi-dataset training and sampling (6 tests)
+pytest tests/test_joint_cine_training.py
+
+# EMIDEC LGE tissue segmentation training and reliability (7 tests)
+pytest tests/test_emidec_training.py
+
+# EMIDEC delayed-enhancement tissue metrics (12 tests)
 pytest tests/test_emidec_tissue_metrics.py
 
-# Run M&Ms external evaluation and generalizability tests (12 tests)
+# M&Ms multi-vendor external generalizability (12 tests)
 pytest tests/test_external_mnms.py
 
-# Run multi-dataset registry, schema, and label mapping tests (23 tests)
+# Empirical synthetic data generator and Gaussian copula (8 tests)
+pytest tests/test_empirical_synthetic_pipeline.py
+
+# Benchmark reconciliation and governance (6 tests)
+pytest tests/test_benchmark_reconciliation.py
+
+# Multi-dataset registry and metadata (23 tests)
 pytest tests/test_dataset_registry.py
 
-# Run EMIDEC and M&Ms dataset loader and integration tests (14 tests)
+# Multi-dataset loaders and label harmonization (14 tests)
 pytest tests/test_dataset_loaders.py
 
-# Run Stage 2 statistical evaluation and measurement agreement tests (17 tests)
-pytest tests/test_stage2_evaluation.py
+# Stage 6 Streamlit multi-dataset integration (8 tests)
+pytest tests/test_stage6_streamlit_integration.py
 
-# Run Stage 1 overview and cardiac measurements UI tests (8 tests)
-pytest tests/test_stage1_ui.py
+# Provenance, test patient verification, and mask audits (6 tests)
+pytest tests/test_provenance_and_verification_audit.py
 
-# Run Milestone 4 end-to-end integration tests (24 tests)
-pytest tests/test_milestone4_integration.py
-
-# Run recovery modeling and explainability tests (25 tests)
+# Recovery prediction modeling, SHAP attributions, and whitelist (25 tests)
 pytest tests/test_recovery_modeling.py
 
-# Run synthetic cohort validation tests (20 tests)
+# Synthetic cohort generation, Pydantic bounds, and invariants (20 tests)
 pytest tests/test_synthetic_cohort.py
 
-# Run automated MRI segmentation pipeline tests (22 tests)
+# 2D U-Net segmentation pipeline and metrics (22 tests)
 pytest tests/test_segmentation_pipeline.py
 
-# Run cardiac volumetric measurement tests (16 tests)
+# Cardiac volumetric metrics and Bland-Altman agreement (17 tests)
+pytest tests/test_stage2_evaluation.py
+
+# Physical chamber volumetrics and voxel geometry (16 tests)
 pytest tests/test_pipeline_and_measurements.py
 
-# Run real ACDC dataset integration tests (4 tests)
+# Real ACDC dataset integration (4 tests)
 pytest tests/test_acdc_integration.py
 ```
 
@@ -1114,52 +1389,70 @@ python -m crip.pipeline evaluate --summary-only
 
 ---
 
-## 24. Troubleshooting
+## 24. Troubleshooting & Frequently Asked Questions
 
 ### 1. `ModuleNotFoundError: No module named 'crip'`
-- **Cause:** The package was not installed in editable mode or virtual environment is not activated.
+- **Cause:** The package was not installed in editable mode or the virtual environment is not activated.
 - **Fix:** Activate `.venv` and run `pip install -e .` from the repository root.
 
-### 2. SimpleITK NIfTI Coordinate Warning
+### 2. Windows PowerShell Execution Policy Error
+- **Error:** `File Activate.ps1 cannot be loaded because running scripts is disabled on this system.`
+- **Cause:** Default Windows PowerShell security policy restricts script execution.
+- **Fix:** Allow script execution for the active terminal process:
+  ```powershell
+  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+  .venv\Scripts\Activate.ps1
+  ```
+
+### 3. Unsupported Python Version (< 3.11)
+- **Error:** `ERROR: Package 'crip' requires a different Python: 3.10.x not in '>=3.11'`
+- **Cause:** CRIP requires Python 3.11, 3.12, or 3.13 due to modern typing syntax and dependency constraints.
+- **Fix:** Install Python 3.12 via Homebrew (`brew install python@3.12`), apt (`sudo apt-get install python3.12 python3.12-venv`), or python.org, then rebuild `.venv`.
+
+### 4. SimpleITK NIfTI Coordinate Warning
 - **Warning:** `NiftiImageIO: patientXXX_frameYY.nii.gz has unexpected scales in sform`
 - **Cause:** Standard ITK notice for anisotropic voxels or minor scaling discrepancies between NIfTI `qform` and `sform` matrices.
 - **Fix:** Harmless informational notice; does not affect voxel counts or volumetric math.
 
-### 3. Matplotlib Font Cache Warning
+### 5. Matplotlib Font Cache Warning or Permission Denied
 - **Warning:** `Matplotlib is building the font cache; this may take a moment` or `Path is not writable`.
-- **Fix:** Set the cache directory before running scripts:
+- **Fix:** Set a local writable cache directory before running scripts:
   ```bash
   export MPLCONFIGDIR=/tmp/matplotlib
   ```
 
-### 4. Streamlit Port Conflicts
+### 6. Streamlit Port 8501 Conflicts
 - **Error:** `Port 8501 is already in use.`
 - **Fix:** Launch on a different port:
   ```bash
   python -m streamlit run src/crip/app/main.py --server.port 8502
   ```
 
-### 5. Missing ACDC Dataset Error
-- **Error:** `FileNotFoundError: ACDC training directory not found at data/raw/acdc/training`
-- **Fix:** Follow [Section 12](#12-acdc-dataset-acquisition-and-setup) to download and extract the dataset. Note that Pages 1, 3, and 4 function independently of the raw MRI files.
+### 7. Missing ACDC Dataset in Path A vs. Path B
+- **Behavior:** In Path A (Synthetic Data Only), Pages 1, 3, and 4 work completely. Pages 2 and 5 display an informative banner indicating that raw CMR scans have not been downloaded. **The application does not crash.**
+- **Fix to Enable Page 2 & 5:** Follow [Path B (Section 12)](#12-path-b--complete-real-mri-dataset-acquisition-and-setup) to download and extract the dataset into `data/raw/acdc/training`.
 
-### 6. Missing MRI Checkpoint Error
+### 8. Missing MRI Checkpoints
 - **Error:** `FileNotFoundError: Checkpoint not found at models/mri/best_unet_model.pt`
-- **Fix:** Train the U-Net model via `python src/crip/mri/train_segmentation.py --epochs 25`.
+- **Behavior:** If deep learning weights are not present, Page 2 falls back to displaying expert ground-truth contours.
+- **Fix:** Train the baseline U-Net (`python src/crip/mri/train_segmentation.py --epochs 25`) or joint U-Net (`python -m crip.pipeline train --task cine`).
 
-### 7. Missing Recovery Model Checkpoint
+### 9. Missing Recovery Model Checkpoint
 - **Behavior:** If `models/recovery/recovery_pipeline.joblib` is missing, Streamlit will automatically train and serialize the default model on startup. Alternatively, run `python -m crip.modeling.train`.
 
-### 8. PyTorch CUDA / MPS Device Fallback
+### 10. PyTorch CUDA / MPS Device Fallback
 - **Notice:** `Using CPU device.`
 - **Fix:** Normal on systems without dedicated GPUs. To force CPU execution explicitly:
   ```bash
   python src/crip/mri/train_segmentation.py --device cpu
   ```
 
-### 9. WSL2 Localhost Connection
-- **Issue:** Unable to open `http://localhost:8501` from Windows host.
-- **Fix:** Ensure WSL2 is using mirrored networking or launch with `python -m streamlit run src/crip/app/main.py --server.address 0.0.0.0`.
+### 11. WSL2 Localhost Connection from Windows Host
+- **Issue:** Unable to open `http://localhost:8501` from Windows host browser.
+- **Fix:** Ensure WSL2 is using mirrored networking or launch Streamlit binding to all addresses:
+  ```bash
+  python -m streamlit run src/crip/app/main.py --server.address 0.0.0.0
+  ```
 
 ---
 
