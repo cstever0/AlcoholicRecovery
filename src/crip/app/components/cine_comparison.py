@@ -165,11 +165,15 @@ def render_cine_comparison_workspace() -> None:
 
     try:
         if is_acdc:
-            meta = acdc_loader.get_patient_metadata(study_id)
-            frame_idx = meta.ed_frame if phase_key == "ED" else meta.es_frame
-            frame = acdc_loader.load_cardiac_frame(study_id, frame_idx)
-            img_3d = frame.image_data
-            gt_mask_3d = frame.ground_truth_mask
+            frame = acdc_loader.load_cardiac_frame(study_id, phase=phase_key, load_mask=True)
+            # ACDC arrays are stored as (slices, height, width).
+            # Transpose to (height, width, slices) to standardize with M&Ms convention.
+            img_3d = np.transpose(frame.image_data, (1, 2, 0))
+            gt_mask_3d = (
+                np.transpose(frame.mask_data, (1, 2, 0))
+                if frame.mask_data is not None
+                else None
+            )
             spacing = frame.voxel_spacing
         else:
             p_frames = mnms_loader.load_phase_frames(study_id, mapped_to_canonical=True)

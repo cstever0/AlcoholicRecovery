@@ -28,11 +28,13 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import nibabel as nib
 import numpy as np
 import SimpleITK as sitk
+
+from crip.datasets.schemas import CardiacPhase
 
 DEFAULT_ACDC_TRAINING_DIR = Path("data/raw/acdc/training")
 DEFAULT_ACDC_TESTING_DIR = Path("data/raw/acdc/testing")
@@ -98,6 +100,11 @@ class ACDCCardiacFrame:
         if not (0 <= slice_idx < self.num_slices):
             raise IndexError(f"Slice index {slice_idx} out of range [0, {self.num_slices - 1}]")
         return self.mask_data[slice_idx]
+
+    @property
+    def ground_truth_mask(self) -> Optional[np.ndarray]:
+        """Alias for mask_data to maintain backward compatibility across workspaces."""
+        return self.mask_data
 
 
 @dataclass
@@ -204,22 +211,42 @@ class ACDCDataLoader:
     def load_cardiac_frame(
         self,
         patient_id: str,
-        phase: str = "ED",
+        phase: Union[str, CardiacPhase] = "ED",
         load_mask: bool = True,
     ) -> ACDCCardiacFrame:
         """Load a 3D cardiac frame (ED or ES) and its corresponding ground-truth segmentation.
 
         Args:
             patient_id: Patient folder name (e.g. 'patient001')
-            phase: 'ED' for end-diastolic frame, 'ES' for end-systolic frame
+            phase: 'ED' for end-diastolic frame, 'ES' for end-systolic frame, or CardiacPhase enum.
             load_mask: If True, load and validate the matching ground-truth mask
 
         Returns:
             ACDCCardiacFrame dataclass with image array, mask array, and metadata.
         """
-        phase_upper = phase.upper()
-        if phase_upper not in ("ED", "ES"):
-            raise ValueError(f"Invalid cardiac phase '{phase}'. Must be 'ED' or 'ES'.")
+        if isinstance(phase, CardiacPhase):
+            if phase == CardiacPhase.ED:
+                phase_upper = "ED"
+            elif phase == CardiacPhase.ES:
+                phase_upper = "ES"
+            else:
+                raise ValueError(
+                    f"CardiacPhase '{phase.name}' cannot be resolved to an ACDC 3D frame. "
+                    "Must be CardiacPhase.ED or CardiacPhase.ES."
+                )
+        elif isinstance(phase, str):
+            phase_clean = phase.strip().upper()
+            if phase_clean in ("ED", "END-DIASTOLE"):
+                phase_upper = "ED"
+            elif phase_clean in ("ES", "END-SYSTOLE"):
+                phase_upper = "ES"
+            else:
+                raise ValueError(f"Invalid cardiac phase '{phase}'. Must be 'ED' or 'ES'.")
+        else:
+            raise TypeError(
+                f"Cardiac phase must be a string ('ED' or 'ES') or CardiacPhase enum, "
+                f"got {type(phase).__name__}: {phase}"
+            )
 
         meta = self.get_patient_metadata(patient_id)
         frame_num = meta.ed_frame if phase_upper == "ED" else meta.es_frame
