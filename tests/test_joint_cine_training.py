@@ -210,3 +210,71 @@ class TestWSLSafeguardsAndPreflight:
         code = main(["train", "--task", "cine", "--dry-run", "--mnms-dir", str(tmp_path / "missing")])
         assert code == 1
 
+
+class TestMNMSDiscoveryAndCanonicalSplits:
+    """Validates M&Ms discovery rules, rejection accounting, and canonical split preservation."""
+
+    def test_mnms_discovery_summary(self) -> None:
+        from crip.datasets.mnms_loader import MNMSDataLoader
+
+        loader = MNMSDataLoader()
+        summary = loader.get_discovery_summary()
+
+        assert summary["total_discovered"] == 345
+        assert summary["with_images"] == 114
+        assert summary["with_masks"] == 179
+        assert summary["usable_pairs"] == 114
+        assert summary["missing_images"] == 231
+        assert summary["missing_masks"] == 166
+        assert summary["rejection_breakdown"]["ELIGIBLE_PAIRED"] == 114
+        assert summary["rejection_breakdown"]["MISSING_IMAGE"] == 65
+        assert summary["rejection_breakdown"]["EMPTY_DIRECTORY"] == 166
+
+    def test_canonical_splits_loaded_when_manifest_missing(self, tmp_path: Path) -> None:
+        from crip.pipeline.joint_trainer import JointCineTrainer
+
+        tmp_splits = tmp_path / "cohort_splits.json"
+        assert not tmp_splits.is_file()
+
+        trainer = JointCineTrainer(splits_path=tmp_splits)
+        acdc_tr, acdc_va, mnms_tr, mnms_va = trainer.load_cohort_splits()
+
+        assert len(acdc_tr) == 60
+        assert len(acdc_va) == 20
+        assert len(mnms_tr) == 60
+        assert len(mnms_va) == 20
+        assert tmp_splits.is_file()
+
+    def test_preflight_reports_canonical_expected_counts(self, tmp_path: Path) -> None:
+        from crip.pipeline.joint_trainer import JointCineTrainer
+
+        tmp_splits = tmp_path / "missing_splits.json"
+        cfg = CineSegmentationConfig(mnms_data_dir=str(tmp_path / "empty_mnms"))
+        trainer = JointCineTrainer(config=cfg, splits_path=tmp_splits)
+
+        report = trainer.validate_preflight(strict=False)
+
+        assert report["acdc_train_total"] == 60
+        assert report["acdc_val_total"] == 20
+        assert report["mnms_train_total"] == 60
+        assert report["mnms_val_total"] == 20
+        assert report["mnms_holdout_quarantined"] == 34
+        assert report["is_valid"] is False
+
+    def test_find_case_files_handles_uppercase_and_nesting(self, tmp_path: Path) -> None:
+        from crip.datasets.mnms_loader import MNMSDataLoader
+
+        case_dir = tmp_path / "TEST_CASE_01"
+        case_dir.mkdir(parents=True)
+        img_file = case_dir / "TEST_CASE_01_SA.nii.gz"
+        mask_file = case_dir / "TEST_CASE_01_SA_GT.nii.gz"
+        img_file.touch()
+        mask_file.touch()
+
+        loader = MNMSDataLoader(root_dir=tmp_path)
+        img_found, mask_found = loader._find_case_files(case_dir, "TEST_CASE_01")
+
+        assert img_found == img_file
+        assert mask_found == mask_file
+
+

@@ -599,12 +599,39 @@ data/raw/
 │   └── testing/
 │       └── patient101 to patient150 (Unannotated challenge test partition)
 ├── mnms/
-│   └── (345 studies across Siemens, Philips, GE, and Canon)
+│   ├── 211230_M&Ms_Dataset_information_diagnosis_opendataset.csv  # Challenge clinical metadata (Vendor, Centre, ED, ES)
+│   ├── Training/
+│   │   ├── Labeled/                                               # 150 studies (80 paired with *_sa.nii.gz and *_sa_gt.nii.gz)
+│   │   │   └── (Centers 1, 2, 3: Siemens & Philips)
+│   │   └── Unlabeled/                                             # 25 unannotated studies
+│   ├── Validation/                                                # 34 studies (All 34 paired; Centers 1, 2, 3, 4, 5)
+│   └── Testing/                                                   # 136 competition studies (withheld reference masks)
 └── emidec/
     ├── Case_N001 to Case_N033 (Normal controls with contours)
     ├── Case_P034 to Case_P100 (Pathological infarction cases with contours)
     └── Case_101 to Case_150 (Unannotated challenge competition partition)
 ```
+
+#### 12.3.1 M&Ms Archive Extraction, Pairing & Ubuntu/WSL Setup
+
+When unpacking or syncing the M&Ms 2020 dataset:
+
+1. **Paired Ground-Truth Annotations**:
+   - The challenge distributes 345 total study directories. Of these, exactly **114 studies** possess expert ground-truth masks with complete End-Diastolic (ED) and End-Systolic (ES) frame indices:
+     - **80 paired studies** in `Training/Labeled/` (split into 60 model training and 20 validation cases).
+     - **34 paired studies** in `Validation/` (held out as the zero-leakage evaluation cohort).
+   - The remaining 231 directories represent unannotated challenge cases, mask-only transfers, or testing partitions.
+2. **Canonical Split Manifest (`docs/unified/cohort_splits.json`)**:
+   - Patient split assignments are version-controlled in `docs/unified/cohort_splits.json`.
+   - On a fresh clone on Ubuntu/WSL, CRIP automatically initializes the processed split manifest from this canonical reference, guaranteeing that expected cohort counts (60 train, 20 val, 34 holdout) remain immutable.
+3. **Cross-Platform Extraction Best Practices (Ubuntu / WSL2)**:
+   - **Directory Structure:** Ensure archives are unpacked into `data/raw/mnms/` matching `Training/Labeled/` and `Validation/`. If an extraction utility creates a wrapper directory (e.g. `data/raw/mnms/OpenDataset/`), CRIP's loader automatically detects it, but moving folders directly under `data/raw/mnms/` is recommended.
+   - **Case Sensitivity:** Linux ext4 is case-sensitive. Filenames are standardized as `{CASE_ID}_sa.nii.gz` (cine volume) and `{CASE_ID}_sa_gt.nii.gz` (ground truth). CRIP handles case-insensitive file variants gracefully.
+   - **Preflight Verification:** Always execute the dry-run preflight check before attempting joint training:
+     ```bash
+     python -m crip.pipeline train --task cine --dry-run
+     ```
+     This validates physical case discovery, indexed slice counts (1,100 ACDC train, 404 ACDC val; 1,300 M&Ms train, 434 M&Ms val), and holdout quarantine without modifying any trained checkpoints.
 
 ---
 

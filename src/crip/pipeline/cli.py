@@ -63,7 +63,7 @@ def run_audit(args: argparse.Namespace) -> int:
 
     mnms = MNMSDataLoader()
     mnms_cases = mnms.discover_cases() if mnms.is_available else {}
-    mnms_paired = [c for c in mnms_cases.values() if c.get("has_mask") and c.get("ed_frame") is not None and c.get("es_frame") is not None]
+    mnms_paired = [c for c in mnms_cases.values() if c.get("has_image") and c.get("has_mask") and c.get("ed_frame") is not None and c.get("es_frame") is not None]
     print(f"\n[2] M&Ms 2020 (Multi-Vendor Cine CMR):")
     print(f"    - Available: {mnms.is_available}")
     print(f"    - Total Discovered Studies: {len(mnms_cases)}")
@@ -329,18 +329,39 @@ def run_train(args: argparse.Namespace) -> int:
         if hasattr(args, "dry_run") and args.dry_run:
             print("\nExecuting Joint Cine Preflight Audit (Dry Run)...")
             report = trainer.validate_preflight(strict=False)
-            print(f"  - Manifest Present: {report['manifest_present']}")
-            print(f"  - ACDC Training Cases: {report['acdc_train_available']} / {report['acdc_train_total']}")
-            print(f"  - ACDC Validation Cases: {report['acdc_val_available']} / {report['acdc_val_total']}")
-            print(f"  - M&Ms Training Cases: {report['mnms_train_available']} / {report['mnms_train_total']}")
-            print(f"  - M&Ms Validation Cases: {report['mnms_val_available']} / {report['mnms_val_total']}")
-            print(f"  - Holdout Quarantined: {report['holdout_quarantine_verified']}")
-            print(f"  - Target Checkpoint: {report['target_checkpoint']}")
+
+            print(f"\nCohort Manifest & Target Partition Verification:")
+            print(f"  - Split Manifest Present: {report['manifest_present']} ({report['manifest_path']})")
+            print(f"  - ACDC Expected Split: {report['acdc_train_total']} Train, {report['acdc_val_total']} Validation")
+            print(f"  - M&Ms Expected Split: {report['mnms_train_total']} Train, {report['mnms_val_total']} Validation, {report['mnms_holdout_quarantined']} Reserved Holdout")
+
+            print(f"\nDiscovered Datasets & Physical File Verification:")
+            print(f"  - ACDC Training Cases:   {report['acdc_train_available']} / {report['acdc_train_total']} (Indexed Slices: {report['acdc_train_slices']})")
+            print(f"  - ACDC Validation Cases: {report['acdc_val_available']} / {report['acdc_val_total']} (Indexed Slices: {report['acdc_val_slices']})")
+            print(f"  - M&Ms Discovered Cases: {report['mnms_discovered_total']} total ({report['mnms_usable_pairs']} usable image-mask pairs)")
+            print(f"  - M&Ms Training Cases:   {report['mnms_train_available']} / {report['mnms_train_total']} (Indexed Slices: {report['mnms_train_slices']})")
+            print(f"  - M&Ms Validation Cases: {report['mnms_val_available']} / {report['mnms_val_total']} (Indexed Slices: {report['mnms_val_slices']})")
+            print(f"  - M&Ms Holdout Cohort:   {report['mnms_holdout_available']} / {report['mnms_holdout_quarantined']} cases (Zero-Leakage Quarantine: {report['holdout_quarantine_verified']})")
+
+            if report.get("mnms_rejection_breakdown"):
+                rb = report["mnms_rejection_breakdown"]
+                print(f"\nM&Ms Ingestion & Rejection Accounting:")
+                print(f"  - Eligible & Paired (Image + Mask + ED/ES): {rb.get('ELIGIBLE_PAIRED', 0)}")
+                print(f"  - Missing Cine Image (Mask only):            {rb.get('MISSING_IMAGE', 0)}")
+                print(f"  - Empty / Partial Directories:               {rb.get('EMPTY_DIRECTORY', 0)}")
+                if rb.get("MISSING_MASK", 0) > 0:
+                    print(f"  - Missing Ground-Truth Mask:                 {rb.get('MISSING_MASK', 0)}")
+                if rb.get("MISSING_ED_ES_METADATA", 0) > 0:
+                    print(f"  - Missing ED/ES Temporal Phase Metadata:     {rb.get('MISSING_ED_ES_METADATA', 0)}")
+
+            print(f"\nTarget Checkpoint Destination: {report['target_checkpoint']}")
+
             if not report["is_valid"]:
                 print("\n[PREFLIGHT CHECK FAILED]:", file=sys.stderr)
                 for err in report["errors"]:
                     print(f"  * {err}", file=sys.stderr)
                 return 1
+
             print("\n[DRY RUN MODE]: Preflight audit passed. Joint datasets and configuration are valid.")
             return 0
 

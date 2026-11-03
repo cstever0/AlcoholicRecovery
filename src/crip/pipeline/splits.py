@@ -28,6 +28,7 @@ logger = logging.getLogger("crip.pipeline.splits")
 
 DEFAULT_ACDC_SPLIT_JSON = Path("docs/acdc/dataset_split.json")
 DEFAULT_UNIFIED_SPLITS_PATH = Path("data/processed/unified/cohort_splits.json")
+CANONICAL_UNIFIED_SPLITS_PATH = Path("docs/unified/cohort_splits.json")
 DEFAULT_EMIDEC_MEASUREMENTS_CSV = Path("data/processed/emidec/tissue_measurements.csv")
 
 
@@ -134,6 +135,7 @@ def create_emidec_splits(
 def create_mnms_splits(
     mnms_loader: Optional[MNMSDataLoader] = None,
     seed: int = 42,
+    use_canonical: bool = True,
 ) -> Dict[str, Any]:
     """Partition M&Ms into training (60), validation (20), and held-out evaluation (34) cohorts.
 
@@ -143,7 +145,26 @@ def create_mnms_splits(
     - 34 cases from challenge 'Validation' split (Centers 3, 4, 5; GE, Canon, Philips, Siemens):
       Designated as the held-out evaluation cohort for the joint model.
     The original Stage 2 zero-shot evaluation across all 114 cases is preserved as a historical benchmark.
+
+    If use_canonical=True and CANONICAL_UNIFIED_SPLITS_PATH exists, loads the verified canonical
+    assignments to guarantee exact reproducibility across all platforms.
     """
+    if use_canonical and CANONICAL_UNIFIED_SPLITS_PATH.is_file():
+        try:
+            with open(CANONICAL_UNIFIED_SPLITS_PATH, "r", encoding="utf-8") as f:
+                c_manifest = json.load(f)
+            mnms_sec = c_manifest["datasets"]["mnms"]
+            return {
+                "total_paired_cases": mnms_sec["counts"]["total_paired"],
+                "training_count": mnms_sec["counts"]["train"],
+                "validation_count": mnms_sec["counts"]["val"],
+                "training_pool_count": mnms_sec["counts"]["train_pool"],
+                "held_out_evaluation_count": mnms_sec["counts"]["held_out_external"],
+                "splits": mnms_sec["splits"],
+            }
+        except Exception as e:
+            logger.warning(f"Could not load canonical M&Ms splits from {CANONICAL_UNIFIED_SPLITS_PATH}: {e}")
+
     if mnms_loader is None:
         mnms_loader = MNMSDataLoader()
 
@@ -196,6 +217,7 @@ def create_mnms_splits(
 def build_unified_cohort_manifest(
     output_path: Path = DEFAULT_UNIFIED_SPLITS_PATH,
     seed: int = 42,
+    force_rebuild: bool = False,
 ) -> Dict[str, Any]:
     """Assemble and persist the complete multi-dataset cohort partition manifest.
 
@@ -204,6 +226,15 @@ def build_unified_cohort_manifest(
     2. Within each dataset, no patient appears in multiple partitions.
     3. Patient-level isolation is strictly preserved.
     """
+    if not force_rebuild and output_path != CANONICAL_UNIFIED_SPLITS_PATH and CANONICAL_UNIFIED_SPLITS_PATH.is_file():
+        with open(CANONICAL_UNIFIED_SPLITS_PATH, "r", encoding="utf-8") as f:
+            manifest = json.load(f)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2)
+        logger.info(f"Initialized unified cohort splits from canonical manifest at {output_path}")
+        return manifest
+
     acdc_splits = load_acdc_splits()
     emidec_splits_dict = create_emidec_splits(seed=seed)
     mnms_splits_dict = create_mnms_splits()

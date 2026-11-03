@@ -68,7 +68,64 @@ class MNMSDataLoader:
     @property
     def is_available(self) -> bool:
         """Check if any M&Ms case folders are present on disk."""
-        return any(d.is_dir() and any(d.iterdir()) for d in self.split_dirs)
+        resolved = self._resolve_split_dirs()
+        return any(d.is_dir() and any(d.iterdir()) for d, _ in resolved)
+
+    def _resolve_split_dirs(self) -> List[Tuple[Path, str]]:
+        """Resolve split directories, supporting case-insensitive paths and OpenDataset subfolders."""
+        search_roots = [self.root_dir]
+        for sub in ["OpenDataset", "opendataset", "open_dataset"]:
+            sub_p = self.root_dir / sub
+            if sub_p.is_dir():
+                search_roots.insert(0, sub_p)
+
+        found_splits: List[Tuple[Path, str]] = []
+        for root in search_roots:
+            candidate_splits = [
+                ("Training/Labeled", ["Training/Labeled", "training/labeled", "Training/labeled"]),
+                ("Training/Unlabeled", ["Training/Unlabeled", "training/unlabeled", "Training/unlabeled"]),
+                ("Validation", ["Validation", "validation"]),
+                ("Testing", ["Testing", "testing"]),
+            ]
+            for canonical_name, variants in candidate_splits:
+                for var in variants:
+                    p = root / var
+                    if p.is_dir():
+                        found_splits.append((p, canonical_name))
+                        break
+            if found_splits:
+                break
+
+        if not found_splits:
+            found_splits = [(d, str(d.relative_to(self.root_dir))) for d in self.split_dirs if d.is_dir()]
+        return found_splits
+
+    def _find_case_files(self, case_dir: Path, case_id: str) -> Tuple[Optional[Path], Optional[Path]]:
+        """Find image and GT mask files with case-insensitive and nested directory support."""
+        direct_files = [p for p in case_dir.iterdir() if p.is_file() and not p.name.startswith(".")]
+
+        nested_files: List[Path] = []
+        for sub in case_dir.iterdir():
+            if sub.is_dir() and not sub.name.startswith("."):
+                nested_files.extend([p for p in sub.iterdir() if p.is_file() and not p.name.startswith(".")])
+
+        candidate_files = direct_files + nested_files
+
+        imgs: List[Path] = []
+        gts: List[Path] = []
+
+        for p in candidate_files:
+            fname = p.name.lower()
+            if ("_sa_gt.nii" in fname or "_sa_seg.nii" in fname or f"{case_id.lower()}_gt.nii" in fname):
+                gts.append(p)
+            elif "_sa.nii" in fname and "_gt" not in fname and "_seg" not in fname:
+                imgs.append(p)
+            elif fname in (f"{case_id.lower()}.nii.gz", f"{case_id.lower()}.nii"):
+                imgs.append(p)
+
+        img_path = imgs[0] if imgs else None
+        mask_path = gts[0] if gts else None
+        return img_path, mask_path
 
     def _load_clinical_df(self) -> pd.DataFrame:
         """Load and index clinical metadata CSV."""
@@ -96,21 +153,17 @@ class MNMSDataLoader:
         df = self._load_clinical_df()
         cases: Dict[str, Dict[str, Any]] = {}
 
-        for s_dir in self.split_dirs:
+        resolved_splits = self._resolve_split_dirs()
+        for s_dir, canonical_split in resolved_splits:
             if not s_dir.is_dir():
                 continue
 
-            rel_split = s_dir.relative_to(self.root_dir)
             for case_dir in sorted(s_dir.iterdir()):
                 if not case_dir.is_dir():
                     continue
 
                 cid = case_dir.name
-                # Find cine image and gt mask
-                # Images match *_sa.nii* or {cid}_sa.nii*
-                # Masks match *_sa_gt.nii* or {cid}_sa_gt.nii*
-                gts = list(case_dir.glob("*_sa_gt.nii*"))
-                imgs = [p for p in case_dir.glob("*_sa.nii*") if "_gt" not in p.name]
+                img_path, mask_path = self._find_case_files(case_dir, cid)
 
                 # Match clinical info from CSV
                 csv_info = {}
@@ -122,25 +175,68 @@ class MNMSDataLoader:
 
                 ed_val = csv_info.get("ED")
                 es_val = csv_info.get("ES")
+                ed_frame = int(ed_val) if pd.notna(ed_val) else None
+                es_frame = int(es_val) if pd.notna(es_val) else None
+
+                has_image = (img_path is not None)
+                has_mask = (mask_path is not None)
+
+                if has_image and has_mask:
+                    if ed_frame is not None and es_frame is not None:
+                        status = "ELIGIBLE_PAIRED"
+                        rejection_reason = None
+                    else:
+                        status = "MISSING_ED_ES_METADATA"
+                        rejection_reason = "Missing ED/ES temporal phase frame indices in clinical metadata"
+                elif not has_image and has_mask:
+                    status = "MISSING_IMAGE"
+                    rejection_reason = "Ground-truth mask exists, but 4D cine MRI image is missing"
+                elif has_image and not has_mask:
+                    status = "MISSING_MASK"
+                    rejection_reason = "4D cine MRI image exists, but ground-truth segmentation mask is missing"
+                else:
+                    status = "EMPTY_DIRECTORY"
+                    rejection_reason = "Directory exists but contains no valid NIfTI image or mask files"
 
                 cases[cid] = {
                     "case_id": cid,
-                    "split_category": str(rel_split),
+                    "split_category": canonical_split,
                     "directory": case_dir,
-                    "image_path": imgs[0] if imgs else None,
-                    "mask_path": gts[0] if gts else None,
-                    "has_image": len(imgs) > 0,
-                    "has_mask": len(gts) > 0,
+                    "image_path": img_path,
+                    "mask_path": mask_path,
+                    "has_image": has_image,
+                    "has_mask": has_mask,
+                    "status": status,
+                    "rejection_reason": rejection_reason,
                     "csv_metadata": csv_info,
                     "vendor": csv_info.get("VendorName") or csv_info.get("Vendor"),
-                    "ed_frame": int(ed_val) if pd.notna(ed_val) else None,
-                    "es_frame": int(es_val) if pd.notna(es_val) else None,
+                    "ed_frame": ed_frame,
+                    "es_frame": es_frame,
                     "diagnosis": csv_info.get("Diagnosis") or csv_info.get("Pathology"),
                 }
 
         self._cases = cases
         logger.info(f"Discovered {len(cases)} M&Ms cases ({sum(1 for c in cases.values() if c['has_image'] and c['has_mask'])} with image+mask)")
         return cases
+
+    def get_discovery_summary(self) -> Dict[str, Any]:
+        """Produce itemized dataset discovery, pairing, and rejection statistics."""
+        cases = self.discover_cases()
+        summary: Dict[str, Any] = {
+            "total_discovered": len(cases),
+            "with_images": sum(1 for c in cases.values() if c["has_image"]),
+            "with_masks": sum(1 for c in cases.values() if c["has_mask"]),
+            "usable_pairs": sum(1 for c in cases.values() if c["status"] == "ELIGIBLE_PAIRED"),
+            "missing_images": sum(1 for c in cases.values() if not c["has_image"]),
+            "missing_masks": sum(1 for c in cases.values() if not c["has_mask"]),
+            "empty_directories": sum(1 for c in cases.values() if c["status"] == "EMPTY_DIRECTORY"),
+            "missing_ed_es": sum(1 for c in cases.values() if c["status"] == "MISSING_ED_ES_METADATA"),
+            "rejection_breakdown": {},
+        }
+        for c in cases.values():
+            st = c["status"]
+            summary["rejection_breakdown"][st] = summary["rejection_breakdown"].get(st, 0) + 1
+        return summary
 
     def get_case_ids(self, only_paired: bool = False) -> List[str]:
         """Return discovered case IDs. If only_paired=True, returns only cases with image AND mask."""
