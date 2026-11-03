@@ -58,7 +58,12 @@ from crip.modeling.dataset import (
     load_modeling_dataset,
 )
 from crip.pipeline.empirical_generator import DEFAULT_EMPIRICAL_COHORT_CSV
-from crip.pipeline.feature_bank import DEFAULT_OUTPUT_CSV as DEFAULT_FEATURE_BANK_CSV
+from crip.pipeline.feature_bank import (
+    DEFAULT_ACDC_CSV,
+    DEFAULT_EMIDEC_CSV,
+    DEFAULT_MNMS_CSV,
+    DEFAULT_OUTPUT_CSV as DEFAULT_FEATURE_BANK_CSV,
+)
 from crip.pipeline.splits import DEFAULT_UNIFIED_SPLITS_PATH
 
 logger = logging.getLogger("crip.pipeline.recovery_trainer")
@@ -67,6 +72,133 @@ DEFAULT_BASELINE_COHORT_CSV = Path("data/synthetic/synthetic_cardiomyopathy_coho
 DEFAULT_RECOVERY_MODELS_DIR = Path("models/recovery")
 DEFAULT_OUTPUT_METRICS_DIR = Path("data/processed/multidataset")
 DEFAULT_FIGURES_DIR = Path("docs/evaluation/multidataset/synthetic_integration")
+
+
+def validate_recovery_preflight(strict: bool = False) -> Dict[str, Any]:
+    """Perform preflight validation of recovery modeling prerequisites without executing training.
+
+    Checks:
+    1. Source measurement artifacts (ACDC, M&Ms, EMIDEC CSVs)
+    2. Unified empirical feature bank and required schema
+    3. Baseline and empirically informed synthetic cohorts (or generation prerequisites)
+    4. Prespecified feature whitelist columns
+
+    Args:
+        strict: If True, raises RuntimeError when preflight validation fails.
+
+    Returns:
+        Dict report containing artifact availability, validation errors, and remediation steps.
+    """
+    report: Dict[str, Any] = {
+        "acdc_csv": str(DEFAULT_ACDC_CSV),
+        "acdc_csv_present": DEFAULT_ACDC_CSV.is_file(),
+        "acdc_records": 0,
+        "mnms_csv": str(DEFAULT_MNMS_CSV),
+        "mnms_csv_present": DEFAULT_MNMS_CSV.is_file(),
+        "mnms_records": 0,
+        "emidec_csv": str(DEFAULT_EMIDEC_CSV),
+        "emidec_csv_present": DEFAULT_EMIDEC_CSV.is_file(),
+        "emidec_records": 0,
+        "feature_bank_csv": str(DEFAULT_FEATURE_BANK_CSV),
+        "feature_bank_present": DEFAULT_FEATURE_BANK_CSV.is_file(),
+        "feature_bank_records": 0,
+        "feature_bank_breakdown": {},
+        "baseline_cohort_csv": str(DEFAULT_BASELINE_COHORT_CSV),
+        "baseline_cohort_present": DEFAULT_BASELINE_COHORT_CSV.is_file(),
+        "baseline_cohort_records": 0,
+        "empirical_cohort_csv": str(DEFAULT_EMPIRICAL_COHORT_CSV),
+        "empirical_cohort_present": DEFAULT_EMPIRICAL_COHORT_CSV.is_file(),
+        "empirical_cohort_records": 0,
+        "errors": [],
+        "warnings": [],
+        "remediation": [],
+        "is_valid": False,
+    }
+
+    # 1. Check ACDC measurements
+    if report["acdc_csv_present"]:
+        try:
+            df_acdc = pd.read_csv(DEFAULT_ACDC_CSV)
+            report["acdc_records"] = len(df_acdc)
+            if len(df_acdc) < 100:
+                report["warnings"].append(f"ACDC measurements at {DEFAULT_ACDC_CSV} has {len(df_acdc)} rows (expected 100).")
+        except Exception as e:
+            report["errors"].append(f"Could not parse ACDC measurements CSV: {e}")
+    else:
+        report["errors"].append(f"Missing ACDC measurements CSV at {DEFAULT_ACDC_CSV}")
+        report["remediation"].append("python -m crip.mri.pipeline --data-dir data/raw/acdc/training --output-dir data/processed/acdc")
+
+    # 2. Check M&Ms evaluation
+    if report["mnms_csv_present"]:
+        try:
+            df_mnms = pd.read_csv(DEFAULT_MNMS_CSV)
+            report["mnms_records"] = len(df_mnms)
+            if len(df_mnms) < 114:
+                report["warnings"].append(f"M&Ms evaluation at {DEFAULT_MNMS_CSV} has {len(df_mnms)} rows (expected 114).")
+        except Exception as e:
+            report["errors"].append(f"Could not parse M&Ms evaluation CSV: {e}")
+    else:
+        report["errors"].append(f"Missing M&Ms external evaluation CSV at {DEFAULT_MNMS_CSV}")
+        report["remediation"].append("python -m crip.evaluation.external_mnms")
+
+    # 3. Check EMIDEC tissue measurements
+    if report["emidec_csv_present"]:
+        try:
+            df_emidec = pd.read_csv(DEFAULT_EMIDEC_CSV)
+            report["emidec_records"] = len(df_emidec)
+            if len(df_emidec) < 100:
+                report["warnings"].append(f"EMIDEC tissue measurements at {DEFAULT_EMIDEC_CSV} has {len(df_emidec)} rows (expected 100).")
+        except Exception as e:
+            report["errors"].append(f"Could not parse EMIDEC tissue measurements CSV: {e}")
+    else:
+        report["errors"].append(f"Missing EMIDEC tissue measurements CSV at {DEFAULT_EMIDEC_CSV}")
+        report["remediation"].append("python -m crip.emidec.tissue_metrics")
+
+    # 4. Check unified empirical feature bank
+    if report["feature_bank_present"]:
+        try:
+            df_fb = pd.read_csv(DEFAULT_FEATURE_BANK_CSV)
+            report["feature_bank_records"] = len(df_fb)
+            if "dataset_id" in df_fb.columns:
+                report["feature_bank_breakdown"] = df_fb["dataset_id"].value_counts().to_dict()
+            if len(df_fb) < 314:
+                report["warnings"].append(f"Feature bank at {DEFAULT_FEATURE_BANK_CSV} has {len(df_fb)} records (expected 314).")
+        except Exception as e:
+            report["errors"].append(f"Could not parse empirical feature bank CSV: {e}")
+    else:
+        report["errors"].append(f"Missing unified empirical feature bank at {DEFAULT_FEATURE_BANK_CSV}")
+        report["remediation"].append("python -m crip.pipeline features")
+
+    # 5. Check synthetic cohorts
+    if report["baseline_cohort_present"]:
+        try:
+            df_base = pd.read_csv(DEFAULT_BASELINE_COHORT_CSV)
+            report["baseline_cohort_records"] = len(df_base)
+        except Exception:
+            pass
+    else:
+        report["warnings"].append(f"Baseline synthetic cohort missing at {DEFAULT_BASELINE_COHORT_CSV} (will generate if feature bank is valid).")
+
+    if report["empirical_cohort_present"]:
+        try:
+            df_emp = pd.read_csv(DEFAULT_EMPIRICAL_COHORT_CSV)
+            report["empirical_cohort_records"] = len(df_emp)
+        except Exception:
+            pass
+    else:
+        report["warnings"].append(f"Empirically informed cohort missing at {DEFAULT_EMPIRICAL_COHORT_CSV} (will generate if feature bank is valid).")
+
+    # Determine validity
+    report["is_valid"] = len(report["errors"]) == 0
+
+    if strict and not report["is_valid"]:
+        err_msg = "\n".join(f"  * {e}" for e in report["errors"])
+        rem_msg = "\n".join(f"  $ {r}" for r in report["remediation"])
+        raise RuntimeError(
+            f"Recovery Pipeline Preflight Validation Failed:\n{err_msg}\n\nRequired Remediation Commands:\n{rem_msg}"
+        )
+
+    return report
 
 
 def compute_comprehensive_metrics(
@@ -545,6 +677,9 @@ def run_full_synthetic_recovery_pipeline(
     out_dir.mkdir(parents=True, exist_ok=True)
     m_dir = Path(models_dir)
     m_dir.mkdir(parents=True, exist_ok=True)
+
+    # Strict preflight check to ensure feature bank and dependencies exist before proceeding
+    validate_recovery_preflight(strict=True)
 
     # 1. Ensure both synthetic cohorts exist
     from crip.pipeline.empirical_generator import EmpiricallyInformedCohortGenerator

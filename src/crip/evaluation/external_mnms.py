@@ -374,12 +374,29 @@ def main() -> None:
     parser.add_argument("--checkpoint", type=str, default=str(DEFAULT_CHECKPOINT_PATH), help="Path to U-Net checkpoint")
     parser.add_argument("--output-csv", type=str, default=str(DEFAULT_MNMS_EVAL_CSV), help="Output CSV path")
     parser.add_argument("--output-summary", type=str, default=str(DEFAULT_MNMS_EVAL_SUMMARY), help="Output JSON summary path")
+    parser.add_argument("--all-cases", action="store_true", help="Evaluate all discovered paired cases instead of canonical 114 cohort")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of cases (for testing)")
     args = parser.parse_args()
 
     evaluator = MNMSExternalEvaluator(checkpoint_path=args.checkpoint)
     cases = evaluator.loader.discover_cases()
-    paired_cids = sorted([cid for cid, c in cases.items() if c["has_image"] and c["has_mask"]])
+
+    # Prefer canonical 114-study evaluation cohort to guarantee cross-platform benchmark parity
+    canonical_manifest = Path("docs/unified/cohort_splits.json")
+    if canonical_manifest.is_file() and not args.all_cases:
+        try:
+            with open(canonical_manifest, "r", encoding="utf-8") as f:
+                c_data = json.load(f)
+            c_ids = c_data.get("datasets", {}).get("mnms", {}).get("splits", {}).get("historical_zero_shot_cohort", [])
+            if len(c_ids) == 114:
+                paired_cids = sorted([cid for cid in c_ids if cid in cases and cases[cid]["has_image"] and cases[cid]["has_mask"]])
+            else:
+                paired_cids = sorted([cid for cid, c in cases.items() if c["has_image"] and c["has_mask"] and c.get("split_category") in ("Training/Labeled", "Validation")])
+        except Exception:
+            paired_cids = sorted([cid for cid, c in cases.items() if c["has_image"] and c["has_mask"] and c.get("split_category") in ("Training/Labeled", "Validation")])
+    else:
+        paired_cids = sorted([cid for cid, c in cases.items() if c["has_image"] and c["has_mask"]])
+
     if args.limit:
         paired_cids = paired_cids[:args.limit]
 

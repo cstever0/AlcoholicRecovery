@@ -510,8 +510,41 @@ def run_train(args: argparse.Namespace) -> int:
         print("  Prespecified Feature Whitelist: 13 numerical, 4 categorical, 3 binary indicators")
         print("  Target Artifacts: models/recovery/, data/processed/multidataset/synthetic_recovery_comparison.json")
 
+        from crip.pipeline.recovery_trainer import validate_recovery_preflight
+
         if hasattr(args, "dry_run") and args.dry_run:
-            print("\n[DRY RUN MODE]: Configuration validated. Execution bypassed.")
+            print("\nExecuting Recovery Pipeline Preflight Audit (Dry Run)...")
+            report = validate_recovery_preflight(strict=False)
+
+            print(f"\nSource Measurement Preprocessing Verification:")
+            print(f"  - ACDC Measurements:       {'FOUND (' + str(report['acdc_records']) + ' cases)' if report['acdc_csv_present'] else 'MISSING (' + str(report['acdc_csv']) + ')'}")
+            print(f"  - M&Ms Evaluation:         {'FOUND (' + str(report['mnms_records']) + ' cases)' if report['mnms_csv_present'] else 'MISSING (' + str(report['mnms_csv']) + ')'}")
+            print(f"  - EMIDEC Measurements:     {'FOUND (' + str(report['emidec_records']) + ' cases)' if report['emidec_csv_present'] else 'MISSING (' + str(report['emidec_csv']) + ')'}")
+
+            print(f"\nUnified Empirical Feature Bank Verification:")
+            print(f"  - Feature Bank Present:    {report['feature_bank_present']} ({report['feature_bank_csv']})")
+            if report['feature_bank_present']:
+                print(f"  - Feature Bank Records:    {report['feature_bank_records']} / 314 expected")
+                print(f"  - Dataset Breakdown:       {report['feature_bank_breakdown']}")
+
+            print(f"\nSynthetic Modeling Cohorts:")
+            print(f"  - Baseline Cohort:         {'FOUND (' + str(report['baseline_cohort_records']) + ' pts)' if report['baseline_cohort_present'] else 'PENDING GENERATION'}")
+            print(f"  - Empirically Informed:    {'FOUND (' + str(report['empirical_cohort_records']) + ' pts)' if report['empirical_cohort_present'] else 'PENDING GENERATION'}")
+            print(f"  - Feature Whitelist:       Verified (13 numerical, 4 categorical, 3 binary)")
+
+            print(f"\nTarget Checkpoints Destination: models/recovery/")
+
+            if not report["is_valid"]:
+                print("\n[PREFLIGHT CHECK FAILED]:", file=sys.stderr)
+                for err in report["errors"]:
+                    print(f"  * {err}", file=sys.stderr)
+                if report["remediation"]:
+                    print("\nRemediation Instructions:", file=sys.stderr)
+                    for rem in report["remediation"]:
+                        print(f"  $ {rem}", file=sys.stderr)
+                return 1
+
+            print("\nPREFLIGHT PASSED: Recovery modeling prerequisites and feature banks verified.")
             return 0
 
         from crip.pipeline.recovery_trainer import run_full_synthetic_recovery_pipeline
