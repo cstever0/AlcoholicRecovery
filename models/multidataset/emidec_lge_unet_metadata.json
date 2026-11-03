@@ -1,0 +1,32 @@
+{
+  "model_identity": "CRIP Dedicated EMIDEC LGE 2D U-Net (5-Class)",
+  "checkpoint_path": "models/multidataset/emidec_lge_unet.pt",
+  "checkpoint_sha256": "d62fb350fed747d7c69cd8bfe6a78c5cea71ba5857bc28d140ef5f464b588c56",
+  "splits_sha256": "dc8195cb22df8f640707d6a2c131e41122cc07fe66917b389a5eafc65ff69e54",
+  "best_epoch": 24,
+  "total_epochs_trained": 30,
+  "training_duration_seconds": 122.98,
+  "hardware_device": "mps",
+  "best_validation_metrics": {
+    "val_loss": 2.236136520610136,
+    "dice_mean": 0.41691245639231056,
+    "dice_lv": 0.7924913167953491,
+    "dice_myo": 0.5710275173187256,
+    "dice_infarct": 0.29720520973205566,
+    "dice_mvo": 0.006925781723111868
+  },
+  "cohort_sizes": {
+    "emidec_train_patients": 60,
+    "emidec_val_patients": 20,
+    "emidec_held_out_test_patients": 20,
+    "total_annotated_cases": 100
+  },
+  "preserved_checkpoints": {
+    "original_acdc_checkpoint": "models/mri/best_unet_model.pt",
+    "original_acdc_intact": true,
+    "original_acdc_sha256": "71ea54235803562acc67b8903deecaaf113d45a1c7b443a97ba9fbe6573072c9",
+    "joint_cine_checkpoint": "models/multidataset/cine_joint_unet.pt",
+    "joint_cine_intact": true,
+    "joint_cine_sha256": "fd4f7da40f756794c99d9e2cad1e06a080701e86b5386afcd686a24b5c12e50d"
+  }
+}

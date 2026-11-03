@@ -1,0 +1,31 @@
+{
+  "model_identity": "CRIP Joint Cine 2D U-Net (ACDC + M&Ms)",
+  "checkpoint_path": "models/multidataset/cine_joint_unet.pt",
+  "checkpoint_sha256": "fd4f7da40f756794c99d9e2cad1e06a080701e86b5386afcd686a24b5c12e50d",
+  "best_epoch": 24,
+  "total_epochs_trained": 25,
+  "training_duration_seconds": 538.83,
+  "hardware_device": "mps",
+  "best_validation_metrics": {
+    "val_loss": 0.1806263728400688,
+    "acdc_dice_mean": 0.8470409909884135,
+    "acdc_dice_lv": 0.8946220874786377,
+    "acdc_dice_rv": 0.8179686665534973,
+    "acdc_dice_myo": 0.8285322189331055,
+    "mnms_dice_mean": 0.8432079950968424,
+    "mnms_dice_lv": 0.8942655324935913,
+    "mnms_dice_rv": 0.8305450081825256,
+    "mnms_dice_myo": 0.8048134446144104,
+    "combined_dice_mean": 0.8451244930426279
+  },
+  "cohort_sizes": {
+    "acdc_train_patients": 60,
+    "acdc_val_patients": 20,
+    "mnms_train_studies": 60,
+    "mnms_val_studies": 20,
+    "total_training_patients": 120,
+    "total_validation_patients": 40
+  },
+  "original_acdc_checkpoint_preserved": true,
+  "original_acdc_checkpoint_sha256": "71ea54235803562acc67b8903deecaaf113d45a1c7b443a97ba9fbe6573072c9"
+}
