@@ -308,6 +308,10 @@ def run_train(args: argparse.Namespace) -> int:
             config.epochs = args.epochs
         if hasattr(args, "batch_size") and args.batch_size:
             config.batch_size = args.batch_size
+        if hasattr(args, "acdc_dir") and args.acdc_dir:
+            config.acdc_data_dir = args.acdc_dir
+        if hasattr(args, "mnms_dir") and args.mnms_dir:
+            config.mnms_data_dir = args.mnms_dir
 
         print(f"\nTask: {config.task_name}")
         print(f"  Architecture: {config.architecture} (MONAI 2D U-Net)")
@@ -318,14 +322,29 @@ def run_train(args: argparse.Namespace) -> int:
         print(f"  Normalization: {config.normalization.value}")
         print(f"  Target Checkpoint: {config.target_checkpoint_dir}cine_joint_unet.pt")
 
-        if hasattr(args, "dry_run") and args.dry_run:
-            print("\n[DRY RUN MODE]: Configuration validated. Execution bypassed.")
-            return 0
-
-        # Execute actual training
         from crip.pipeline.joint_trainer import JointCineTrainer
         device_arg = torch.device(args.device) if hasattr(args, "device") and args.device else None
         trainer = JointCineTrainer(config=config, device=device_arg)
+
+        if hasattr(args, "dry_run") and args.dry_run:
+            print("\nExecuting Joint Cine Preflight Audit (Dry Run)...")
+            report = trainer.validate_preflight(strict=False)
+            print(f"  - Manifest Present: {report['manifest_present']}")
+            print(f"  - ACDC Training Cases: {report['acdc_train_available']} / {report['acdc_train_total']}")
+            print(f"  - ACDC Validation Cases: {report['acdc_val_available']} / {report['acdc_val_total']}")
+            print(f"  - M&Ms Training Cases: {report['mnms_train_available']} / {report['mnms_train_total']}")
+            print(f"  - M&Ms Validation Cases: {report['mnms_val_available']} / {report['mnms_val_total']}")
+            print(f"  - Holdout Quarantined: {report['holdout_quarantine_verified']}")
+            print(f"  - Target Checkpoint: {report['target_checkpoint']}")
+            if not report["is_valid"]:
+                print("\n[PREFLIGHT CHECK FAILED]:", file=sys.stderr)
+                for err in report["errors"]:
+                    print(f"  * {err}", file=sys.stderr)
+                return 1
+            print("\n[DRY RUN MODE]: Preflight audit passed. Joint datasets and configuration are valid.")
+            return 0
+
+        # Execute actual training
         meta = trainer.train(epochs=config.epochs, batch_size=config.batch_size)
 
         print("\nJoint Cine Training Completed Successfully:")
@@ -448,6 +467,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     train_parser.add_argument("--device", type=str, default=None, help="Device to use ('mps', 'cuda', 'cpu')")
     train_parser.add_argument("--dry-run", action="store_true", help="Validate configuration without training")
     train_parser.add_argument("--seed", type=int, default=42, help="Random seed for training")
+    train_parser.add_argument("--acdc-dir", type=str, default=None, help="ACDC training data directory")
+    train_parser.add_argument("--mnms-dir", type=str, default=None, help="M&Ms data directory")
 
     args = parser.parse_args(argv)
 

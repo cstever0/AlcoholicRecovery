@@ -57,6 +57,8 @@ class CineSegmentationConfig:
     random_seed: int = 42
     target_checkpoint_dir: str = "models/multidataset/"
     supported_datasets: List[str] = field(default_factory=lambda: ["acdc", "mnms"])
+    acdc_data_dir: str = "data/raw/acdc/training"
+    mnms_data_dir: str = "data/raw/mnms"
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert config to dictionary."""

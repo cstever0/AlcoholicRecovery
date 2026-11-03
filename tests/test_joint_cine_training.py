@@ -127,3 +127,86 @@ class TestCheckpointAndSplitIsolation:
         non_existent = tmp_path / "does_not_exist.pt"
         with pytest.raises(FileNotFoundError):
             MatchedCineEvaluator(joint_checkpoint=non_existent)
+
+
+class TestWSLSafeguardsAndPreflight:
+    """Validates preflight checks, missing dataset detection, and sampler protections."""
+
+    def test_sampler_empty_mnms_raises_value_error(self) -> None:
+        class MockDataset:
+            def __init__(self):
+                self.slices = [{"dataset": "acdc"} for _ in range(10)]
+
+        ds = MockDataset()
+        with pytest.raises(ValueError, match="Joint cine training requires annotated M&Ms"):
+            BalancedDatasetBatchSampler(ds, batch_size=4, seed=42)
+
+    def test_sampler_empty_acdc_raises_value_error(self) -> None:
+        class MockDataset:
+            def __init__(self):
+                self.slices = [{"dataset": "mnms"} for _ in range(10)]
+
+        ds = MockDataset()
+        with pytest.raises(ValueError, match="ACDC pool is empty"):
+            BalancedDatasetBatchSampler(ds, batch_size=4, seed=42)
+
+    def test_sampler_both_empty_raises_value_error(self) -> None:
+        class MockDataset:
+            def __init__(self):
+                self.slices = []
+
+        ds = MockDataset()
+        with pytest.raises(ValueError, match="completely empty"):
+            BalancedDatasetBatchSampler(ds, batch_size=4, seed=42)
+
+    def test_preflight_audit_missing_mnms(self, tmp_path: Path) -> None:
+        from crip.pipeline.joint_trainer import JointCineTrainer
+
+        cfg = CineSegmentationConfig(mnms_data_dir=str(tmp_path / "empty_mnms"))
+        trainer = JointCineTrainer(config=cfg)
+        report = trainer.validate_preflight(strict=False)
+
+        assert report["is_valid"] is False
+        assert report["mnms_train_available"] == 0
+        assert any("Joint cine training requires annotated M&Ms" in e for e in report["errors"])
+
+        with pytest.raises(RuntimeError, match="Joint cine training requires annotated M&Ms"):
+            trainer.validate_preflight(strict=True)
+
+    def test_preflight_audit_missing_acdc(self, tmp_path: Path) -> None:
+        from crip.pipeline.joint_trainer import JointCineTrainer
+
+        cfg = CineSegmentationConfig(acdc_data_dir=str(tmp_path / "empty_acdc"))
+        trainer = JointCineTrainer(config=cfg)
+        report = trainer.validate_preflight(strict=False)
+
+        assert report["is_valid"] is False
+        assert report["acdc_train_available"] == 0
+        assert any("ACDC raw training dataset not found" in e for e in report["errors"])
+
+    def test_preflight_audit_passes_with_real_data(self) -> None:
+        from crip.pipeline.joint_trainer import JointCineTrainer
+
+        trainer = JointCineTrainer()
+        report = trainer.validate_preflight(strict=False)
+
+        assert report["is_valid"] is True
+        assert report["acdc_train_available"] == 60
+        assert report["acdc_val_available"] == 20
+        assert report["mnms_train_available"] == 60
+        assert report["mnms_val_available"] == 20
+        assert report["holdout_quarantine_verified"] is True
+        assert len(report["errors"]) == 0
+
+    def test_cli_dry_run_success(self) -> None:
+        from crip.pipeline.cli import main
+
+        code = main(["train", "--task", "cine", "--dry-run"])
+        assert code == 0
+
+    def test_cli_dry_run_fails_with_missing_mnms(self, tmp_path: Path) -> None:
+        from crip.pipeline.cli import main
+
+        code = main(["train", "--task", "cine", "--dry-run", "--mnms-dir", str(tmp_path / "missing")])
+        assert code == 1
+

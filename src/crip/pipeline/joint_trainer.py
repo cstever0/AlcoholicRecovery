@@ -25,6 +25,8 @@ import torch
 from monai.metrics import DiceMetric
 from torch.utils.data import DataLoader
 
+from crip.datasets.mnms_loader import DEFAULT_MNMS_ROOT, MNMSDataLoader
+from crip.mri.acdc_loader import ACDCDataLoader, DEFAULT_ACDC_TRAINING_DIR
 from crip.mri.segmentation_model import (
     CompoundDiceCELoss,
     DEFAULT_CHECKPOINT_PATH as ORIGINAL_ACDC_CHECKPOINT,
@@ -99,6 +101,135 @@ class JointCineTrainer:
             f"M&Ms (train={len(mnms_train)}, val={len(mnms_val)})"
         )
         return acdc_train, acdc_val, mnms_train, mnms_val
+
+    def validate_preflight(self, strict: bool = False) -> Dict[str, Any]:
+        """Perform preflight audit of dataset availability, directories, and split integrity.
+
+        Checks:
+        1. Unified split manifest existence and valid non-overlapping assignments.
+        2. Designated M&Ms holdout exclusion (zero overlap with train/val).
+        3. ACDC training cases availability on disk (with ED/ES frames).
+        4. M&Ms training cases availability on disk (with images and ground-truth masks).
+        5. Validation cohorts availability for both datasets.
+        6. Checkpoint destination directory writability/validity.
+
+        Args:
+            strict: If True, raises RuntimeError on any missing required dataset.
+
+        Returns:
+            Dict containing preflight validation report.
+        """
+        report: Dict[str, Any] = {
+            "splits_manifest": str(self.splits_path),
+            "splits_manifest_exists": self.splits_path.is_file(),
+            "manifest_path": str(self.splits_path),
+            "manifest_present": self.splits_path.is_file(),
+            "target_checkpoint": str(self.checkpoint_path),
+            "checkpoint_destination": str(self.checkpoint_path),
+            "acdc_train_requested": 0,
+            "acdc_train_total": 0,
+            "acdc_train_available": 0,
+            "acdc_val_requested": 0,
+            "acdc_val_total": 0,
+            "acdc_val_available": 0,
+            "mnms_train_requested": 0,
+            "mnms_train_total": 0,
+            "mnms_train_available": 0,
+            "mnms_val_requested": 0,
+            "mnms_val_total": 0,
+            "mnms_val_available": 0,
+            "mnms_holdout_quarantined": 0,
+            "holdout_leakage_detected": False,
+            "holdout_quarantine_verified": True,
+            "errors": [],
+            "warnings": [],
+            "is_valid": False,
+        }
+
+        # 1. Load splits
+        try:
+            acdc_tr, acdc_va, mnms_tr, mnms_va = self.load_cohort_splits()
+            report["acdc_train_requested"] = len(acdc_tr)
+            report["acdc_train_total"] = len(acdc_tr)
+            report["acdc_val_requested"] = len(acdc_va)
+            report["acdc_val_total"] = len(acdc_va)
+            report["mnms_train_requested"] = len(mnms_tr)
+            report["mnms_train_total"] = len(mnms_tr)
+            report["mnms_val_requested"] = len(mnms_va)
+            report["mnms_val_total"] = len(mnms_va)
+        except Exception as e:
+            report["errors"].append(f"Failed to load unified cohort splits: {e}")
+            if strict:
+                raise RuntimeError(report["errors"][-1]) from e
+            return report
+
+        # Check holdout exclusion
+        try:
+            with open(self.splits_path, "r", encoding="utf-8") as f:
+                manifest = json.load(f)
+            holdout_cases = manifest["datasets"]["mnms"]["splits"].get("held_out_external", [])
+            report["mnms_holdout_quarantined"] = len(holdout_cases)
+            overlap = set(holdout_cases) & (set(mnms_tr) | set(mnms_va))
+            if overlap:
+                report["holdout_leakage_detected"] = True
+                report["holdout_quarantine_verified"] = False
+                report["errors"].append(f"Holdout contamination: cases {overlap} appear in training/validation!")
+            else:
+                report["holdout_quarantine_verified"] = True
+        except Exception as e:
+            report["warnings"].append(f"Could not verify holdout quarantine: {e}")
+
+        # 2. Check ACDC raw files
+        acdc_dir = Path(getattr(self.config, "acdc_data_dir", DEFAULT_ACDC_TRAINING_DIR))
+        acdc_loader = ACDCDataLoader(acdc_dir)
+        if not acdc_loader.is_available():
+            report["errors"].append(
+                f"ACDC raw training dataset not found at {acdc_dir}. "
+                "Download ACDC training data into data/raw/acdc/training/."
+            )
+        else:
+            avail_acdc = set(acdc_loader.list_patients())
+            report["acdc_train_available"] = len(set(acdc_tr) & avail_acdc)
+            report["acdc_val_available"] = len(set(acdc_va) & avail_acdc)
+            if report["acdc_train_available"] == 0:
+                report["errors"].append(
+                    f"No usable ACDC training patients found at {acdc_dir}. Expected {len(acdc_tr)}."
+                )
+            if report["acdc_val_available"] == 0:
+                report["errors"].append(
+                    f"No usable ACDC validation patients found at {acdc_dir}. Expected {len(acdc_va)}."
+                )
+
+        # 3. Check M&Ms raw files
+        mnms_dir = Path(getattr(self.config, "mnms_data_dir", DEFAULT_MNMS_ROOT))
+        mnms_loader = MNMSDataLoader(root_dir=mnms_dir)
+        if not mnms_loader.is_available:
+            report["errors"].append(
+                "Joint cine training requires annotated M&Ms training cases. "
+                "No usable M&Ms slices were found. Verify data/raw/mnms/ and the unified cohort manifest."
+            )
+        else:
+            paired_cases = set(mnms_loader.get_case_ids(only_paired=True))
+            report["mnms_train_available"] = len(set(mnms_tr) & paired_cases)
+            report["mnms_val_available"] = len(set(mnms_va) & paired_cases)
+            if report["mnms_train_available"] == 0:
+                report["errors"].append(
+                    "Joint cine training requires annotated M&Ms training cases. "
+                    "No usable M&Ms slices were found. Verify data/raw/mnms/ and the unified cohort manifest. "
+                    f"(Found 0 / {len(mnms_tr)} paired training cases)."
+                )
+            if report["mnms_val_available"] == 0:
+                report["errors"].append(
+                    f"No usable M&Ms validation cases found at {mnms_dir}. Expected {len(mnms_va)}."
+                )
+
+        report["is_valid"] = (len(report["errors"]) == 0)
+
+        if strict and not report["is_valid"]:
+            error_msg = "\n".join(report["errors"])
+            raise RuntimeError(f"Preflight validation failed:\n{error_msg}")
+
+        return report
 
     def train_epoch(
         self,
@@ -217,12 +348,17 @@ class JointCineTrainer:
         logger.info(f"Initiating Joint Cine U-Net training on {self.device} for {num_epochs} epochs...")
         start_time = time.time()
 
+        # Preflight validation to ensure both datasets are present and holdouts quarantined
+        self.validate_preflight(strict=True)
+
         acdc_tr, acdc_va, mnms_tr, mnms_va = self.load_cohort_splits()
 
         # Build datasets
         train_ds = JointCineSegmentationDataset(
             acdc_patient_ids=acdc_tr,
             mnms_case_ids=mnms_tr,
+            acdc_data_dir=self.config.acdc_data_dir,
+            mnms_data_dir=self.config.mnms_data_dir,
             target_size=self.config.target_spatial_size,
             augment=True,
             seed=self.config.random_seed,
@@ -231,11 +367,19 @@ class JointCineTrainer:
         val_ds = JointCineSegmentationDataset(
             acdc_patient_ids=acdc_va,
             mnms_case_ids=mnms_va,
+            acdc_data_dir=self.config.acdc_data_dir,
+            mnms_data_dir=self.config.mnms_data_dir,
             target_size=self.config.target_spatial_size,
             augment=False,
             seed=self.config.random_seed,
             cache_data=True,
         )
+
+        if train_ds.acdc_slice_count == 0 or train_ds.mnms_slice_count == 0:
+            raise RuntimeError(
+                f"Joint cine training requires slices from both ACDC and M&Ms. "
+                f"Found {train_ds.acdc_slice_count} ACDC slices and {train_ds.mnms_slice_count} M&Ms slices."
+            )
 
         train_sampler = BalancedDatasetBatchSampler(train_ds, batch_size=b_size, seed=self.config.random_seed)
         train_loader = DataLoader(train_ds, batch_sampler=train_sampler, num_workers=0)

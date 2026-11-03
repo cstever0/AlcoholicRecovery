@@ -22,7 +22,7 @@ import torch
 from torch.utils.data import Dataset, Sampler
 
 from crip.datasets.labels import map_mnms_to_canonical
-from crip.datasets.mnms_loader import MNMSDataLoader
+from crip.datasets.mnms_loader import DEFAULT_MNMS_ROOT, MNMSDataLoader
 from crip.mri.acdc_loader import ACDCDataLoader, DEFAULT_ACDC_TRAINING_DIR
 from crip.mri.preprocessing import (
     DEFAULT_TARGET_SPATIAL_SIZE,
@@ -41,6 +41,7 @@ class JointCineSegmentationDataset(Dataset):
         acdc_patient_ids: Sequence[str] = (),
         mnms_case_ids: Sequence[str] = (),
         acdc_data_dir: Path | str = DEFAULT_ACDC_TRAINING_DIR,
+        mnms_data_dir: Path | str = DEFAULT_MNMS_ROOT,
         target_size: Tuple[int, int] = DEFAULT_TARGET_SPATIAL_SIZE,
         augment: bool = False,
         seed: Optional[int] = 42,
@@ -49,13 +50,16 @@ class JointCineSegmentationDataset(Dataset):
         self.acdc_patient_ids = list(acdc_patient_ids)
         self.mnms_case_ids = list(mnms_case_ids)
         self.acdc_data_dir = Path(acdc_data_dir)
+        self.mnms_data_dir = Path(mnms_data_dir)
         self.target_size = target_size
         self.augment = augment
         self.rng = np.random.RandomState(seed) if seed is not None else np.random.RandomState()
 
         self.acdc_loader = ACDCDataLoader(self.acdc_data_dir)
-        self.mnms_loader = MNMSDataLoader()
+        self.mnms_loader = MNMSDataLoader(root_dir=self.mnms_data_dir)
 
+        self.acdc_slice_count: int = 0
+        self.mnms_slice_count: int = 0
         self.slices: List[Dict[str, Any]] = []
         self._build_slice_index(cache_data=cache_data)
 
@@ -142,6 +146,9 @@ class JointCineSegmentationDataset(Dataset):
                     self.slices.append(entry)
                     mnms_slice_count += 1
 
+        self.acdc_slice_count = acdc_slice_count
+        self.mnms_slice_count = mnms_slice_count
+
         logger.info(
             f"Joint indexing complete: {len(self.slices)} total slices "
             f"({acdc_slice_count} ACDC, {mnms_slice_count} M&Ms)."
@@ -218,12 +225,40 @@ class BalancedDatasetBatchSampler(Sampler):
         self.acdc_indices = [i for i, s in enumerate(dataset.slices) if s["dataset"] == "acdc"]
         self.mnms_indices = [i for i, s in enumerate(dataset.slices) if s["dataset"] == "mnms"]
 
-        self.half_batch = batch_size // 2
-        self.num_batches = max(len(self.acdc_indices), len(self.mnms_indices)) // max(self.half_batch, 1)
+        # Validate that neither pool is empty
+        if len(self.acdc_indices) == 0 and len(self.mnms_indices) == 0:
+            raise ValueError(
+                "Joint cine balanced sampling requires slices from both ACDC and M&Ms datasets, "
+                "but the dataset is completely empty (0 total slices)."
+            )
+        if len(self.acdc_indices) == 0:
+            raise ValueError(
+                f"Joint cine balanced sampling requires annotated ACDC training cases, but ACDC pool is empty "
+                f"(0 ACDC slices, {len(self.mnms_indices)} M&Ms slices). "
+                "Verify data/raw/acdc/training/ and the unified cohort manifest."
+            )
+        if len(self.mnms_indices) == 0:
+            raise ValueError(
+                "Joint cine training requires annotated M&Ms training cases. No usable M&Ms slices were found. "
+                "Verify data/raw/mnms/ and the unified cohort manifest. "
+                f"(ACDC slices={len(self.acdc_indices)}, M&Ms slices=0)."
+            )
+
+        self.half_batch = max(1, batch_size // 2)
+        self.num_batches = max(len(self.acdc_indices), len(self.mnms_indices)) // self.half_batch
+        if self.num_batches == 0:
+            self.num_batches = 1
 
     def __iter__(self):
         acdc_pool = list(self.acdc_indices)
         mnms_pool = list(self.mnms_indices)
+
+        if len(acdc_pool) == 0 or len(mnms_pool) == 0:
+            raise ValueError(
+                f"Cannot iterate BalancedDatasetBatchSampler with empty pools: "
+                f"ACDC={len(acdc_pool)}, M&Ms={len(mnms_pool)}. "
+                "Joint cine training requires slices from both datasets."
+            )
 
         self.rng.shuffle(acdc_pool)
         self.rng.shuffle(mnms_pool)

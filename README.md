@@ -745,8 +745,11 @@ python src/crip/mri/train_segmentation.py --smoke-test
 ### 16.2 Joint Cine Multi-Dataset U-Net (ACDC + M&Ms)
 Unites 120 training patients (60 ACDC + 60 M&Ms) and 40 validation patients (20 ACDC + 20 M&Ms) with balanced slice sampling and label harmonization:
 
+> [!IMPORTANT]
+> **Dataset Prerequisite:** Joint cine training requires both ACDC and M&Ms datasets downloaded and extracted under `data/raw/acdc/training/` and `data/raw/mnms/`. Because raw medical images are excluded from version control (`.gitignore`), on fresh clones or new environments (such as Ubuntu/WSL), attempting to train without M&Ms will trigger a descriptive preflight error preventing invalid single-dataset training. Always run the `--dry-run` preflight audit first to verify dataset availability, slice counts, and holdout quarantine:
+
 ```bash
-# Dry-run configuration validation (instant)
+# Dry-run preflight audit and configuration validation (recommended before training)
 python -m crip.pipeline train --task cine --dry-run
 
 # Full multi-dataset training (20 epochs)
