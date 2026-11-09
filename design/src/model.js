@@ -3,6 +3,7 @@
 // planFor() are stand-ins until the treatment model exists: replace those two only.
 import MODEL from './data/model.json';
 import COHORT from './data/cohort.json';
+import REAL_CASES from './data/real_cases.json';
 
 export const modelVersion = MODEL.version;
 export const DEFAULT_THRESHOLD = 85;
@@ -12,6 +13,13 @@ export const patients = COHORT.rows.map((row) =>
 );
 
 export const demoPatients = Object.values(COHORT.demo);
+
+// Constructed scenarios: a real ACDC MRI plus a made-up health history (data/real_cases.json).
+// Kept out of `patients`, so they never reach the cohort counts, the Models page or any metric.
+// Null volumes (until export_real_cases.py runs) are filled with the training median in predict(),
+// the same imputation the exported Python pipeline uses.
+export const realCases = REAL_CASES.records;
+export const isScenario = (rec) => rec.record_type === 'CONSTRUCTED_MULTIMODAL_SCENARIO';
 
 const DRIVER_GROUP = {
   peth_value_ng_ml: 'peth', peth_available: 'peth',
@@ -169,7 +177,7 @@ export function driverText(key, rec) {
         ? `PEth ${rec.peth_value_ng_ml} ng/mL`
         : 'PEth not done';
     case 'lv':
-      return `LVEF ${rec.baseline_lvef}%, LV EDV ${Math.round(rec.edv_ml)} mL`;
+      return rec.edv_ml == null ? `LVEF ${rec.baseline_lvef}%` : `LVEF ${rec.baseline_lvef}%, LV EDV ${Math.round(rec.edv_ml)} mL`;
     case 'rv':
       return rec.rvef_percent == null ? 'RV function not measured' : `RVEF ${rec.rvef_percent}%`;
     case 'history': {

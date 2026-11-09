@@ -35,6 +35,15 @@ export function StatusChip({ status }) {
   );
 }
 
+const SOURCE_LABEL = { REAL_MRI: 'Real MRI', SIMULATED: 'Simulated', PENDING_EXPORT: 'Waiting for export' };
+
+// Where a value came from, shown only on constructed scenarios (records that carry a provenance map).
+export function SourceTag({ rec, field }) {
+  const source = rec.provenance?.[field];
+  if (!source) return null;
+  return <span className={`src-tag src-${source.toLowerCase().replace('_', '-')}`}>{SOURCE_LABEL[source]}</span>;
+}
+
 const clamp01 = (x) => Math.min(1, Math.max(0, x));
 
 // PEth spans three orders of magnitude, so the scale is logarithmic.

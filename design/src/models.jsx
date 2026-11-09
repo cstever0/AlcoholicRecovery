@@ -168,10 +168,25 @@ function CalibrationChart() {
   );
 }
 
+// The same frozen U-Net on two test sets: the hospital it trained on, then other hospitals'
+// scanners it never saw (M&Ms external validation, docs/evaluation/mnms_external_validation_report.md).
 const MRI_STATS = [
-  ['3.86 points', 'Mean LVEF error against expert contours'],
-  ['15 of 20', 'Test patients within 5 points'],
-  ['0.839', 'Mean Dice overlap'],
+  {
+    title: 'ACDC test scans: 20 patients, the hospital it trained on',
+    stats: [
+      ['3.86 points', 'Mean LVEF error against expert contours'],
+      ['15 of 20', 'Test patients within 5 points'],
+      ['0.839', 'Mean Dice overlap'],
+    ],
+  },
+  {
+    title: 'M&Ms scans: 114 patients from other hospitals, 4 scanner brands',
+    stats: [
+      ['8.48 points', 'Mean LVEF error against expert contours'],
+      ['46 of 114', 'Patients within 5 points'],
+      ['0.726', 'Mean Dice overlap'],
+    ],
+  },
 ];
 
 export function ModelsView({ threshold, setThreshold }) {
@@ -217,16 +232,24 @@ export function ModelsView({ threshold, setThreshold }) {
       </div>
 
       <section className="panel">
-        <h2>MRI measurement: U-Net on real ACDC scans</h2>
-        <dl className="stat-row">
-          {MRI_STATS.map(([value, label]) => (
-            <div key={label}>
-              <dd>{value}</dd>
-              <dt>{label}</dt>
-            </div>
-          ))}
-        </dl>
-        <p className="small-note">From the README. Not rerun here, because the ACDC scans are not in the repository.</p>
+        <h2>MRI measurement: U-Net on real scans</h2>
+        <p className="takeaway">
+          On other hospitals' scanners, the LVEF error more than doubles, from <strong>3.86</strong> to <strong>8.48 points</strong>.
+        </p>
+        {MRI_STATS.map((set) => (
+          <div key={set.title} className="stat-set">
+            <h3>{set.title}</h3>
+            <dl className="stat-row">
+              {set.stats.map(([value, label]) => (
+                <div key={label}>
+                  <dd>{value}</dd>
+                  <dt>{label}</dt>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+        <p className="small-note">From the README and the M&amp;Ms external validation report. Not rerun here, because the scans are not in the repository.</p>
       </section>
     </div>
   );
