@@ -1,12 +1,12 @@
 import {
-  DEFAULT_THRESHOLD, LGE_PATTERN_LABEL, TTN_LABEL, TTN_ORDER, assess, demoPatients,
-  patients, pct, predict, sexWord,
+  DEFAULT_THRESHOLD, LGE_PATTERN_LABEL, TTN_LABEL, TTN_ORDER, assess, demoPatients, isScenario,
+  patients, pct, predict, realCases, sexWord,
 } from './model.js';
 import { Intake } from './intake.jsx';
 import { ModelsView } from './models.jsx';
 import { PatientPage } from './patient.jsx';
-import { PatientChart, summaryText } from './chart.jsx';
-import { Segmented, StatusMark } from './ui.jsx';
+import { ACDC_GROUP_LABEL, ImputeNote, LVEF_METHOD_LABEL, PatientChart, summaryText } from './chart.jsx';
+import { Segmented, SourceTag, StatusMark } from './ui.jsx';
 import mriOriginal from './data/mri-original.jpg';
 import mriOverlay from './data/mri-overlay.jpg';
 
@@ -40,14 +40,21 @@ function applyDisplay({ size, theme }) {
 
 const demoNote = Object.fromEntries(demoPatients.map((d) => [d.id, d.note]));
 const demoOrder = demoPatients.map((d) => d.id);
+const realIds = new Set(realCases.map((r) => r.patient_id));
+const known = (id) => realIds.has(id) || patients.some((p) => p.patient_id === id);
+
+// Images the export script writes into src/data/ are bundled by name (esbuild globs this require).
+const caseImage = (file) => require(`./data/${file.replace(/\.jpg$/, '')}.jpg`);
+
+const ACDC_ATTRIBUTION = 'ACDC dataset: Bernard et al., IEEE TMI 2018. CC BY-NC-SA 4.0, non-commercial research use.';
 
 function initialView() {
   const token = location.hash.slice(1);
   if (token === 'models') return { name: 'models' };
   if (token === 'new') return { name: 'new' };
-  if (token && patients.some((p) => p.patient_id === token)) return { name: 'patient', id: token };
+  if (token && known(token)) return { name: 'patient', id: token };
   const shareId = token.replace('patient-view.', '');
-  if (shareId !== token && patients.some((p) => p.patient_id === shareId)) return { name: 'patient-page', id: shareId, standalone: true };
+  if (shareId !== token && known(shareId)) return { name: 'patient-page', id: shareId, standalone: true };
   return { name: 'patient', id: demoOrder[0] };
 }
 
@@ -82,7 +89,7 @@ function Worklist({ tab, setTab, counts, query, setQuery, filters, setFilters, r
           <kbd aria-hidden="true">/</kbd>
         </label>
         <div className="tabs" role="group" aria-label="Which patients to show">
-          {[['demo', 'Demo'], ['all', 'All'], ['unsure', 'Not sure']].map(([key, label]) => (
+          {[['demo', 'Demo'], ['real', 'Real scans'], ['all', 'All'], ['unsure', 'Not sure']].map(([key, label]) => (
             <button key={key} type="button" className={tab === key ? 'on' : ''} aria-pressed={tab === key} onClick={() => setTab(key)}>
               {label} <span>{counts[key].toLocaleString()}</span>
             </button>
@@ -113,6 +120,7 @@ function Worklist({ tab, setTab, counts, query, setQuery, filters, setFilters, r
               <span className="row-id">{rec.patient_id.replace('CRIP-', '')}</span>
               <span className="row-who">{rec.age} {sexWord(rec.biological_sex)}</span>
               {tab === 'demo' && <span className="row-note">{edits[rec.patient_id] ? 'Results updated this session' : demoNote[rec.patient_id]}</span>}
+              {tab === 'real' && <span className="row-note">Demo case. Real MRI (ACDC {rec.acdc_id}), made-up history</span>}
             </button>
           </li>
         ))}
@@ -125,60 +133,83 @@ function Worklist({ tab, setTab, counts, query, setQuery, filters, setFilters, r
   );
 }
 
+// Rows are [term, value, meaning, field]. The field picks the source tag on constructed scenarios.
 function valueGroups(rec) {
-  const fmt = (v, unit = '') => (v == null ? 'Not recorded' : `${v}${unit}`);
-  const ml = (v) => (v == null ? 'Not recorded' : `${Math.round(v)} mL`);
+  const scenario = isScenario(rec);
+  const missingText = scenario ? '–' : 'Not recorded';
+  const fmt = (v, unit = '') => (v == null ? missingText : `${v}${unit}`);
+  const ml = (v) => (v == null ? missingText : `${Math.round(v)} mL`);
   const groups = [
     {
       id: 'peth',
       title: 'PEth and alcohol',
       rows: [
-        ['PEth', rec.peth_available ? `${rec.peth_value_ng_ml} ng/mL` : 'Not done', 'Blood marker of alcohol use over the last 2 to 4 weeks. Can read falsely high in advanced liver disease.'],
-        ['Drawn on', fmt(rec.peth_measurement_date), null],
-        ['Drinks per week', fmt(rec.reported_drinks_per_week), 'Self-reported, so less reliable than PEth.'],
-        ['Days since last drink', fmt(rec.time_since_last_drink_days), 'Self-reported.'],
-        ['Years of heavy drinking', fmt(rec.years_heavy_drinking), 'More than 80 g of alcohol a day.'],
+        ['PEth', rec.peth_available ? `${rec.peth_value_ng_ml} ng/mL` : 'Not done', 'Blood marker of alcohol use over the last 2 to 4 weeks. Can read falsely high in advanced liver disease.', 'peth_value_ng_ml'],
+        ['Drawn on', rec.peth_measurement_date ?? 'Not recorded', null, 'peth_measurement_date'],
+        ['Drinks per week', rec.reported_drinks_per_week ?? 'Not recorded', 'Self-reported, so less reliable than PEth.', 'reported_drinks_per_week'],
+        ['Days since last drink', rec.time_since_last_drink_days ?? 'Not recorded', 'Self-reported.', 'time_since_last_drink_days'],
+        ['Years of heavy drinking', rec.years_heavy_drinking ?? 'Not recorded', 'More than 80 g of alcohol a day.', 'years_heavy_drinking'],
       ],
     },
     {
       id: 'mri',
       title: 'Left ventricle',
+      note: scenario ? <ImputeNote rec={rec} /> : null,
       rows: [
-        ['LVEF', fmt(rec.baseline_lvef, '%'), 'Share of blood pumped out with each beat. 35% or below is the usual ICD range.'],
-        ['LV EDV', ml(rec.edv_ml), 'End-diastolic volume: blood in the chamber when it is fullest. High values mean it has stretched.'],
-        ['LV ESV', ml(rec.esv_ml), 'End-systolic volume: blood left after the squeeze.'],
-        ['LV stroke volume', ml(rec.stroke_volume_ml), 'EDV minus ESV: blood pumped each beat.'],
-        ['LV mass', fmt(rec.myocardial_mass_g, ' g'), 'Weight of the heart muscle, estimated from MRI at 1.05 g/mL.'],
+        ['LVEF', fmt(rec.baseline_lvef, '%'), 'Share of blood pumped out with each beat. 35% or below is the usual ICD range.', 'baseline_lvef'],
+        ['LV EDV', ml(rec.edv_ml), 'End-diastolic volume: blood in the chamber when it is fullest. High values mean it has stretched.', 'edv_ml'],
+        ['LV ESV', ml(rec.esv_ml), 'End-systolic volume: blood left after the squeeze.', 'esv_ml'],
+        ['LV stroke volume', ml(rec.stroke_volume_ml), 'EDV minus ESV: blood pumped each beat.', 'stroke_volume_ml'],
+        ['LV mass', fmt(rec.myocardial_mass_g, ' g'), 'Weight of the heart muscle, estimated from MRI at 1.05 g/mL.', 'myocardial_mass_g'],
       ],
     },
     {
       id: 'rv',
       title: 'Right ventricle',
       rows: [
-        ['RVEF', fmt(rec.rvef_percent, '%'), 'The same pumping measure for the chamber that feeds the lungs.'],
-        ['RV EDV', ml(rec.rvedv_ml), 'Blood in the right ventricle when fullest.'],
-        ['RV ESV', ml(rec.rvesv_ml), 'Blood left after the squeeze.'],
+        ['RVEF', fmt(rec.rvef_percent, '%'), 'The same pumping measure for the chamber that feeds the lungs.', 'rvef_percent'],
+        ['RV EDV', ml(rec.rvedv_ml), 'Blood in the right ventricle when fullest.', 'rvedv_ml'],
+        ['RV ESV', ml(rec.rvesv_ml), 'Blood left after the squeeze.', 'rvesv_ml'],
       ],
     },
     {
       id: 'lge',
       title: 'Scar on LGE',
       rows: [
-        ['Result', !rec.lge_available ? 'Not performed' : rec.lge_status === 'NEGATIVE' ? 'No scar' : 'Scar present', 'Late gadolinium enhancement marks scar, which does not recover. The strongest single signal in this model.'],
-        ['Pattern', LGE_PATTERN_LABEL[rec.lge_pattern] ?? 'None', 'Midwall scar is the typical non-ischemic pattern.'],
-        ['Extent', rec.lge_extent_percent == null ? 'Not recorded' : `${rec.lge_extent_percent}% of LV mass`, null],
+        ['Result', !rec.lge_available ? 'Not performed' : rec.lge_status === 'NEGATIVE' ? 'No scar' : 'Scar present', 'Late gadolinium enhancement marks scar, which does not recover. The strongest single signal in this model.', 'lge_status'],
+        ['Pattern', LGE_PATTERN_LABEL[rec.lge_pattern] ?? 'None', 'Midwall scar is the typical non-ischemic pattern.', 'lge_pattern'],
+        ['Extent', rec.lge_extent_percent == null ? 'Not recorded' : `${rec.lge_extent_percent}% of LV mass`, null, 'lge_extent_percent'],
       ],
     },
     {
       id: 'ttn',
       title: 'TTN genetics',
       rows: [
-        ['Result', TTN_LABEL[rec.ttn_classification], 'Titin variants can cause dilated cardiomyopathy. A VUS is never treated as a confirmed cause.'],
+        ['Result', TTN_LABEL[rec.ttn_classification], 'Titin variants can cause dilated cardiomyopathy. A VUS is never treated as a confirmed cause.', 'ttn_classification'],
         ['Standard', 'ACMG-AMP 2015, ClinVar', null],
       ],
     },
   ];
-  if (rec.follow_up_lvef != null) {
+  if (scenario) {
+    groups.unshift({
+      id: 'scan',
+      title: 'Scan',
+      note: 'From the public ACDC dataset. Only this section and the MRI measurements are real. Everything else is made up.',
+      rows: [
+        ['Source', `ACDC ${rec.acdc_id}`, null, 'acdc_id'],
+        ['ACDC group', `${rec.acdc_group}, ${ACDC_GROUP_LABEL[rec.acdc_group] ?? ''}`, 'Diagnosis label from the dataset. Says nothing about alcohol.', 'acdc_group'],
+        ['Height', fmt(rec.height_cm, ' cm'), null, 'height_cm'],
+        ['Weight', fmt(rec.weight_kg, ' kg'), null, 'weight_kg'],
+        ['LVEF method', LVEF_METHOD_LABEL[rec.lvef_method] ?? rec.lvef_method, rec.lvef_method === 'UNET_TRAINING_CASE' ? 'This scan was in the U-Net training split, so the measurement is not a test of the U-Net.' : null, 'lvef_method'],
+      ],
+    });
+    groups.push({
+      id: 'outcome',
+      title: '6-month outcome',
+      note: 'None. This is a constructed scenario, so there is no follow-up and the recovery estimate cannot be checked against one.',
+      rows: [],
+    });
+  } else if (rec.follow_up_lvef != null) {
     groups.push({
       id: 'outcome',
       title: 'Simulated 6-month outcome',
@@ -234,6 +265,31 @@ function WhatIf({ rec, threshold }) {
   );
 }
 
+function CaseImages({ rec }) {
+  const img = rec.image;
+  return (
+    <div className="images">
+      {img ? (
+        <>
+          <div className="image-pair">
+            <figure><img src={caseImage(img.original)} alt={`Short-axis cine MRI slice from ACDC ${rec.acdc_id}`} /><figcaption>Original</figcaption></figure>
+            <figure><img src={caseImage(img.overlay)} alt="The same slice with the right ventricle, myocardium and left ventricle outlined in color" /><figcaption>Expert contours</figcaption></figure>
+          </div>
+          <ul className="mri-legend">
+            <li><i style={{ background: 'var(--mri-rv)' }} />Right ventricle</li>
+            <li><i style={{ background: 'var(--mri-myo)' }} />Myocardium</li>
+            <li><i style={{ background: 'var(--mri-lv)' }} />Left ventricle</li>
+          </ul>
+          <p><strong>This case's own scan.</strong> ACDC {rec.acdc_id}, {img.phase === 'ED' ? 'end-diastole' : img.phase}, slice {img.slice} of {img.slices}. The scan is real. The health history it is paired with is made up.</p>
+        </>
+      ) : (
+        <p className="case-image-pending">The image for ACDC {rec.acdc_id} arrives with the export. It is only on the machine that holds the ACDC scans.</p>
+      )}
+      <p className="small-note">{ACDC_ATTRIBUTION}</p>
+    </div>
+  );
+}
+
 function Images() {
   return (
     <div className="images">
@@ -247,7 +303,7 @@ function Images() {
         <li><i style={{ background: 'var(--mri-lv)' }} />Left ventricle</li>
       </ul>
       <p><strong>Sample image, not this patient.</strong> ACDC patient001, end-diastole, slice 6 of 10. Synthetic records have numbers only. The slice and phase viewer from the Streamlit MRI page moves here.</p>
-      <p className="small-note">ACDC dataset, CC BY-NC-SA 4.0. Bernard et al., IEEE Trans Med Imaging, 2018.</p>
+      <p className="small-note">{ACDC_ATTRIBUTION}</p>
     </div>
   );
 }
@@ -283,17 +339,17 @@ function Drawer({ rec, threshold, tab, section, setTab, onClose }) {
               <h3>{group.title}</h3>
               {group.note && <p className="small-note">{group.note}</p>}
               <dl className="values">
-                {group.rows.map(([term, value, meaning]) => (
+                {group.rows.map(([term, value, meaning, field]) => (
                   <div key={term}>
                     <dt>{term}</dt>
-                    <dd>{value}</dd>
+                    <dd>{value}{field && <SourceTag rec={rec} field={field} />}</dd>
                     {meaning && <p>{meaning}</p>}
                   </div>
                 ))}
               </dl>
             </section>
           ))}
-          {tab === 'images' && <Images />}
+          {tab === 'images' && (isScenario(rec) ? <CaseImages rec={rec} /> : <Images />)}
           {tab === 'whatif' && <WhatIf rec={rec} threshold={threshold} />}
         </div>
       </aside>
@@ -327,7 +383,7 @@ function App() {
   const [added, setAdded] = useState([]);
   const [edits, setEdits] = useState({});
   const [shared, setShared] = useState({});
-  const [tab, setTab] = useState('demo');
+  const [tab, setTab] = useState(() => (realIds.has(view.id) ? 'real' : 'demo'));
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState({});
   const [drawer, setDrawer] = useState(null);
@@ -352,21 +408,25 @@ function App() {
     return all.map((rec) => ({ rec, a: assess(rec, threshold) }));
   }, [added, edits, threshold]);
 
-  const byId = useMemo(() => new Map(scored.map((row) => [row.rec.patient_id, row])), [scored]);
+  // Scored apart from the cohort so they never enter All, Not sure, or any count.
+  const realRows = useMemo(() => realCases.map((rec) => ({ rec, a: assess(rec, threshold) })), [threshold]);
+
+  const byId = useMemo(() => new Map([...scored, ...realRows].map((row) => [row.rec.patient_id, row])), [scored, realRows]);
   const demoRows = useMemo(() => demoOrder.map((id) => byId.get(id)), [byId]);
 
   const rows = useMemo(() => {
-    let list = tab === 'demo' ? demoRows : tab === 'unsure' ? scored.filter((r) => r.a.status === 'unsure') : scored;
+    let list = tab === 'demo' ? demoRows : tab === 'real' ? realRows : tab === 'unsure' ? scored.filter((r) => r.a.status === 'unsure') : scored;
     const q = query.trim().toLowerCase();
     if (q) list = list.filter((r) => r.rec.patient_id.toLowerCase().includes(q));
     for (const [key, value] of Object.entries(filters)) {
       if (value) list = list.filter((r) => FILTERS[key].test(r.rec, value));
     }
     return list;
-  }, [tab, demoRows, scored, query, filters]);
+  }, [tab, demoRows, realRows, scored, query, filters]);
 
   const counts = useMemo(() => ({
     demo: demoOrder.length,
+    real: realRows.length,
     all: scored.length,
     unsure: scored.filter((r) => r.a.status === 'unsure').length,
   }), [scored]);
@@ -485,7 +545,7 @@ function App() {
               onPrev={index > 0 ? () => step(-1) : null}
               onNext={index >= 0 && index < rows.length - 1 ? () => step(1) : null}
               onOpen={(t, section) => setDrawer({ tab: t, section })}
-              onEdit={() => setView({ name: 'edit', id: view.id })}
+              onEdit={isScenario(current.rec) ? null : () => setView({ name: 'edit', id: view.id })}
               onCopy={copy}
               copied={copied}
               onPatientView={() => setView({ name: 'patient-page', id: view.id })}

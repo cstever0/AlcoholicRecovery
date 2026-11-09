@@ -1,9 +1,9 @@
 // The single-patient view: three findings, the plan, and three ways of arranging them.
 import {
-  MISSING_ACTION, TTN_LABEL, TTN_ORDER, LGE_PATTERN_LABEL, driverText, efBand, modelVersion,
+  MISSING_ACTION, TTN_LABEL, TTN_ORDER, LGE_PATTERN_LABEL, driverText, efBand, isScenario, modelVersion,
   pct, pethBand, planFor, sexWord,
 } from './model.js';
-import { ConfidenceBar, EfScale, Flag, PethScale, StatusChip, Term } from './ui.jsx';
+import { ConfidenceBar, EfScale, Flag, PethScale, SourceTag, StatusChip, Term } from './ui.jsx';
 
 const round = (v) => (v == null ? '–' : Math.round(v));
 
@@ -32,12 +32,13 @@ function PethFinding({ rec, onOpen }) {
             <span className="value">{rec.peth_value_ng_ml}</span>
             <span className="unit">ng/mL</span>
             <Flag value={band.flag} />
+            <SourceTag rec={rec} field="peth_value_ng_ml" />
           </p>
           <p className="reading-note">{band.label} over the last 2 to 4 weeks</p>
           <PethScale value={rec.peth_value_ng_ml} />
         </>
       ) : (
-        <p className="absent">Not done</p>
+        <p className="absent">Not done <SourceTag rec={rec} field="peth_available" /></p>
       )}
       {rec.time_since_last_drink_days != null && (
         <p className="meta">Last drink {rec.time_since_last_drink_days} days ago</p>
@@ -62,6 +63,7 @@ function MriFinding({ rec, onOpen }) {
             <span className="value">{rec.baseline_lvef}</span>
             <span className="unit">%</span>
             <Flag value={lv?.flag} />
+            <SourceTag rec={rec} field="baseline_lvef" />
           </p>
           <p className="reading-note">
             <Term tip="Left ventricular ejection fraction: the share of blood the main pumping chamber pushes out each beat.">LVEF</Term>
@@ -74,6 +76,7 @@ function MriFinding({ rec, onOpen }) {
           <p className="reading">
             <span className="value">{rec.rvef_percent ?? '–'}</span>
             <span className="unit">%</span>
+            <SourceTag rec={rec} field="rvef_percent" />
           </p>
           <p className="reading-note">
             <Term tip="Right ventricular ejection fraction: the same measure for the chamber that pumps to the lungs.">RVEF</Term>
@@ -84,14 +87,54 @@ function MriFinding({ rec, onOpen }) {
       <dl className="inline-stats">
         <div>
           <dt><Term tip="Late gadolinium enhancement shows scar in the heart muscle. Scar does not recover.">Scar on LGE</Term></dt>
-          <dd>{scarLine(rec)}</dd>
+          <dd>{scarLine(rec)} <SourceTag rec={rec} field="lge_status" /></dd>
         </div>
         <div>
           <dt><Term tip="End-diastolic volume: blood in the left ventricle when it is fullest. High values mean the chamber has stretched.">LV EDV</Term></dt>
-          <dd>{round(rec.edv_ml)} mL</dd>
+          <dd>{round(rec.edv_ml)} mL <SourceTag rec={rec} field="edv_ml" /></dd>
         </div>
       </dl>
+      {rec.provenance && <ScanNote rec={rec} />}
     </Finding>
+  );
+}
+
+export const ACDC_GROUP_LABEL = {
+  DCM: 'dilated cardiomyopathy', HCM: 'hypertrophic cardiomyopathy', MINF: 'previous myocardial infarction',
+  NOR: 'normal heart', RV: 'abnormal right ventricle',
+};
+
+export const LVEF_METHOD_LABEL = {
+  UNET_TRAINING_CASE: 'Measured by our U-Net (training case)',
+  EXPERT_MASK: 'Measured from the ACDC expert contours',
+};
+
+const pendingExport = (rec) => Object.values(rec.provenance ?? {}).includes('PENDING_EXPORT');
+
+export function ImputeNote({ rec }) {
+  if (!pendingExport(rec)) return null;
+  return 'LV and RV volumes and LV mass are waiting for the export. Until it arrives the model fills them with the training median.';
+}
+
+function ScanNote({ rec }) {
+  const method = LVEF_METHOD_LABEL[rec.lvef_method] ?? rec.lvef_method;
+  return (
+    <p className="meta scan-note">
+      LVEF {method.charAt(0).toLowerCase() + method.slice(1)}. <ImputeNote rec={rec} />
+    </p>
+  );
+}
+
+function ScenarioBanner({ rec }) {
+  const group = ACDC_GROUP_LABEL[rec.acdc_group] ?? rec.acdc_group;
+  return (
+    <div className="scenario-banner" role="note">
+      <p>
+        <strong>Demo case built from a real MRI (ACDC {rec.acdc_id}, {group}) and a made-up health history.</strong>{' '}
+        The recovery outcome is simulated. Not a real patient with this disease.
+      </p>
+      <p className="scenario-sub">Shows the pipeline running end to end. It is not a validation of the model.</p>
+    </div>
   );
 }
 
@@ -100,7 +143,7 @@ function TtnFinding({ rec, onOpen }) {
   const missing = value === 'NOT_TESTED';
   return (
     <Finding title="TTN genetics" section="ttn" onOpen={onOpen}>
-      {missing ? <p className="absent">Not tested</p> : <p className="reading-text">{TTN_LABEL[value]}</p>}
+      {missing ? <p className="absent">Not tested <SourceTag rec={rec} field="ttn_classification" /></p> : <p className="reading-text">{TTN_LABEL[value]} <SourceTag rec={rec} field="ttn_classification" /></p>}
       {value === 'VARIANT_OF_UNCERTAIN_SIGNIFICANCE' && (
         <p className="reading-note">Uncertain. Not treated as a cause of the cardiomyopathy.</p>
       )}
@@ -229,9 +272,11 @@ function Unsure({ a, rec, threshold, onEdit }) {
                 </li>
               ))}
             </ol>
-            <button type="button" className="btn btn-primary" onClick={onEdit}>
-              Add results
-            </button>
+            {onEdit && (
+              <button type="button" className="btn btn-primary" onClick={onEdit}>
+                Add results
+              </button>
+            )}
           </div>
         ) : (
           <div className="next-steps">
@@ -410,15 +455,18 @@ function NoteLayout({ rec, a, threshold, onEdit, onOpen }) {
 export function PatientChart({ rec, a, threshold, layout, position, onPrev, onNext, onOpen, onEdit, onCopy, copied, note, onPatientView, shared }) {
   const Layout = layout === 'first' ? PlanFirstLayout : layout === 'note' ? NoteLayout : ChartLayout;
   const isNew = rec.patient_id.startsWith('CRIP-NEW');
+  const scenario = isScenario(rec);
   return (
     <div className="chart">
+      {scenario && <ScenarioBanner rec={rec} />}
       <header className="chart-head">
         <div className="chart-id">
           <h1>{rec.patient_id}</h1>
           <p>
             {rec.age} {sexWord(rec.biological_sex)}
+            {scenario && <> <SourceTag rec={rec} field="age" /></>}
             <span className="dot" />
-            {isNew ? 'Entered this session' : 'Synthetic record'}
+            {scenario ? 'Constructed scenario' : isNew ? 'Entered this session' : 'Synthetic record'}
             <span className="dot" />
             Model {modelVersion}
           </p>
@@ -429,9 +477,11 @@ export function PatientChart({ rec, a, threshold, layout, position, onPrev, onNe
           <button type="button" className="btn" onClick={onCopy}>
             {copied ? 'Copied' : 'Copy summary'}
           </button>
-          <button type="button" className="btn" onClick={onEdit}>
-            Edit results
-          </button>
+          {onEdit && (
+            <button type="button" className="btn" onClick={onEdit}>
+              Edit results
+            </button>
+          )}
           <button type="button" className="btn" onClick={onPatientView}>
             {shared ? 'Patient view (shared)' : 'Patient view'}
           </button>
@@ -469,6 +519,9 @@ export function summaryText(rec, a) {
     lines.push(`Procedures and surgery: ${plan.procedures.map((p) => p.title).join('; ')}.`);
   } else if (a.status === 'unsure') {
     lines.push(`Not sure. No recommendation. Confidence ${Math.round(a.confidence * 100)}%.`);
+  }
+  if (isScenario(rec)) {
+    lines.push(`Demo case built from a real MRI (ACDC ${rec.acdc_id}) and a made-up health history. The recovery outcome is simulated. Not a real patient with this disease.`);
   }
   lines.push('Research prototype on synthetic data. Not for clinical use.');
   return lines.join('\n');

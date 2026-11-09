@@ -32,7 +32,9 @@ OUT = Path(__file__).parent / "src" / "data"
 
 # Six demo patients, each showing a different state. All come from the validation and test
 # splits, so the model never trained on them, and all are 7+ days past their last drink,
-# because the plan assumes withdrawal is complete.
+# because the plan assumes withdrawal is complete. Within each state the pick has the LVEF
+# closest to that group's median, so the demo shows a typical heart for this cohort rather
+# than the weakest one.
 DEMO_NOTES = {
     "favorable": "Recovery likely: toxic picture, no scar, no TTN variant",
     "substrate": "Recovery unlikely: TTN variant with scar",
@@ -133,15 +135,20 @@ def pick_demo(pipeline, df: pd.DataFrame, unseen_ids: list) -> dict:
         & (pool.ttn_classification != "NOT_TESTED")
     )
     none_ttn = pool.ttn_classification == "NO_PATHOGENIC_OR_LIKELY_PATHOGENIC"
+
+    def typical(group: pd.DataFrame) -> pd.Series:
+        gap = (group.baseline_lvef - group.baseline_lvef.median()).abs()
+        return group.assign(gap=gap).sort_values(["gap", "patient_id"]).iloc[0]
+
     picks = {}
-    picks["favorable"] = pool[complete & none_ttn & (pool.lge_status == "NEGATIVE") & (pool.peth_value_ng_ml > 150) & (pool.baseline_lvef < 35) & (pool.p > 0.95) & (pool.recovery_binary == 1)].sort_values("baseline_lvef").iloc[0]
-    picks["substrate"] = pool[complete & (pool.ttn_classification == "PATHOGENIC") & (pool.lge_status == "POSITIVE") & (pool.p < 0.05) & (pool.recovery_binary == 0)].sort_values("lge_extent_percent", ascending=False).iloc[0]
+    picks["favorable"] = typical(pool[complete & none_ttn & (pool.lge_status == "NEGATIVE") & (pool.peth_value_ng_ml > 150) & (pool.baseline_lvef < 35) & (pool.p > 0.95) & (pool.recovery_binary == 1)])
+    picks["substrate"] = typical(pool[complete & (pool.ttn_classification == "PATHOGENIC") & (pool.lge_status == "POSITIVE") & (pool.p < 0.05) & (pool.recovery_binary == 0)])
     no_lge = ~pool.lge_available.astype(str).str.lower().isin(["true", "1", "1.0"])
     picks["missing"] = pool[(pool.ttn_classification == "NOT_TESTED") & no_lge].sort_values("p", ascending=False).iloc[0]
-    picks["fence"] = pool[complete & pool.p.between(0.40, 0.62)].sort_values("baseline_lvef").iloc[0]
-    picks["vus"] = pool[complete & (pool.ttn_classification == "VARIANT_OF_UNCERTAIN_SIGNIFICANCE") & (pool.p > 0.9)].sort_values("baseline_lvef").iloc[0]
+    picks["fence"] = typical(pool[complete & pool.p.between(0.40, 0.62)])
+    picks["vus"] = typical(pool[complete & (pool.ttn_classification == "VARIANT_OF_UNCERTAIN_SIGNIFICANCE") & (pool.p > 0.9)])
     used = {str(s.patient_id) for s in picks.values()}
-    picks["device"] = pool[complete & ~pool.patient_id.astype(str).isin(used) & (pool.baseline_lvef <= 30) & (pool.lge_status != "NEGATIVE") & (pool.p < 0.1)].sort_values("baseline_lvef").iloc[0]
+    picks["device"] = typical(pool[complete & ~pool.patient_id.astype(str).isin(used) & (pool.baseline_lvef <= 30) & (pool.lge_status != "NEGATIVE") & (pool.p < 0.1)])
     return {k: {"id": str(v.patient_id), "note": DEMO_NOTES[k], "p": round(float(v.p), 4)} for k, v in picks.items()}
 
 
